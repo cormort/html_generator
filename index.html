@@ -1,0 +1,192 @@
+
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML 產生器 (增強版)</title>
+    
+    <!-- 1. 引入 CodeMirror 核心 CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.css">
+    <!-- 引入 CodeMirror 主題 (可選，這裡使用 material) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/theme/material.min.css">
+    <!-- 引入 CodeMirror 語法檢查 (Lint) CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/lint/lint.css">
+
+    <style>
+        body {
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            background-color: #f8f9fa;
+            color: #343a40;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 30px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        h1, p {
+            text-align: center;
+        }
+        h1 {
+            color: #2c3e50;
+        }
+        p {
+            margin-bottom: 1.5em;
+        }
+
+        /* 2. 優化 CodeMirror 編輯器樣式 */
+        .CodeMirror {
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            height: 400px; /* 增加高度以容納更多程式碼 */
+            font-size: 1rem;
+            margin-bottom: 15px;
+        }
+        .CodeMirror:focus-within { /* 當編輯器獲取焦點時 */
+             border-color: #8ab4f8;
+             box-shadow: 0 0 0 0.2rem rgba(74, 103, 133, 0.25);
+        }
+
+        .button-container {
+            text-align: center;
+        }
+
+        button {
+            padding: 12px 22px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin: 5px;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease;
+        }
+        
+        button:not(#clearButton):not(#checkButton) {
+            background-color: #4a6785;
+        }
+        button:not(#clearButton):not(#checkButton):hover {
+            background-color: #3a536b;
+            transform: translateY(-1px);
+        }
+
+        /* 3. 新增檢查按鈕的樣式 */
+        #checkButton {
+            background-color: #28a745; /* 綠色，代表檢查、成功 */
+        }
+        #checkButton:hover {
+            background-color: #218838;
+            transform: translateY(-1px);
+        }
+
+        #clearButton {
+            background-color: #dc3545;
+        }
+        #clearButton:hover {
+            background-color: #c82333;
+            transform: translateY(-1px);
+        }
+
+        button:active {
+             transform: translateY(0px);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+
+        <h1>HTML 原始碼產生器 (增強版)</h1>
+        <p>請在下方的編輯器中貼上您的 HTML 原始碼，程式碼會自動高亮。點擊按鈕進行檢查、預覽或下載。</p>
+
+        <!-- 原本的 textarea 會被 CodeMirror 取代 -->
+        <textarea id="htmlSource" placeholder="在這裡貼上您的 HTML 原始碼..."></textarea>
+
+        <div class="button-container">
+            <!-- 4. 新增「檢查語法」按鈕 -->
+            <button type="button" id="checkButton" onclick="checkSyntax()">檢查語法</button>
+            <button type="button" onclick="previewHTML()">預覽 HTML</button>
+            <button type="button" onclick="downloadHTML()">下載 HTML</button>
+            <button type="button" id="clearButton" onclick="clearContent()">清除內容</button>
+        </div>
+
+    </div>
+
+    <!-- 5. 引入必要的 JavaScript 庫 -->
+    <!-- CodeMirror 核心 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.js"></script>
+    <!-- 引入 JSHint for JavaScript 檢查 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jshint/2.13.6/jshint.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/lint/javascript-lint.js"></script>
+    <!-- 引入 HTML 語法檢查 -->
+    <script src="https://unpkg.com/htmlhint@latest/lib/htmlhint.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/lint/html-lint.js"></script>
+    <!-- 引入 CodeMirror 語法檢查核心 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/lint/lint.js"></script>
+    <!-- 引入 CodeMirror 模式 (支援 HTML, JS, CSS) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/xml/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/css/css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/htmlmixed/htmlmixed.min.js"></script>
+
+
+    <script>
+        // 6. 初始化 CodeMirror 編輯器
+        var editor = CodeMirror.fromTextArea(document.getElementById('htmlSource'), {
+            mode: "htmlmixed", // 設定為 HTML 混合模式
+            theme: "material", // 設定主題
+            lineNumbers: true, // 顯示行號
+            lineWrapping: true, // 自動換行
+            gutters: ["CodeMirror-lint-markers"], // 設定語法檢查的標記位置
+            lint: true // 啟用語法檢查
+        });
+
+        // 7. 新增檢查語法函式
+        function checkSyntax() {
+            // CodeMirror 的 lint addon 是即時的，
+            // 這個按鈕可以手動觸發一次完整的檢查，對於貼上程式碼的場景很有用。
+            editor.performLint();
+            alert("語法檢查已執行完畢！請查看編輯器左側的錯誤標記（如果有的話）。");
+        }
+
+        // 8. 修改現有函式以從 CodeMirror 實例中獲取內容
+        function previewHTML() {
+            var htmlContent = editor.getValue(); // 從 editor 獲取內容
+            var newWindow = window.open();
+            if (newWindow) {
+                newWindow.document.write(htmlContent);
+                newWindow.document.close();
+            } else {
+                alert("請允許彈出式視窗以預覽內容。");
+            }
+        }
+
+        function downloadHTML() {
+            var htmlContent = editor.getValue(); // 從 editor 獲取內容
+            var blob = new Blob([htmlContent], { type: 'text/html' });
+            var a = document.createElement('a');
+            a.style.display = 'none';
+            var url = window.URL.createObjectURL(blob);
+            a.href = url;
+            a.download = 'generated.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+
+        function clearContent() {
+            editor.setValue(''); // 清空 editor 的內容
+        }
+    </script>
+
+</body>
+</html>
