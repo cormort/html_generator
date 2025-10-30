@@ -11,8 +11,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/theme/dracula.min.css">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/lint/lint.css">
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/fold/foldgutter.css">
+
+    <!-- (新增) CodeMirror 搜尋功能樣式 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/dialog/dialog.css">
 
     <style>
         /* CSS 變數定義 (與前一版相同) */
@@ -195,6 +197,24 @@
             opacity: 0.8;
             transform: translateY(-1px);
         }
+
+        /* 7. (新增) CodeMirror 搜尋對話框樣式，使其支援主題切換 */
+        .CodeMirror-dialog {
+            background-color: var(--container-bg);
+            color: var(--text-color);
+            border-color: var(--cm-border-color);
+            padding: 5px;
+            box-shadow: 0 2px 8px var(--container-shadow);
+        }
+        .CodeMirror-dialog input {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            border: 1px solid var(--cm-border-color);
+            padding: 3px;
+        }
+        .CodeMirror-search-field {
+            width: 20em; /* 調整搜尋框寬度 */
+        }
     </style>
 </head>
 <body>
@@ -232,20 +252,30 @@
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.js"></script>
     
+    <!-- (新增) CodeMirror 搜尋功能 Addons -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/dialog/dialog.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/search/searchcursor.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/search/search.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/search/jump-to-line.js"></script>
+    
+    <!-- 語法檢查 Addons -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jshint/2.13.6/jshint.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/lint/javascript-lint.js"></script>
     <script src="https://unpkg.com/htmlhint@latest/lib/htmlhint.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/lint/html-lint.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/lint/lint.js"></script>
     
+    <!-- 語言模式 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/xml/xml.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/javascript/javascript.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/css/css.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/htmlmixed/htmlmixed.min.js"></script>
     
+    <!-- 編輯器增強 Addons -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/edit/closetag.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/edit/closebrackets.js"></script>
 
+    <!-- 程式碼摺疊 Addons -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/fold/foldcode.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/fold/foldgutter.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/fold/brace-fold.js"></script>
@@ -253,11 +283,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/fold/tag-fold.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/fold/comment-fold.js"></script>
 
+    <!-- 美化格式工具 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.7/beautify-html.min.js"></script>
 
 
     <script>
-        // 10. (修改) 初始化 CodeMirror 編輯器 (加入 Addons)
+        // 初始化 CodeMirror 編輯器
         var editor = CodeMirror.fromTextArea(document.getElementById('htmlSource'), {
             mode: "htmlmixed",
             theme: "default",
@@ -267,59 +298,53 @@
             // 語法檢查設定
             lint: true,
             
-            // (新增) 編輯器增強功能
+            // 編輯器增強功能
             autoCloseTags: true,
             autoCloseBrackets: true,
             
-            // (新增) 程式碼摺疊設定
+            // 程式碼摺疊設定
             foldGutter: true,
-            gutters: ["CodeMirror-linenumbers", "CodeMirror-lint-markers", "CodeMirror-foldgutter"]
+            gutters: ["CodeMirror-linenumbers", "CodeMirror-lint-markers", "CodeMirror-foldgutter"],
+
+            // (新增) 啟用搜尋、取代等快速鍵
+            extraKeys: {
+                "Ctrl-F": "find",
+                "Cmd-F": "find", // for Mac
+                "Ctrl-H": "replace",
+                "Cmd-Alt-F": "replace", // for Mac
+                "Shift-Ctrl-H": "replaceAll",
+                "Shift-Cmd-Alt-F": "replaceAll" // for Mac
+            }
         });
 
-        // 11. (新增) 即時預覽函式
+        // 即時預覽函式
         function updatePreview() {
             var htmlContent = editor.getValue();
             var iframe = document.getElementById('preview-frame');
-            
-            // 使用 srcdoc 屬性來更新 iframe，這是最安全且推薦的方式
-            // 它會自動建立一個完整的 HTML 文件上下文
             iframe.srcdoc = htmlContent;
         }
 
-        // 12. (新增) 監聽編輯器變更事件，觸發即時預覽
-        // 使用 setTimeout 進行防抖(debounce)，避免過於頻繁的更新
+        // 監聽編輯器變更事件，觸發即時預覽 (防抖)
         var updateTimeout;
         editor.on("change", function() {
             clearTimeout(updateTimeout);
             updateTimeout = setTimeout(updatePreview, 300); // 延遲 300 毫秒後更新
         });
 
-        // 13. (新增) 程式碼美化函式
+        // 程式碼美化函式
         function formatCode() {
             try {
                 var currentCode = editor.getValue();
-                // 使用 html_beautify 函式
                 var formattedCode = html_beautify(currentCode, {
                     "indent_size": 4,
                     "indent_char": " ",
                     "max_preserve_newlines": 1,
                     "preserve_newlines": true,
-                    "keep_array_indentation": false,
-                    "break_chained_methods": false,
                     "indent_scripts": "normal",
                     "brace_style": "collapse",
-                    "space_before_conditional": true,
-                    "unescape_strings": false,
-                    "jslint_happy": false,
-                    "end_with_newline": false,
                     "wrap_line_length": 0,
-                    "indent_inner_html": true,
-                    "comma_first": false,
-                    "e4x": false,
-                    "indent_empty_lines": false
+                    "indent_inner_html": true
                 });
-                
-                // 將格式化後的程式碼寫回編輯器
                 editor.setValue(formattedCode);
             } catch (e) {
                 console.error("程式碼美化失敗:", e);
@@ -327,9 +352,7 @@
             }
         }
 
-
-        // (以下函式大多不變，除了 'previewHTML' 已被移除)
-
+        // 主題切換函式
         function applyTheme(themeName) {
             let cmTheme = 'default';
             if (themeName === 'default-light') {
@@ -342,13 +365,13 @@
             editor.setOption('theme', cmTheme);
         }
 
+        // 語法檢查函式
         function checkSyntax() {
             editor.performLint();
             alert("語法檢查已執行完畢！請查看編輯器左側的錯誤標記（如果有的話）。");
         }
 
-        // 'previewHTML' 函式已被 'updatePreview' 和 iframe 取代，故刪除。
-
+        // 下載 HTML 函式
         function downloadHTML() {
             var htmlContent = editor.getValue();
             var blob = new Blob([htmlContent], { type: 'text/html' });
@@ -363,11 +386,12 @@
             window.URL.revokeObjectURL(url);
         }
 
+        // 清除內容函式
         function clearContent() {
             editor.setValue('');
         }
         
-        // 14. (新增) 頁面載入時觸發一次預覽
+        // 頁面載入時觸發一次預覽
         document.addEventListener("DOMContentLoaded", updatePreview);
 
     </script>
