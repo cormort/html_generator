@@ -3,17 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HTML 產生器 (專業版)</title>
-    
+    <title>HTML 產生器 (專業版) - 含 Markdown</title>
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.css">
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/theme/material.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/theme/dracula.min.css">
-    
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/lint/lint.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/fold/foldgutter.css">
-
-    <!-- (新增) CodeMirror 搜尋功能樣式 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/dialog/dialog.css">
 
     <style>
@@ -78,24 +75,24 @@
             --preview-border: #6272a4;
         }
 
-        /* 2. (修改) 全局樣式以支援全螢幕佈局 */
+        /* 全局樣式 (與前一版相同) */
         html, body {
             height: 100%;
             margin: 0;
-            overflow: hidden; /* 避免根層級滾動 */
+            overflow: hidden; 
         }
-        
+                
         body {
             font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             line-height: 1.6;
-            display: flex; /* 使用 Flexbox 進行佈局 */
-            flex-direction: column; /* 垂直排列：標題 -> 內容 */
+            display: flex;
+            flex-direction: column;
             transition: background-color 0.3s, color 0.3s;
         }
 
-        /* 3. (修改) 頂部標題列樣式 */
+        /* 頂部標題列樣式 (與前一版相同) */
         .header-bar {
             padding: 10px 20px;
             background-color: var(--container-bg);
@@ -110,10 +107,6 @@
             color: var(--heading-color);
             margin: 0;
         }
-        
-        .theme-selector-container {
-            /* (移除 text-align: right 和 margin-bottom) */
-        }
         #theme-select {
             padding: 5px 8px;
             border-radius: 4px;
@@ -123,32 +116,47 @@
             font-size: 0.9rem;
         }
 
-        /* 4. (新增) 主內容分割佈局 (CSS Grid) */
+        /* 主內容分割佈局 (與前一版相同) */
         .main-content {
             display: grid;
             grid-template-columns: 1fr 1fr; /* 左右 50% 分割 */
             flex-grow: 1; /* 佔滿剩餘空間 */
             overflow: hidden;
-            height: 100%; /* 確保高度正確 */
+            height: 100%;
         }
-        
+                
         .editor-pane, .preview-pane {
             height: 100%;
             display: flex;
             flex-direction: column;
             overflow: hidden;
         }
-        
+                
         .button-container {
             text-align: center;
             padding: 10px 0;
             background-color: var(--container-bg);
-            border-bottom: 1px solid var(--cm-border-color); /* 統一風格 */
+            border-bottom: 1px solid var(--cm-border-color);
             border-top: 1px solid var(--cm-border-color);
+            /* (新增) 讓按鈕和 Checkbox 垂直對齊 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* (修改) 讓按鈕在 Flex 容器中保持原樣 */
+        .button-container button {
+             /* 移除 margin: auto 或其他，使用原始 margin */
         }
 
+        /* (修改) 讓 Label 也在 Flex 容器中 */
+        .preview-pane .button-container label {
+            margin: 5px; /* 統一間距 */
+        }
+
+
         button {
-            padding: 8px 18px; /* 稍微縮小按鈕以適應頂部 */
+            padding: 8px 18px;
             font-size: 0.95rem;
             cursor: pointer;
             margin: 5px;
@@ -157,27 +165,24 @@
             color: white;
             transition: background-color 0.2s ease-in-out, transform 0.1s ease;
         }
-        
-        /* 5. (修改) CodeMirror 和預覽視窗樣式 */
+
+        /* CodeMirror 和預覽視窗樣式 (與前一版相同) */
         .CodeMirror {
-            border: none; /* 移除邊框，由父容器控制 */
-            height: 100%; /* 佔滿父容器 */
+            border: none;
+            height: 100%;
             font-size: 1rem;
-            flex-grow: 1; /* 佔滿剩餘空間 */
-        }
-        .CodeMirror:focus-within {
-             /* (移除邊框和陰影，保持簡潔) */
+            flex-grow: 1;
         }
 
         #preview-frame {
             width: 100%;
             height: 100%;
             border: none;
-            background-color: #ffffff; /* 預覽區域始終為白色背景 */
+            background-color: #ffffff;
             flex-grow: 1;
         }
-        
-        /* 按鈕樣式 (繼承自上一版) */
+
+        /* 按鈕樣式 (與前一版相同) */
         button:not(#clearButton):not(#checkButton):not(#formatButton) { background-color: var(--button-primary-bg); }
         button:not(#clearButton):not(#checkButton):not(#formatButton):hover { background-color: var(--button-primary-hover); transform: translateY(-1px); }
         #checkButton { background-color: var(--button-check-bg); }
@@ -186,19 +191,18 @@
         #clearButton:hover { background-color: var(--button-danger-hover); transform: translateY(-1px); }
         button:active { transform: translateY(0px); }
 
-        /* 6. (新增) 美化按鈕樣式 */
         #formatButton {
-            background-color: #6272a4; /* Dracula Purple 變種 */
+            background-color: #6272a4; 
         }
         [data-theme="material"] #formatButton {
-            background-color: #00BCD4; /* Material Cyan */
+            background-color: #00BCD4;
         }
         #formatButton:hover {
             opacity: 0.8;
             transform: translateY(-1px);
         }
 
-        /* 7. (新增) CodeMirror 搜尋對話框樣式，使其支援主題切換 */
+        /* CodeMirror 搜尋對話框樣式 (與前一版相同) */
         .CodeMirror-dialog {
             background-color: var(--container-bg);
             color: var(--text-color);
@@ -213,14 +217,14 @@
             padding: 3px;
         }
         .CodeMirror-search-field {
-            width: 20em; /* 調整搜尋框寬度 */
+            width: 20em;
         }
     </style>
 </head>
 <body>
 
     <div class="header-bar">
-        <h1>HTML 產生器 (專業版)</h1>
+        <h1>HTML / Markdown 產生器 (專業版)</h1>
         <div class="theme-selector-container">
             <label for="theme-select">選擇主題: </label>
             <select id="theme-select" onchange="applyTheme(this.value)">
@@ -234,48 +238,48 @@
     <div class="main-content">
         <div class="editor-pane">
             <div class="button-container">
-                <button type="button" id="formatButton" onclick="formatCode()">美化格式</button>
-                <button type="button" id="checkButton" onclick="checkSyntax()">檢查語法</button>
-                <button type="button" onclick="downloadHTML()">下載 HTML</button>
+                <button type="button" id="formatButton" onclick="formatCode()">美化格式 (HTML)</button>
+                <button type="button" id="checkButton" onclick="checkSyntax()">檢查語法 (HTML)</button>
+                <button type="button" onclick="downloadHTML()">下載檔案</button>
                 <button type="button" id="clearButton" onclick="clearContent()">清除內容</button>
             </div>
-            <textarea id="htmlSource" placeholder="在這裡貼上您的 HTML 原始碼..."></textarea>
+            <textarea id="htmlSource" placeholder="貼上您的 HTML 或 Markdown 原始碼..."></textarea>
         </div>
 
         <div class="preview-pane">
             <div class="button-container">
                 <label style="font-weight: bold;">即時預覽</label>
+                
+                <label for="markdown-toggle" style="font-weight: normal; font-size: 0.9rem; cursor: pointer; user-select: none;">
+                    <input type="checkbox" id="markdown-toggle" onchange="triggerUpdate()">
+                    Markdown 模式
+                </label>
             </div>
             <iframe id="preview-frame" title="即時預覽"></iframe>
         </div>
     </div>
-    
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.js"></script>
-    
-    <!-- (新增) CodeMirror 搜尋功能 Addons -->
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/dialog/dialog.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/search/searchcursor.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/search/search.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/search/jump-to-line.js"></script>
-    
-    <!-- 語法檢查 Addons -->
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jshint/2.13.6/jshint.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/lint/javascript-lint.js"></script>
     <script src="https://unpkg.com/htmlhint@latest/lib/htmlhint.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/lint/html-lint.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/lint/lint.js"></script>
-    
-    <!-- 語言模式 -->
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/xml/xml.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/javascript/javascript.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/css/css.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/htmlmixed/htmlmixed.min.js"></script>
-    
-    <!-- 編輯器增強 Addons -->
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/edit/closetag.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/edit/closebrackets.js"></script>
 
-    <!-- 程式碼摺疊 Addons -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/fold/foldcode.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/fold/foldgutter.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/fold/brace-fold.js"></script>
@@ -283,30 +287,23 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/fold/tag-fold.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/fold/comment-fold.js"></script>
 
-    <!-- 美化格式工具 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.7/beautify-html.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
 
     <script>
-        // 初始化 CodeMirror 編輯器
+        // 初始化 CodeMirror 編輯器 (與你原本的設定相同)
         var editor = CodeMirror.fromTextArea(document.getElementById('htmlSource'), {
             mode: "htmlmixed",
             theme: "default",
             lineNumbers: true,
             lineWrapping: true,
-            
-            // 語法檢查設定
             lint: true,
-            
-            // 編輯器增強功能
             autoCloseTags: true,
             autoCloseBrackets: true,
-            
-            // 程式碼摺疊設定
             foldGutter: true,
             gutters: ["CodeMirror-linenumbers", "CodeMirror-lint-markers", "CodeMirror-foldgutter"],
-
-            // (新增) 啟用搜尋、取代等快速鍵
             extraKeys: {
                 "Ctrl-F": "find",
                 "Cmd-F": "find", // for Mac
@@ -317,33 +314,61 @@
             }
         });
 
-        // 即時預覽函式
+        // *** (新增) 獲取 Markdown 切換開關的 DOM 元素 ***
+        var markdownToggle = document.getElementById('markdown-toggle');
+
+        // *** (已修改) 即時預覽函式 ***
         function updatePreview() {
-            var htmlContent = editor.getValue();
+            // 1. 檢查 "Markdown 模式" 是否開啟
+            var isMarkdownMode = markdownToggle.checked;
+            
+            // 2. 獲取編輯器原始內容
+            var rawContent = editor.getValue();
+            var processedContent = '';
+
+            // 3. 根據模式決定如何處理內容
+            if (isMarkdownMode) {
+                // *** Markdown 模式 ***
+                if (typeof marked === 'undefined') {
+                    processedContent = '<h1>錯誤：marked.js 函式庫載入失敗！</h1><p>請檢查網路連線並重新整理。</p>';
+                } else {
+                    // 使用 marked.js 解析
+                    processedContent = marked.parse(rawContent);
+                }
+            } else {
+                // *** HTML 模式 (原始功能) ***
+                processedContent = rawContent;
+            }
+
+            // 4. 更新預覽
             var iframe = document.getElementById('preview-frame');
-            iframe.srcdoc = htmlContent;
+            iframe.srcdoc = processedContent;
         }
 
-        // 監聽編輯器變更事件，觸發即時預覽 (防抖)
+        // *** (已修改) 防抖 (Debounce) 邏輯 ***
         var updateTimeout;
-        editor.on("change", function() {
+        // 建立一個手動觸發器，以便在切換 Toggle 時也能更新
+        function triggerUpdate() {
             clearTimeout(updateTimeout);
             updateTimeout = setTimeout(updatePreview, 300); // 延遲 300 毫秒後更新
-        });
+        }
+        
+        // 監聽編輯器變更事件，觸發即時預覽
+        editor.on("change", triggerUpdate);
 
-        // 程式碼美化函式
+        // 程式碼美化函式 (與你原本的相同)
         function formatCode() {
+            // 在 Markdown 模式下，美化功能可能無效或產生非預期結果
+            if (markdownToggle.checked) {
+                alert("「美化格式」功能僅適用於 HTML 模式。");
+                return;
+            }
             try {
                 var currentCode = editor.getValue();
                 var formattedCode = html_beautify(currentCode, {
-                    "indent_size": 4,
-                    "indent_char": " ",
-                    "max_preserve_newlines": 1,
-                    "preserve_newlines": true,
-                    "indent_scripts": "normal",
-                    "brace_style": "collapse",
-                    "wrap_line_length": 0,
-                    "indent_inner_html": true
+                    "indent_size": 4, "indent_char": " ", "max_preserve_newlines": 1,
+                    "preserve_newlines": true, "indent_scripts": "normal",
+                    "brace_style": "collapse", "wrap_line_length": 0, "indent_inner_html": true
                 });
                 editor.setValue(formattedCode);
             } catch (e) {
@@ -352,7 +377,7 @@
             }
         }
 
-        // 主題切換函式
+        // 主題切換函式 (與你原本的相同)
         function applyTheme(themeName) {
             let cmTheme = 'default';
             if (themeName === 'default-light') {
@@ -360,21 +385,78 @@
                 cmTheme = 'default';
             } else {
                 document.body.dataset.theme = themeName;
-                cmTheme = themeName; 
+                cmTheme = themeName;
             }
             editor.setOption('theme', cmTheme);
         }
 
-        // 語法檢查函式
+        // 語法檢查函式 (與你原本的相同)
         function checkSyntax() {
+            // 語法檢查僅適用於 HTML
+            if (markdownToggle.checked) {
+                alert("「檢查語法」功能僅適用於 HTML 模式。");
+                return;
+            }
             editor.performLint();
             alert("語法檢查已執行完畢！請查看編輯器左側的錯誤標記（如果有的話）。");
         }
 
-        // 下載 HTML 函式
+        // *** (新增) 用於 Markdown 下載的輔助函式 ***
+        function createHtmlTemplate(content, title = "Markdown 匯出") {
+            return `
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${title}</title>
+    <style>
+        /* 為 Markdown 匯出內容加入一些基本樣式 */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6; padding: 20px; max-width: 800px; margin: 0 auto; color: #333;
+        }
+        h1, h2, h3, h4, h5, h6 { border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        ul, ol { padding-left: 30px; }
+        code { background-color: #f4f4f4; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
+        pre { background-color: #f4f4f4; padding: 10px; border-radius: 4px; overflow-x: auto; }
+        img { max-width: 100%; height: auto; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    ${content}
+</body>
+</html>
+            `;
+        }
+
+        // *** (已修改) 下載 HTML 函式 ***
         function downloadHTML() {
-            var htmlContent = editor.getValue();
-            var blob = new Blob([htmlContent], { type: 'text/html' });
+            var isMarkdownMode = markdownToggle.checked;
+            var rawContent = editor.getValue();
+            var finalHtmlContent = '';
+
+            if (isMarkdownMode) {
+                // *** Markdown 模式 ***
+                // 下載時，將 Markdown 轉換並打包成一個完整的、帶有樣式的 HTML 檔案
+                if (typeof marked === 'undefined') {
+                    alert('marked.js 載入失敗，無法下載。');
+                    return;
+                }
+                var convertedBody = marked.parse(rawContent);
+                // 使用輔助函式來建立完整的 HTML 頁面
+                finalHtmlContent = createHtmlTemplate(convertedBody, "Markdown 匯出內容");
+            } else {
+                // *** HTML 模式 ***
+                // 直接使用編輯器中的 HTML 內容
+                finalHtmlContent = rawContent;
+            }
+
+            // 下載邏輯 (與你原本的相同)
+            var blob = new Blob([finalHtmlContent], { type: 'text/html' });
             var a = document.createElement('a');
             a.style.display = 'none';
             var url = window.URL.createObjectURL(blob);
@@ -386,15 +468,14 @@
             window.URL.revokeObjectURL(url);
         }
 
-        // 清除內容函式
+        // 清除內容函式 (與你原本的相同)
         function clearContent() {
             editor.setValue('');
         }
-        
+
         // 頁面載入時觸發一次預覽
         document.addEventListener("DOMContentLoaded", updatePreview);
 
     </script>
-
 </body>
 </html>
