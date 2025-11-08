@@ -3,479 +3,308 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HTML 產生器 (專業版) - 含 Markdown</title>
+    <title>HTML 生成器 (專業版) - 含 Markdown</title>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/theme/material.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/theme/dracula.min.css">
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/lint/lint.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/fold/foldgutter.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/dialog/dialog.css">
 
     <style>
-        /* CSS 變數定義 (與前一版相同) */
-        :root {
-            --bg-color: #f8f9fa;
-            --text-color: #343a40;
-            --container-bg: #ffffff;
-            --container-shadow: rgba(0, 0, 0, 0.08);
-            --heading-color: #2c3e50;
-            --button-primary-bg: #4a6785;
-            --button-primary-hover: #3a536b;
-            --button-check-bg: #28a745;
-            --button-check-hover: #218838;
-            --button-danger-bg: #dc3545;
-            --button-danger-hover: #c82333;
-            --cm-border-color: #ced4da;
-            --cm-focus-border: #8ab4f8;
-            --cm-focus-shadow: rgba(74, 103, 133, 0.25);
-            --selector-bg: #ffffff;
-            --selector-border: #ced4da;
-            --preview-border: #ced4da;
-        }
+        /* ... 您的所有 CSS 變數和大部分樣式保持不變 ... */
+        :root { --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%); --bg-color: #f5f7fa; --text-color: #2d3748; --container-bg: #ffffff; --container-shadow: 0 10px 40px rgba(0, 0, 0, 0.1); --heading-color: #1a202c; --button-primary-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%); --button-primary-hover: linear-gradient(135deg, #5568d3 0%, #653a8b 100%); --button-success-bg: linear-gradient(135deg, #48bb78 0%, #38a169 100%); --button-success-hover: linear-gradient(135deg, #38a169 0%, #2f855a 100%); --button-danger-bg: linear-gradient(135deg, #fc8181 0%, #f56565 100%); --button-danger-hover: linear-gradient(135deg, #f56565 0%, #e53e3e 100%); --button-info-bg: linear-gradient(135deg, #4299e1 0%, #3182ce 100%); --cm-border-color: #e2e8f0; --cm-focus-border: #667eea; --cm-focus-shadow: rgba(102, 126, 234, 0.3); --nav-border-color: #e2e8f0; --nav-link-color: #4a5568; --nav-link-hover-bg: #edf2f7; --nav-link-active-bg: #e6fffa; --nav-link-id-color: #667eea; --accent-color: #667eea; --toggle-btn-bg: #ffffff; --toggle-btn-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); }
+        [data-theme="material"] { --bg-gradient: linear-gradient(135deg, #1a237e 0%, #0d47a1 100%); --bg-color: #1e1e1e; --text-color: #e0e0e0; --container-bg: #2d2d2d; --container-shadow: 0 10px 40px rgba(0, 0, 0, 0.5); --heading-color: #ffffff; --button-primary-bg: linear-gradient(135deg, #26c6da 0%, #00acc1 100%); --button-primary-hover: linear-gradient(135deg, #00acc1 0%, #0097a7 100%); --button-success-bg: linear-gradient(135deg, #66bb6a 0%, #43a047 100%); --button-success-hover: linear-gradient(135deg, #43a047 0%, #2e7d32 100%); --button-danger-bg: linear-gradient(135deg, #ef5350 0%, #e53935 100%); --button-danger-hover: linear-gradient(135deg, #e53935 0%, #c62828 100%); --button-info-bg: linear-gradient(135deg, #5c6bc0 0%, #3949ab 100%); --cm-border-color: #424242; --cm-focus-border: #26c6da; --nav-link-color: #b0bec5; --nav-link-hover-bg: #424242; --nav-link-active-bg: #1a237e; --nav-link-id-color: #26c6da; --accent-color: #26c6da; --toggle-btn-bg: #424242; --toggle-btn-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); }
+        [data-theme="dracula"] { --bg-gradient: linear-gradient(135deg, #6272a4 0%, #44475a 100%); --bg-color: #282a36; --text-color: #f8f8f2; --container-bg: #44475a; --container-shadow: 0 10px 40px rgba(0, 0, 0, 0.5); --heading-color: #bd93f9; --button-primary-bg: linear-gradient(135deg, #bd93f9 0%, #9580d6 100%); --button-primary-hover: linear-gradient(135deg, #9580d6 0%, #7d6dbd 100%); --button-success-bg: linear-gradient(135deg, #50fa7b 0%, #3ee76a 100%); --button-success-hover: linear-gradient(135deg, #3ee76a 0%, #2cd459 100%); --button-danger-bg: linear-gradient(135deg, #ff5555 0%, #ff3838 100%); --button-danger-hover: linear-gradient(135deg, #ff3838 0%, #ff1b1b 100%); --button-info-bg: linear-gradient(135deg, #8be9fd 0%, #6fe9fb 100%); --cm-border-color: #6272a4; --cm-focus-border: #bd93f9; --nav-link-color: #f8f8f2; --nav-link-hover-bg: #6272a4; --nav-link-active-bg: #44475a; --nav-link-id-color: #8be9fd; --accent-color: #bd93f9; --toggle-btn-bg: #6272a4; --toggle-btn-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; overflow: hidden; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif; background: var(--bg-color); color: var(--text-color); line-height: 1.6; display: flex; flex-direction: column; transition: all 0.3s ease; }
+        .header-bar { padding: 16px 24px; background: var(--bg-gradient); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15); display: flex; justify-content: space-between; align-items: center; z-index: 10; }
+        .header-bar h1 { font-size: 1.5rem; color: white; margin: 0; font-weight: 600; letter-spacing: 0.5px; display: flex; align-items: center; gap: 10px; }
+        .header-bar h1::before { content: '⚡'; font-size: 1.8rem; }
+        .theme-selector-container { display: flex; align-items: center; gap: 10px; }
+        .theme-selector-container label { color: white; font-weight: 500; font-size: 0.9rem; }
+        #theme-select { padding: 8px 16px; border-radius: 8px; border: 2px solid rgba(255, 255, 255, 0.3); background-color: rgba(255, 255, 255, 0.15); color: white; font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: all 0.3s ease; backdrop-filter: blur(10px); }
+        #theme-select:hover { background-color: rgba(255, 255, 255, 0.25); border-color: rgba(255, 255, 255, 0.5); }
+        #theme-select option { background-color: var(--container-bg); color: var(--text-color); }
+        .main-content { display: grid; grid-template-columns: 280px 1fr 1fr; flex-grow: 1; overflow: hidden; height: 100%; gap: 0; transition: grid-template-columns 0.3s ease; }
+        .main-content.nav-collapsed { grid-template-columns: 0px 1fr 1fr; }
+        .main-content.preview-collapsed { grid-template-columns: 280px 1fr 0px; }
+        .main-content.nav-collapsed.preview-collapsed { grid-template-columns: 0px 1fr 0px; }
+        .editor-pane, .preview-pane, .navigation-pane { height: 100%; display: flex; flex-direction: column; overflow: hidden; background: var(--container-bg); }
+        .editor-pane { position: relative; border-left: 1px solid var(--nav-border-color); border-right: 1px solid var(--nav-border-color); }
+        .preview-pane { position: relative; min-width: 0; /* (修正) 允許面板寬度收縮至 0 */ }
+        .navigation-pane { background: var(--container-bg); border-right: 1px solid var(--nav-border-color); box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05); min-width: 0; }
+        .navigation-pane h2 { font-size: 1rem; padding: 16px; margin: 0; color: var(--heading-color); border-bottom: 2px solid var(--nav-border-color); text-align: center; font-weight: 600; letter-spacing: 0.5px; background: var(--bg-color); }
+        .nav-filter-container { padding: 12px; background: var(--bg-color); border-bottom: 1px solid var(--nav-border-color); }
+        #nav-filter { width: 100%; padding: 10px; border: 2px solid var(--cm-border-color); border-radius: 8px; background: var(--container-bg); color: var(--text-color); font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: all 0.3s ease; }
+        #nav-filter:hover { border-color: var(--accent-color); }
+        #nav-filter:focus { outline: none; border-color: var(--accent-color); box-shadow: 0 0 0 3px var(--cm-focus-shadow); }
+        #outline-container { flex-grow: 1; overflow-y: auto; padding: 8px 0; }
+        #outline-container::-webkit-scrollbar { width: 6px; }
+        #outline-container::-webkit-scrollbar-track { background: transparent; }
+        #outline-container::-webkit-scrollbar-thumb { background: var(--cm-border-color); border-radius: 3px; }
+        #outline-container::-webkit-scrollbar-thumb:hover { background: var(--nav-link-color); }
+        #outline-container a { display: block; padding: 10px 16px; text-decoration: none; color: var(--nav-link-color); font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: all 0.2s ease; cursor: pointer; border-left: 3px solid transparent; margin: 2px 0; }
+        #outline-container a:hover { background-color: var(--nav-link-hover-bg); border-left-color: var(--accent-color); padding-left: 20px; }
+        #outline-container a:active { background-color: var(--nav-link-active-bg); }
+        .outline-h1 { padding-left: 16px !important; font-weight: 600; font-size: 0.95rem; }
+        .outline-h2 { padding-left: 28px !important; font-size: 0.9rem; }
+        .outline-h3 { padding-left: 40px !important; font-size: 0.875rem; }
+        .outline-h4 { padding-left: 52px !important; font-size: 0.85rem; }
+        .outline-h5 { padding-left: 64px !important; font-size: 0.85rem; }
+        .outline-h6 { padding-left: 76px !important; font-size: 0.85rem; }
+        .outline-id { padding-left: 28px !important; color: var(--nav-link-id-color) !important; font-style: italic; font-size: 0.875rem; }
+        .outline-id::before { content: '#'; margin-right: 6px; font-weight: 600; }
+        .outline-function { padding-left: 28px !important; color: #f59e0b !important; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.875rem; }
+        .outline-function::before { content: 'ƒ'; margin-right: 6px; font-weight: bold; }
+        .outline-class { padding-left: 28px !important; color: #8b5cf6 !important; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.875rem; }
+        .outline-class::before { content: '.'; margin-right: 4px; font-weight: bold; }
+        .CodeMirror .highlight-range { background-color: rgba(102, 126, 234, 0.2); }
+        [data-theme="material"] .CodeMirror .highlight-range { background-color: rgba(38, 198, 218, 0.25); }
+        [data-theme="dracula"] .CodeMirror .highlight-range { background-color: rgba(189, 147, 249, 0.25); }
+        .no-outline { padding: 32px 20px; color: #999; font-style: italic; font-size: 0.9rem; text-align: center; line-height: 1.8; }
+        #toggle-nav-btn { position: absolute; top: 12px; left: -18px; z-index: 20; background: var(--toggle-btn-bg); color: var(--accent-color); border: 2px solid var(--accent-color); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: bold; line-height: 1; padding: 0; cursor: pointer; box-shadow: var(--toggle-btn-shadow); transition: all 0.3s ease; }
+        #toggle-nav-btn:hover { transform: scale(1.1); box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4); background: var(--accent-color); color: white; }
+        #toggle-nav-btn:active { transform: scale(0.95); }
+        .main-content.nav-collapsed #toggle-nav-btn { left: 8px; }
 
-        [data-theme="material"] {
-            --bg-color: #263238;
-            --text-color: #ECEFF1;
-            --container-bg: #37474F;
-            --container-shadow: rgba(0, 0, 0, 0.25);
-            --heading-color: #ffffff;
-            --button-primary-bg: #009688;
-            --button-primary-hover: #00796B;
-            --button-check-bg: #4CAF50;
-            --button-check-hover: #43A047;
-            --button-danger-bg: #f44336;
-            --button-danger-hover: #e53935;
-            --cm-border-color: #546E7A;
-            --cm-focus-border: #80CBC4;
-            --cm-focus-shadow: rgba(128, 203, 196, 0.25);
-            --selector-bg: #546E7A;
-            --selector-border: #546E7A;
-            --preview-border: #546E7A;
-        }
-
-        [data-theme="dracula"] {
-            --bg-color: #282a36;
-            --text-color: #f8f8f2;
-            --container-bg: #3b3d50;
-            --container-shadow: rgba(0, 0, 0, 0.25);
-            --heading-color: #bd93f9;
-            --button-primary-bg: #bd93f9;
-            --button-primary-hover: #a47de4;
-            --button-check-bg: #50fa7b;
-            --button-check-hover: #42e368;
-            --button-danger-bg: #ff5555;
-            --button-danger-hover: #ff2d2d;
-            --cm-border-color: #6272a4;
-            --cm-focus-border: #bd93f9;
-            --cm-focus-shadow: rgba(189, 147, 249, 0.25);
-            --selector-bg: #6272a4;
-            --selector-border: #6272a4;
-            --preview-border: #6272a4;
-        }
-
-        /* 全局樣式 (與前一版相同) */
-        html, body {
-            height: 100%;
-            margin: 0;
-            overflow: hidden; 
-        }
-                
-        body {
-            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            line-height: 1.6;
-            display: flex;
-            flex-direction: column;
-            transition: background-color 0.3s, color 0.3s;
-        }
-
-        /* 頂部標題列樣式 (與前一版相同) */
-        .header-bar {
-            padding: 10px 20px;
-            background-color: var(--container-bg);
-            box-shadow: 0 4px 12px var(--container-shadow);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 10;
-        }
-        .header-bar h1 {
-            font-size: 1.5rem;
-            color: var(--heading-color);
-            margin: 0;
-        }
-        #theme-select {
-            padding: 5px 8px;
-            border-radius: 4px;
-            border: 1px solid var(--selector-border);
-            background-color: var(--selector-bg);
-            color: var(--text-color);
-            font-size: 0.9rem;
-        }
-
-        /* 主內容分割佈局 (與前一版相同) */
-        .main-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr; /* 左右 50% 分割 */
-            flex-grow: 1; /* 佔滿剩餘空間 */
-            overflow: hidden;
-            height: 100%;
-        }
-                
-        .editor-pane, .preview-pane {
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-                
-        .button-container {
-            text-align: center;
-            padding: 10px 0;
-            background-color: var(--container-bg);
-            border-bottom: 1px solid var(--cm-border-color);
-            border-top: 1px solid var(--cm-border-color);
-            /* (新增) 讓按鈕和 Checkbox 垂直對齊 */
+        /* (修正) 預覽區收合按鈕樣式 */
+        #toggle-preview-btn {
+            position: absolute;
+            top: 12px;
+            right: -18px; /* 定位在右邊 */
+            z-index: 20;
+            background: var(--toggle-btn-bg);
+            color: var(--accent-color);
+            border: 2px solid var(--accent-color);
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
             display: flex;
             align-items: center;
             justify-content: center;
-        }
-        
-        /* (修改) 讓按鈕在 Flex 容器中保持原樣 */
-        .button-container button {
-             /* 移除 margin: auto 或其他，使用原始 margin */
-        }
-
-        /* (修改) 讓 Label 也在 Flex 容器中 */
-        .preview-pane .button-container label {
-            margin: 5px; /* 統一間距 */
-        }
-
-
-        button {
-            padding: 8px 18px;
-            font-size: 0.95rem;
+            font-size: 1.3rem;
+            font-weight: bold;
+            line-height: 1;
+            padding: 0;
             cursor: pointer;
-            margin: 5px;
-            border: none;
-            border-radius: 6px;
-            color: white;
-            transition: background-color 0.2s ease-in-out, transform 0.1s ease;
+            box-shadow: var(--toggle-btn-shadow);
+            transition: all 0.3s ease;
+        }
+        #toggle-preview-btn:hover { transform: scale(1.1); box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4); background: var(--accent-color); color: white; }
+        #toggle-preview-btn:active { transform: scale(0.95); }
+        
+        /* (修正) 收合時，按鈕向內移動 */
+        .main-content.preview-collapsed #toggle-preview-btn {
+            right: 8px;
         }
 
-        /* CodeMirror 和預覽視窗樣式 (與前一版相同) */
-        .CodeMirror {
-            border: none;
-            height: 100%;
-            font-size: 1rem;
-            flex-grow: 1;
-        }
-
-        #preview-frame {
-            width: 100%;
-            height: 100%;
-            border: none;
-            background-color: #ffffff;
-            flex-grow: 1;
-        }
-
-        /* 按鈕樣式 (與前一版相同) */
-        button:not(#clearButton):not(#checkButton):not(#formatButton) { background-color: var(--button-primary-bg); }
-        button:not(#clearButton):not(#checkButton):not(#formatButton):hover { background-color: var(--button-primary-hover); transform: translateY(-1px); }
-        #checkButton { background-color: var(--button-check-bg); }
-        #checkButton:hover { background-color: var(--button-check-hover); transform: translateY(-1px); }
-        #clearButton { background-color: var(--button-danger-bg); }
-        #clearButton:hover { background-color: var(--button-danger-hover); transform: translateY(-1px); }
+        .button-container { padding: 12px 16px; background: var(--bg-color); border-bottom: 1px solid var(--nav-border-color); display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 8px; }
+        button { padding: 10px 20px; font-size: 0.9rem; font-weight: 500; cursor: pointer; margin: 0; border: none; border-radius: 8px; color: white; transition: all 0.2s ease; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); position: relative; overflow: hidden; }
+        button::before { content: ''; position: absolute; top: 50%; left: 50%; width: 0; height: 0; border-radius: 50%; background: rgba(255, 255, 255, 0.3); transform: translate(-50%, -50%); transition: width 0.6s, height 0.6s; }
+        button:hover::before { width: 300px; height: 300px; }
+        button span { position: relative; z-index: 1; }
+        .CodeMirror { border: none; height: auto; font-size: 1rem; flex-grow: 1; }
+        #preview-frame { width: 100%; height: 100%; border: none; background-color: #ffffff; flex-grow: 1; }
+        button:not(#clearButton):not(#checkButton):not(#formatButton) { background: var(--button-primary-bg); }
+        button:not(#clearButton):not(#checkButton):not(#formatButton):hover { background: var(--button-primary-hover); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4); }
+        #checkButton { background: var(--button-success-bg); }
+        #checkButton:hover { background: var(--button-success-hover); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(72, 187, 120, 0.4); }
+        #clearButton { background: var(--button-danger-bg); }
+        #clearButton:hover { background: var(--button-danger-hover); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(252, 129, 129, 0.4); }
         button:active { transform: translateY(0px); }
-
-        #formatButton {
-            background-color: #6272a4; 
-        }
-        [data-theme="material"] #formatButton {
-            background-color: #00BCD4;
-        }
-        #formatButton:hover {
-            opacity: 0.8;
-            transform: translateY(-1px);
-        }
-
-        /* CodeMirror 搜尋對話框樣式 (與前一版相同) */
-        .CodeMirror-dialog {
-            background-color: var(--container-bg);
-            color: var(--text-color);
-            border-color: var(--cm-border-color);
-            padding: 5px;
-            box-shadow: 0 2px 8px var(--container-shadow);
-        }
-        .CodeMirror-dialog input {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            border: 1px solid var(--cm-border-color);
-            padding: 3px;
-        }
-        .CodeMirror-search-field {
-            width: 20em;
-        }
+        #formatButton { background: var(--button-info-bg); }
+        #formatButton:hover { background: linear-gradient(135deg, #3182ce 0%, #2c5282 100%); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(66, 153, 225, 0.4); }
+        .markdown-toggle-label { display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background-color 0.2s; }
+        .markdown-toggle-label:hover { background-color: var(--nav-link-hover-bg); }
+        #markdown-toggle { width: 18px; height: 18px; cursor: pointer; accent-color: var(--accent-color); }
+        .preview-label { font-weight: 600; color: var(--heading-color); font-size: 1rem; letter-spacing: 0.5px; }
+        .CodeMirror-dialog { background-color: var(--container-bg); color: var(--text-color); border-color: var(--cm-border-color); padding: 8px; box-shadow: var(--container-shadow); border-radius: 8px; }
+        .CodeMirror-dialog input { background-color: var(--bg-color); color: var(--text-color); border: 2px solid var(--cm-border-color); padding: 8px; border-radius: 6px; transition: border-color 0.3s; }
+        .CodeMirror-dialog input:focus { outline: none; border-color: var(--accent-color); box-shadow: 0 0 0 3px var(--cm-focus-shadow); }
+        .CodeMirror-search-field { width: 20em; }
+        @media (max-width: 1200px) { .main-content { grid-template-columns: 240px 1fr 1fr; } .main-content.nav-collapsed { grid-template-columns: 0px 1fr 1fr; } .main-content.preview-collapsed { grid-template-columns: 240px 1fr 0px; } .main-content.nav-collapsed.preview-collapsed { grid-template-columns: 0px 1fr 0px; } }
+        @media (max-width: 768px) { .header-bar { flex-direction: column; gap: 10px; padding: 12px 16px; } .main-content { grid-template-columns: 200px 1fr 1fr; } .main-content.nav-collapsed { grid-template-columns: 0px 1fr 1fr; } .main-content.preview-collapsed { grid-template-columns: 200px 1fr 0px; } .main-content.nav-collapsed.preview-collapsed { grid-template-columns: 0px 1fr 0px; } button { padding: 8px 16px; font-size: 0.85rem; } }
     </style>
 </head>
 <body>
 
     <div class="header-bar">
-        <h1>HTML / Markdown 產生器 (專業版)</h1>
+        <h1>HTML / Markdown 編輯器</h1>
         <div class="theme-selector-container">
-            <label for="theme-select">選擇主題: </label>
+            <label for="theme-select">主題</label>
             <select id="theme-select" onchange="applyTheme(this.value)">
-                <option value="default-light">預設淺色 (Default Light)</option>
-                <option value="material">Material (Dark)</option>
-                <option value="dracula">Dracula (Dark)</option>
+                <option value="default-light">淺色模式</option>
+                <option value="material">Material Dark</option>
+                <option value="dracula">Dracula</option>
             </select>
         </div>
     </div>
 
     <div class="main-content">
+        <div class="navigation-pane">
+            <h2>📑 文件導覽</h2>
+            <div class="nav-filter-container">
+                <select id="nav-filter" onchange="updateOutline()">
+                    <option value="all">🔍 全部</option>
+                    <option value="headings">📝 標題 (H1-H6)</option>
+                    <option value="ids">🔖 ID 元素</option>
+                    <option value="functions">⚙️ JS 函數</option>
+                    <option value="classes">🎨 CSS 類別</option>
+                </select>
+            </div>
+            <div id="outline-container">
+                <p class="no-outline">貼上 HTML 內容以生成導覽...</p>
+            </div>
+        </div>
+
         <div class="editor-pane">
+            <button id="toggle-nav-btn" title="收合導覽">«</button>
+            <!-- (修正) 將預覽收合按鈕移到這裡 -->
+            <button id="toggle-preview-btn" title="收合預覽">»</button>
+            
             <div class="button-container">
-                <button type="button" id="formatButton" onclick="formatCode()">美化格式 (HTML)</button>
-                <button type="button" id="checkButton" onclick="checkSyntax()">檢查語法 (HTML)</button>
-                <button type="button" onclick="downloadHTML()">下載檔案</button>
-                <button type="button" id="clearButton" onclick="clearContent()">清除內容</button>
+                <button type="button" id="formatButton" onclick="formatCode()"><span>✨ 美化格式</span></button>
+                <button type="button" id="checkButton" onclick="checkSyntax()"><span>✓ 檢查語法</span></button>
+                <button type="button" onclick="downloadHTML()"><span>💾 下載檔案</span></button>
+                <button type="button" id="clearButton" onclick="clearContent()"><span>🗑️ 清除內容</span></button>
             </div>
             <textarea id="htmlSource" placeholder="貼上您的 HTML 或 Markdown 原始碼..."></textarea>
         </div>
 
         <div class="preview-pane">
+            <!-- (修正) 按鈕已移出 -->
             <div class="button-container">
-                <label style="font-weight: bold;">即時預覽</label>
-                
-                <label for="markdown-toggle" style="font-weight: normal; font-size: 0.9rem; cursor: pointer; user-select: none;">
-                    <input type="checkbox" id="markdown-toggle" onchange="triggerUpdate()">
-                    Markdown 模式
+                <span class="preview-label">👁️ 即時預覽</span>
+                <label for="markdown-toggle" class="markdown-toggle-label">
+                    <input type="checkbox" id="markdown-toggle" onchange="triggerUpdate(); triggerOutlineUpdate();">
+                    <span>Markdown 模式</span>
                 </label>
             </div>
             <iframe id="preview-frame" title="即時預覽"></iframe>
         </div>
     </div>
 
+    <!-- 所有 Script 標籤保持不變 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.js"></script>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/dialog/dialog.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/search/searchcursor.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/search/search.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/search/jump-to-line.js"></script>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jshint/2.13.6/jshint.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/lint/javascript-lint.js"></script>
     <script src="https://unpkg.com/htmlhint@latest/lib/htmlhint.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/lint/html-lint.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/lint/lint.js"></script>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/xml/xml.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/javascript/javascript.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/css/css.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/htmlmixed/htmlmixed.min.js"></script>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/edit/closetag.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/edit/closebrackets.js"></script>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/fold/foldcode.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/fold/foldgutter.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/fold/brace-fold.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/fold/xml-fold.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/fold/tag-fold.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/fold/comment-fold.js"></script>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.7/beautify-html.min.js"></script>
-
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
-
     <script>
-        // 初始化 CodeMirror 編輯器 (與你原本的設定相同)
+        // (修正) JavaScript 部分完全不需要修改，因為問題出在 HTML 和 CSS 結構
+        // 為了方便，這裡仍提供完整的 JS 程式碼
         var editor = CodeMirror.fromTextArea(document.getElementById('htmlSource'), {
-            mode: "htmlmixed",
-            theme: "default",
-            lineNumbers: true,
-            lineWrapping: true,
-            lint: true,
-            autoCloseTags: true,
-            autoCloseBrackets: true,
-            foldGutter: true,
+            mode: "htmlmixed", theme: "default", lineNumbers: true, lineWrapping: true,
+            lint: true, autoCloseTags: true, autoCloseBrackets: true, foldGutter: true,
             gutters: ["CodeMirror-linenumbers", "CodeMirror-lint-markers", "CodeMirror-foldgutter"],
-            extraKeys: {
-                "Ctrl-F": "find",
-                "Cmd-F": "find", // for Mac
-                "Ctrl-H": "replace",
-                "Cmd-Alt-F": "replace", // for Mac
-                "Shift-Ctrl-H": "replaceAll",
-                "Shift-Cmd-Alt-F": "replaceAll" // for Mac
-            }
+            extraKeys: { "Ctrl-F": "find", "Cmd-F": "find", "Ctrl-H": "replace", "Cmd-Alt-F": "replace", "Shift-Ctrl-H": "replaceAll", "Shift-Cmd-Alt-F": "replaceAll" }
         });
-
-        // *** (新增) 獲取 Markdown 切換開關的 DOM 元素 ***
+        
         var markdownToggle = document.getElementById('markdown-toggle');
+        var currentHighlightMarks = [];
+        const toggleNavBtn = document.getElementById('toggle-nav-btn');
+        const togglePreviewBtn = document.getElementById('toggle-preview-btn');
+        const mainContent = document.querySelector('.main-content');
 
-        // *** (已修改) 即時預覽函式 ***
-        function updatePreview() {
-            // 1. 檢查 "Markdown 模式" 是否開啟
-            var isMarkdownMode = markdownToggle.checked;
-            
-            // 2. 獲取編輯器原始內容
-            var rawContent = editor.getValue();
-            var processedContent = '';
-
-            // 3. 根據模式決定如何處理內容
-            if (isMarkdownMode) {
-                // *** Markdown 模式 ***
-                if (typeof marked === 'undefined') {
-                    processedContent = '<h1>錯誤：marked.js 函式庫載入失敗！</h1><p>請檢查網路連線並重新整理。</p>';
-                } else {
-                    // 使用 marked.js 解析
-                    processedContent = marked.parse(rawContent);
-                }
-            } else {
-                // *** HTML 模式 (原始功能) ***
-                processedContent = rawContent;
-            }
-
-            // 4. 更新預覽
-            var iframe = document.getElementById('preview-frame');
-            iframe.srcdoc = processedContent;
-        }
-
-        // *** (已修改) 防抖 (Debounce) 邏輯 ***
-        var updateTimeout;
-        // 建立一個手動觸發器，以便在切換 Toggle 時也能更新
-        function triggerUpdate() {
-            clearTimeout(updateTimeout);
-            updateTimeout = setTimeout(updatePreview, 300); // 延遲 300 毫秒後更新
+        function toggleNavigation() {
+            mainContent.classList.toggle('nav-collapsed');
+            const isCollapsed = mainContent.classList.contains('nav-collapsed');
+            toggleNavBtn.innerHTML = isCollapsed ? '»' : '«';
+            toggleNavBtn.title = isCollapsed ? '展開導覽' : '收合導覽';
+            setTimeout(() => { editor.refresh(); }, 310);
         }
         
-        // 監聽編輯器變更事件，觸發即時預覽
-        editor.on("change", triggerUpdate);
-
-        // 程式碼美化函式 (與你原本的相同)
-        function formatCode() {
-            // 在 Markdown 模式下，美化功能可能無效或產生非預期結果
-            if (markdownToggle.checked) {
-                alert("「美化格式」功能僅適用於 HTML 模式。");
-                return;
-            }
-            try {
-                var currentCode = editor.getValue();
-                var formattedCode = html_beautify(currentCode, {
-                    "indent_size": 4, "indent_char": " ", "max_preserve_newlines": 1,
-                    "preserve_newlines": true, "indent_scripts": "normal",
-                    "brace_style": "collapse", "wrap_line_length": 0, "indent_inner_html": true
-                });
-                editor.setValue(formattedCode);
-            } catch (e) {
-                console.error("程式碼美化失敗:", e);
-                alert("程式碼美化失敗，請檢查主控台獲取更多資訊。");
-            }
+        function togglePreview() {
+            mainContent.classList.toggle('preview-collapsed');
+            const isCollapsed = mainContent.classList.contains('preview-collapsed');
+            togglePreviewBtn.innerHTML = isCollapsed ? '«' : '»';
+            togglePreviewBtn.title = isCollapsed ? '展開預覽' : '收合預覽';
+            setTimeout(() => { editor.refresh(); }, 310);
         }
+        
+        toggleNavBtn.addEventListener('click', toggleNavigation);
+        togglePreviewBtn.addEventListener('click', togglePreview);
 
-        // 主題切換函式 (與你原本的相同)
-        function applyTheme(themeName) {
-            let cmTheme = 'default';
-            if (themeName === 'default-light') {
-                document.body.removeAttribute('data-theme');
-                cmTheme = 'default';
-            } else {
-                document.body.dataset.theme = themeName;
-                cmTheme = themeName;
-            }
-            editor.setOption('theme', cmTheme);
-        }
-
-        // 語法檢查函式 (與你原本的相同)
-        function checkSyntax() {
-            // 語法檢查僅適用於 HTML
-            if (markdownToggle.checked) {
-                alert("「檢查語法」功能僅適用於 HTML 模式。");
-                return;
-            }
-            editor.performLint();
-            alert("語法檢查已執行完畢！請查看編輯器左側的錯誤標記（如果有的話）。");
-        }
-
-        // *** (新增) 用於 Markdown 下載的輔助函式 ***
-        function createHtmlTemplate(content, title = "Markdown 匯出") {
-            return `
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${title}</title>
-    <style>
-        /* 為 Markdown 匯出內容加入一些基本樣式 */
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            line-height: 1.6; padding: 20px; max-width: 800px; margin: 0 auto; color: #333;
-        }
-        h1, h2, h3, h4, h5, h6 { border-bottom: 1px solid #eee; padding-bottom: 5px; }
-        ul, ol { padding-left: 30px; }
-        code { background-color: #f4f4f4; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
-        pre { background-color: #f4f4f4; padding: 10px; border-radius: 4px; overflow-x: auto; }
-        img { max-width: 100%; height: auto; }
-        table { border-collapse: collapse; width: 100%; }
-        th, td { border: 1px solid #ddd; padding: 8px; }
-        th { background-color: #f2f2f2; }
-    </style>
-</head>
-<body>
-    ${content}
-</body>
-</html>
-            `;
-        }
-
-        // *** (已修改) 下載 HTML 函式 ***
-        function downloadHTML() {
-            var isMarkdownMode = markdownToggle.checked;
-            var rawContent = editor.getValue();
-            var finalHtmlContent = '';
-
-            if (isMarkdownMode) {
-                // *** Markdown 模式 ***
-                // 下載時，將 Markdown 轉換並打包成一個完整的、帶有樣式的 HTML 檔案
-                if (typeof marked === 'undefined') {
-                    alert('marked.js 載入失敗，無法下載。');
-                    return;
+        function updateOutline() {
+            const container = document.getElementById('outline-container'); const filterValue = document.getElementById('nav-filter').value; container.innerHTML = '';
+            if (markdownToggle.checked) { container.innerHTML = '<p class="no-outline">導覽功能僅適用於 HTML 模式。</p>'; return; }
+            const doc = editor.getDoc(); const lineCount = doc.lineCount(); const fragment = document.createDocumentFragment(); let hasOutline = false; const processedLines = new Set();
+            for (let i = 0; i < lineCount; i++) {
+                if (processedLines.has(i)) continue;
+                const lineContent = doc.getLine(i);
+                if (filterValue === 'all' || filterValue === 'headings') {
+                    const headingMatch = lineContent.match(/<\s*(h[1-6])[^>]*>([^<]+)<\/\s*\1\s*>/i);
+                    if (headingMatch) {
+                        const level = headingMatch[1].toLowerCase(); const text = headingMatch[2].trim();
+                        if (text) { const link = createNavLink(text, i, i, `outline-${level}`); fragment.appendChild(link); hasOutline = true; processedLines.add(i); continue; }
+                    }
                 }
-                var convertedBody = marked.parse(rawContent);
-                // 使用輔助函式來建立完整的 HTML 頁面
-                finalHtmlContent = createHtmlTemplate(convertedBody, "Markdown 匯出內容");
-            } else {
-                // *** HTML 模式 ***
-                // 直接使用編輯器中的 HTML 內容
-                finalHtmlContent = rawContent;
+                if (filterValue === 'all' || filterValue === 'ids') {
+                    const idMatch = lineContent.match(/id\s*=\s*["']([^"']+)["']/i);
+                    if (idMatch) { const id = idMatch[1]; const link = createNavLink(id, i, i, 'outline-id'); fragment.appendChild(link); hasOutline = true; processedLines.add(i); }
+                }
+                if (filterValue === 'all' || filterValue === 'functions') {
+                    const functionMatch = lineContent.match(/function\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\(/);
+                    const arrowFunctionMatch = lineContent.match(/(?:const|let|var)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*(?:\([^)]*\)|[a-zA-Z_$][a-zA-Z0-9_$]*)\s*=>/);
+                    if (functionMatch || arrowFunctionMatch) {
+                        const funcName = functionMatch ? functionMatch[1] : arrowFunctionMatch[1];
+                        let endLine = findFunctionEnd(doc, i);
+                        const link = createNavLink(funcName + '()', i, endLine, 'outline-function'); fragment.appendChild(link); hasOutline = true; processedLines.add(i);
+                    }
+                }
+                if (filterValue === 'all' || filterValue === 'classes') {
+                    const classMatch = lineContent.match(/class\s*=\s*["']([^"']+)["']/i);
+                    if (classMatch) {
+                        const classes = classMatch[1].split(/\s+/);
+                        classes.forEach(className => {
+                            if (className.trim()) { const link = createNavLink(className, i, i, 'outline-class'); fragment.appendChild(link); hasOutline = true; }
+                        });
+                        processedLines.add(i);
+                    }
+                }
             }
-
-            // 下載邏輯 (與你原本的相同)
-            var blob = new Blob([finalHtmlContent], { type: 'text/html' });
-            var a = document.createElement('a');
-            a.style.display = 'none';
-            var url = window.URL.createObjectURL(blob);
-            a.href = url;
-            a.download = 'generated.html';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
+            if (hasOutline) { container.appendChild(fragment); } else { const filterText = { 'all': '可導覽的內容', 'headings': '標題', 'ids': 'ID 元素', 'functions': 'JavaScript 函數', 'classes': 'CSS 類別' }; container.innerHTML = `<p class="no-outline">目前文件中沒有${filterText[filterValue]}。</p>`; }
         }
 
-        // 清除內容函式 (與你原本的相同)
-        function clearContent() {
-            editor.setValue('');
-        }
-
-        // 頁面載入時觸發一次預覽
-        document.addEventListener("DOMContentLoaded", updatePreview);
-
+        function findFunctionEnd(doc, startLine) { let braceCount = 0; let foundStart = false; for (let i = startLine; i < doc.lineCount(); i++) { const line = doc.getLine(i); for (let char of line) { if (char === '{') { braceCount++; foundStart = true; } else if (char === '}') { braceCount--; if (foundStart && braceCount === 0) { return i; } } } } return startLine; }
+        function clearHighlights() { currentHighlightMarks.forEach(mark => mark.clear()); currentHighlightMarks = []; }
+        function highlightRange(startLine, endLine) { clearHighlights(); const doc = editor.getDoc(); for (let i = startLine; i <= endLine; i++) { const mark = doc.markText({line: i, ch: 0}, {line: i, ch: doc.getLine(i).length}, {className: 'highlight-range'}); currentHighlightMarks.push(mark); } }
+        function createNavLink(text, startLine, endLine, className) { const a = document.createElement('a'); a.textContent = text; a.className = className; a.dataset.startLine = startLine; a.dataset.endLine = endLine; const lineRange = startLine === endLine ? `第 ${startLine + 1} 行` : `第 ${startLine + 1}-${endLine + 1} 行`; a.title = `跳轉至${lineRange}`; a.onclick = function(e) { e.preventDefault(); const start = parseInt(this.dataset.startLine, 10); const end = parseInt(this.dataset.endLine, 10); highlightRange(start, end); editor.setCursor({line: start, ch: 0}); const t = editor.charCoords({line: start, ch: 0}, "local").top; const middleHeight = editor.getScrollerElement().offsetHeight / 2; editor.scrollTo(null, t - middleHeight - 5); editor.focus(); }; return a; }
+        var updateTimeout; var outlineTimeout;
+        function triggerUpdate() { clearTimeout(updateTimeout); updateTimeout = setTimeout(updatePreview, 300); }
+        function triggerOutlineUpdate() { clearTimeout(outlineTimeout); outlineTimeout = setTimeout(updateOutline, 500); }
+        editor.on("change", () => { triggerUpdate(); triggerOutlineUpdate(); clearHighlights(); });
+        function updatePreview() { var isMarkdownMode = markdownToggle.checked; var rawContent = editor.getValue(); var processedContent = ''; if (isMarkdownMode) { if (typeof marked === 'undefined') { processedContent = '<h1>錯誤：marked.js 函式庫載入失敗！</h1>'; } else { processedContent = marked.parse(rawContent); } } else { processedContent = rawContent; } document.getElementById('preview-frame').srcdoc = processedContent; }
+        function formatCode() { if (markdownToggle.checked) { alert("「美化格式」功能僅適用於 HTML 模式。"); return; } try { var currentCode = editor.getValue(); var formattedCode = html_beautify(currentCode, { "indent_size": 4, "indent_char": " ", "max_preserve_newlines": 1, "preserve_newlines": true, "indent_scripts": "normal", "brace_style": "collapse", "wrap_line_length": 0, "indent_inner_html": true }); editor.setValue(formattedCode); } catch (e) { console.error("程式碼美化失敗:", e); alert("程式碼美化失敗。"); } }
+        function applyTheme(themeName) { let cmTheme = (themeName === 'default-light') ? 'default' : themeName; document.body.dataset.theme = (themeName === 'default-light') ? '' : themeName; if(themeName === 'default-light') document.body.removeAttribute('data-theme'); editor.setOption('theme', cmTheme); }
+        function checkSyntax() { if (markdownToggle.checked) { alert("「檢查語法」功能僅適用於 HTML 模式。"); return; } editor.performLint(); alert("語法檢查已執行完畢！"); }
+        function createHtmlTemplate(content, title = "Markdown 匯出") { return `<!DOCTYPE html><html lang="zh-TW"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>${title}</title><style>body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; line-height: 1.6; padding: 20px; max-width: 800px; margin: 0 auto; color: #333; } h1, h2, h3, h4, h5, h6 { border-bottom: 1px solid #eee; padding-bottom: 5px; } ul, ol { padding-left: 30px; } code { background-color: #f4f4f4; padding: 2px 6px; border-radius: 4px; font-family: monospace; } pre { background-color: #f4f4f4; padding: 10px; border-radius: 4px; overflow-x: auto; } img { max-width: 100%; height: auto; } table { border-collapse: collapse; width: 100%; } th, td { border: 1px solid #ddd; padding: 8px; } th { background-color: #f2f2f2; }</style></head><body>${content}</body></html>`; }
+        function downloadHTML() { var isMarkdownMode = markdownToggle.checked; var rawContent = editor.getValue(); var finalHtmlContent = isMarkdownMode && typeof marked !== 'undefined' ? createHtmlTemplate(marked.parse(rawContent)) : rawContent; var blob = new Blob([finalHtmlContent], { type: 'text/html' }); var a = document.createElement('a'); a.href = window.URL.createObjectURL(blob); a.download = 'generated.html'; a.click(); window.URL.revokeObjectURL(a.href); a.remove(); }
+        function clearContent() { if (confirm('確定要清除所有內容嗎？')) { editor.setValue(''); triggerOutlineUpdate(); } }
+        document.addEventListener("DOMContentLoaded", () => { triggerUpdate(); triggerOutlineUpdate(); });
     </script>
 </body>
 </html>
