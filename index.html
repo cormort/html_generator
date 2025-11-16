@@ -1,759 +1,517 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>智慧型 JSON/XML/CSV/Excel 報表產生器</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <title>HTML 生成器 (專業版) - 含 Markdown</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/theme/material.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/theme/dracula.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/lint/lint.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/fold/foldgutter.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/dialog/dialog.css">
+
     <style>
-        .hidden { display: none !important; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            line-height: 1.6; color: #333; max-width: 1200px;
-            margin: 20px auto; padding: 0 20px; background-color: #f4f7f6;
-        }
-
-        /* 主標題和語言切換按鈕的容器 */
-        .header-container {
-            position: relative;
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        h1 { color: #2c3e50; margin: 0; }
-        #lang-toggle-btn {
-            position: absolute;
-            top: 50%;
-            right: 0;
-            transform: translateY(-50%);
-            padding: 5px 12px;
-            font-size: 0.9em;
-            background-color: #7f8c8d;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        #lang-toggle-btn:hover { background-color: #95a5a6; }
+        :root { --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%); --bg-color: #f5f7fa; --text-color: #2d3748; --container-bg: #ffffff; --container-shadow: 0 10px 40px rgba(0, 0, 0, 0.1); --heading-color: #1a202c; --button-primary-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%); --button-primary-hover: linear-gradient(135deg, #5568d3 0%, #653a8b 100%); --button-success-bg: linear-gradient(135deg, #48bb78 0%, #38a169 100%); --button-success-hover: linear-gradient(135deg, #38a169 0%, #2f855a 100%); --button-danger-bg: linear-gradient(135deg, #fc8181 0%, #f56565 100%); --button-danger-hover: linear-gradient(135deg, #f56565 0%, #e53e3e 100%); --button-info-bg: linear-gradient(135deg, #4299e1 0%, #3182ce 100%); --cm-border-color: #e2e8f0; --cm-focus-border: #667eea; --cm-focus-shadow: rgba(102, 126, 234, 0.3); --nav-border-color: #e2e8f0; --nav-link-color: #4a5568; --nav-link-hover-bg: #edf2f7; --nav-link-active-bg: #e6fffa; --nav-link-id-color: #667eea; --accent-color: #667eea; --toggle-btn-bg: #ffffff; --toggle-btn-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); }
+        [data-theme="material"] { --bg-gradient: linear-gradient(135deg, #1a237e 0%, #0d47a1 100%); --bg-color: #1e1e1e; --text-color: #e0e0e0; --container-bg: #2d2d2d; --container-shadow: 0 10px 40px rgba(0, 0, 0, 0.5); --heading-color: #ffffff; --button-primary-bg: linear-gradient(135deg, #26c6da 0%, #00acc1 100%); --button-primary-hover: linear-gradient(135deg, #00acc1 0%, #0097a7 100%); --button-success-bg: linear-gradient(135deg, #66bb6a 0%, #43a047 100%); --button-success-hover: linear-gradient(135deg, #43a047 0%, #2e7d32 100%); --button-danger-bg: linear-gradient(135deg, #ef5350 0%, #e53935 100%); --button-danger-hover: linear-gradient(135deg, #e53935 0%, #c62828 100%); --button-info-bg: linear-gradient(135deg, #5c6bc0 0%, #3949ab 100%); --cm-border-color: #424242; --cm-focus-border: #26c6da; --nav-link-color: #b0bec5; --nav-link-hover-bg: #424242; --nav-link-active-bg: #1a237e; --nav-link-id-color: #26c6da; --accent-color: #26c6da; --toggle-btn-bg: #424242; --toggle-btn-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); }
+        [data-theme="dracula"] { --bg-gradient: linear-gradient(135deg, #6272a4 0%, #44475a 100%); --bg-color: #282a36; --text-color: #f8f8f2; --container-bg: #44475a; --container-shadow: 0 10px 40px rgba(0, 0, 0, 0.5); --heading-color: #bd93f9; --button-primary-bg: linear-gradient(135deg, #bd93f9 0%, #9580d6 100%); --button-primary-hover: linear-gradient(135deg, #9580d6 0%, #7d6dbd 100%); --button-success-bg: linear-gradient(135deg, #50fa7b 0%, #3ee76a 100%); --button-success-hover: linear-gradient(135deg, #3ee76a 0%, #2cd459 100%); --button-danger-bg: linear-gradient(135deg, #ff5555 0%, #ff3838 100%); --button-danger-hover: linear-gradient(135deg, #ff3838 0%, #ff1b1b 100%); --button-info-bg: linear-gradient(135deg, #8be9fd 0%, #6fe9fb 100%); --cm-border-color: #6272a4; --cm-focus-border: #bd93f9; --nav-link-color: #f8f8f2; --nav-link-hover-bg: #6272a4; --nav-link-active-bg: #44475a; --nav-link-id-color: #8be9fd; --accent-color: #bd93f9; --toggle-btn-bg: #6272a4; --toggle-btn-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; overflow: hidden; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif; background: var(--bg-color); color: var(--text-color); line-height: 1.6; display: flex; flex-direction: column; transition: background-color 0.3s, color 0.3s; }
+        .header-bar { padding: 16px 24px; background: var(--bg-gradient); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15); display: flex; justify-content: space-between; align-items: center; z-index: 10; flex-shrink: 0; }
+        .header-bar h1 { font-size: 1.5rem; color: white; margin: 0; font-weight: 600; letter-spacing: 0.5px; display: flex; align-items: center; gap: 10px; }
+        .header-bar h1::before { content: '⚡'; font-size: 1.8rem; }
+        .theme-selector-container { display: flex; align-items: center; gap: 10px; }
+        .theme-selector-container label { color: white; font-weight: 500; font-size: 0.9rem; }
+        #theme-select { padding: 8px 16px; border-radius: 8px; border: 2px solid rgba(255, 255, 255, 0.3); background-color: rgba(255, 255, 255, 0.15); color: white; font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: all 0.3s ease; backdrop-filter: blur(10px); }
+        #theme-select:hover { background-color: rgba(255, 255, 255, 0.25); border-color: rgba(255, 255, 255, 0.5); }
+        #theme-select option { background-color: var(--container-bg); color: var(--text-color); }
         
-        h2 { color: #2c3e50; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; text-align: center; }
-        #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.8); z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column; gap: 20px; }
-        .spinner { border: 8px solid #f3f3f3; border-top: 8px solid #3498db; border-radius: 50%; width: 60px; height: 60px; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        #drop-area { border: 2px dashed #bdc3c7; border-radius: 8px; padding: 40px; text-align: center; cursor: pointer; background-color: #fff; transition: background-color 0.3s, border-color 0.3s; margin-bottom: 20px; }
-        #drop-area.highlight { border-color: #3498db; background-color: #ecf5ff; }
-        #file-input { display: none; }
-        .content-box { background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        #post-load-controls { text-align: center; }
-        #generate-btn { padding: 12px 25px; font-size: 1.1em; color: #fff; background-color: #3498db; border: none; border-radius: 5px; cursor: pointer; transition: background-color 0.3s; margin-top: 10px; }
+        .main-content {
+            display: grid;
+            grid-template-columns: 280px 5px 1fr 5px 1fr;
+            flex-grow: 1;
+            overflow: hidden;
+            height: 100%;
+        }
         
-        /* 修改此處：調整 table-actions-container 的佈局以容納多個匯出按鈕 */
-        .table-actions-container {
-            display: flex;
-            flex-direction: column; /* 讓內容垂直排列 */
-            gap: 15px; /* 按鈕間距 */
-            margin-top: 20px;
-            margin-bottom: 20px;
-            align-items: center; /* 水平居中 */
+        .grid-divider {
+            background-color: var(--nav-border-color);
+            cursor: col-resize;
+            transition: background-color 0.2s ease;
         }
-
-        .table-search-controls {
-            display: flex;
-            gap: 10px;
-            width: 100%; /* 佔滿可用寬度 */
-            max-width: 600px; /* 限制最大寬度，避免過寬 */
+        .grid-divider:hover {
+            background-color: var(--accent-color);
         }
-        #search-input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
-        #search-btn {
-            padding: 10px 20px; font-size: 1em; color: #fff; border: none; border-radius: 4px; cursor: pointer; white-space: nowrap;
-            background-color: #3498db;
-        }
-
-        /* 匯出按鈕群組 */
-        .export-buttons-group {
-            display: flex;
-            flex-wrap: wrap; /* 允許換行 */
-            gap: 10px; /* 按鈕間距 */
-            justify-content: center; /* 居中對齊 */
-            width: 100%;
-        }
-
-        /* 統一匯出按鈕樣式 */
-        .export-buttons-group button {
-            padding: 10px 20px;
-            font-size: 1em;
-            color: #fff;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            white-space: nowrap;
-            flex-grow: 1; /* 讓按鈕在空間允許下等寬延伸 */
-            max-width: 180px; /* 限制單個按鈕最大寬度 */
-            transition: background-color 0.3s;
-        }
-
-        #export-excel-btn { background-color: #27ae60; } /* Excel 綠色 */
-        #export-csv-btn { background-color: #f39c12; } /* CSV 橘色 */
-        #export-json-btn { background-color: #e74c3c; } /* JSON 紅色 */
-        #export-xml-btn { background-color: #9b59b6; } /* XML 紫色 */
-
-        .export-buttons-group button:disabled { background-color: #95a5a6; cursor: not-allowed; }
-
-        #filter-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; }
-        .filter-control label { margin-bottom: 5px; font-weight: bold; font-size: 0.9em; color: #34495e; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .filter-control select { width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #bdc3c7; }
-        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #ddd; overflow-wrap: break-word; word-break: break-word; }
-        th.sortable { cursor: pointer; } th.sortable:hover { background-color: #e9e9e9; }
-        th.sortable::after { content: ''; display: inline-block; width: 1em; text-align: center; margin-left: 5px; opacity: 0.5; }
-        th.sort-asc::after { content: '▲'; opacity: 1; } th.sort-desc::after { content: '▼'; opacity: 1; }
+        
+        .main-content.nav-collapsed { grid-template-columns: 0px 0px 1fr 5px 1fr !important; }
+        .main-content.preview-collapsed { grid-template-columns: 280px 5px 1fr 0px 0px !important; }
+        .main-content.nav-collapsed.preview-collapsed { grid-template-columns: 0px 0px 1fr 0px 0px !important; }
+        
+        .editor-pane, .preview-pane, .navigation-pane { height: 100%; display: flex; flex-direction: column; overflow: hidden; background: var(--container-bg); min-width: 0; }
+        .editor-pane { position: relative; }
+        .preview-pane { position: relative; }
+        .navigation-pane { background: var(--container-bg); box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05); }
+        .navigation-pane h2 { font-size: 1rem; padding: 16px; margin: 0; color: var(--heading-color); border-bottom: 2px solid var(--nav-border-color); text-align: center; font-weight: 600; letter-spacing: 0.5px; background: var(--bg-color); }
+        .nav-filter-container { padding: 12px; background: var(--bg-color); border-bottom: 1px solid var(--nav-border-color); }
+        #nav-filter { width: 100%; padding: 10px; border: 2px solid var(--cm-border-color); border-radius: 8px; background: var(--container-bg); color: var(--text-color); font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: all 0.3s ease; }
+        #nav-filter:hover { border-color: var(--accent-color); }
+        #nav-filter:focus { outline: none; border-color: var(--accent-color); box-shadow: 0 0 0 3px var(--cm-focus-shadow); }
+        #outline-container { flex-grow: 1; overflow-y: auto; padding: 8px 0; }
+        #outline-container::-webkit-scrollbar { width: 6px; }
+        #outline-container::-webkit-scrollbar-track { background: transparent; }
+        #outline-container::-webkit-scrollbar-thumb { background: var(--cm-border-color); border-radius: 3px; }
+        #outline-container::-webkit-scrollbar-thumb:hover { background: var(--nav-link-color); }
+        #outline-container a { display: block; padding: 10px 16px; text-decoration: none; color: var(--nav-link-color); font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: all 0.2s ease; cursor: pointer; border-left: 3px solid transparent; margin: 2px 0; }
+        #outline-container a:hover { background-color: var(--nav-link-hover-bg); border-left-color: var(--accent-color); padding-left: 20px; }
+        #outline-container a:active { background-color: var(--nav-link-active-bg); }
+        .outline-h1 { padding-left: 16px !important; font-weight: 600; font-size: 0.95rem; }
+        .outline-h2 { padding-left: 28px !important; font-size: 0.9rem; }
+        .outline-h3 { padding-left: 40px !important; font-size: 0.875rem; }
+        .outline-h4 { padding-left: 52px !important; font-size: 0.85rem; }
+        .outline-h5 { padding-left: 64px !important; font-size: 0.85rem; }
+        .outline-h6 { padding-left: 76px !important; font-size: 0.85rem; }
+        .outline-id { padding-left: 28px !important; color: var(--nav-link-id-color) !important; font-style: italic; font-size: 0.875rem; }
+        .outline-id::before { content: '#'; margin-right: 6px; font-weight: 600; }
+        .outline-function { padding-left: 28px !important; color: #f59e0b !important; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.875rem; }
+        .outline-function::before { content: 'ƒ'; margin-right: 6px; font-weight: bold; }
+        .outline-class { padding-left: 28px !important; color: #8b5cf6 !important; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.875rem; }
+        .outline-class::before { content: '.'; margin-right: 4px; font-weight: bold; }
+        .CodeMirror .highlight-range { background-color: rgba(102, 126, 234, 0.2); }
+        [data-theme="material"] .CodeMirror .highlight-range { background-color: rgba(38, 198, 218, 0.25); }
+        [data-theme="dracula"] .CodeMirror .highlight-range { background-color: rgba(189, 147, 249, 0.25); }
+        .no-outline { padding: 32px 20px; color: #999; font-style: italic; font-size: 0.9rem; text-align: center; line-height: 1.8; }
+        #toggle-nav-btn { position: absolute; top: 12px; left: -18px; z-index: 20; background: var(--toggle-btn-bg); color: var(--accent-color); border: 2px solid var(--accent-color); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: bold; line-height: 1; padding: 0; cursor: pointer; box-shadow: var(--toggle-btn-shadow); transition: all 0.3s ease; }
+        #toggle-nav-btn:hover { transform: scale(1.1); box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4); background: var(--accent-color); color: white; }
+        #toggle-nav-btn:active { transform: scale(0.95); }
+        .main-content.nav-collapsed #toggle-nav-btn { left: 8px; }
+        #toggle-preview-btn { position: absolute; top: 12px; right: -18px; z-index: 20; background: var(--toggle-btn-bg); color: var(--accent-color); border: 2px solid var(--accent-color); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: bold; line-height: 1; padding: 0; cursor: pointer; box-shadow: var(--toggle-btn-shadow); transition: all 0.3s ease; }
+        #toggle-preview-btn:hover { transform: scale(1.1); box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4); background: var(--accent-color); color: white; }
+        #toggle-preview-btn:active { transform: scale(0.95); }
+        .main-content.preview-collapsed #toggle-preview-btn { right: 8px; }
+        .button-container { padding: 12px 16px; background: var(--bg-color); border-bottom: 1px solid var(--nav-border-color); display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 8px; }
+        button { padding: 10px 20px; font-size: 0.9rem; font-weight: 500; cursor: pointer; margin: 0; border: none; border-radius: 8px; color: white; transition: all 0.2s ease; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); position: relative; overflow: hidden; }
+        button::before { content: ''; position: absolute; top: 50%; left: 50%; width: 0; height: 0; border-radius: 50%; background: rgba(255, 255, 255, 0.3); transform: translate(-50%, -50%); transition: width 0.6s, height 0.6s; }
+        button:hover::before { width: 300px; height: 300px; }
+        button span { position: relative; z-index: 1; }
+        .CodeMirror { border: none; height: auto; font-size: 1rem; flex-grow: 1; }
+        #preview-frame { width: 100%; height: 100%; border: none; background-color: #ffffff; flex-grow: 1; }
+        button:not(#clearButton):not(#checkButton):not(#formatButton) { background: var(--button-primary-bg); }
+        button:not(#clearButton):not(#checkButton):not(#formatButton):hover { background: var(--button-primary-hover); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4); }
+        #checkButton { background: var(--button-success-bg); }
+        #checkButton:hover { background: var(--button-success-hover); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(72, 187, 120, 0.4); }
+        #clearButton { background: var(--button-danger-bg); }
+        #clearButton:hover { background: var(--button-danger-hover); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(252, 129, 129, 0.4); }
+        button:active { transform: translateY(0px); }
+        #formatButton { background: var(--button-info-bg); }
+        #formatButton:hover { background: linear-gradient(135deg, #3182ce 0%, #2c5282 100%); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(66, 153, 225, 0.4); }
+        .markdown-toggle-label { display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background-color 0.2s; }
+        .markdown-toggle-label:hover { background-color: var(--nav-link-hover-bg); }
+        #markdown-toggle { width: 18px; height: 18px; cursor: pointer; accent-color: var(--accent-color); }
+        .preview-label { font-weight: 600; color: var(--heading-color); font-size: 1rem; letter-spacing: 0.5px; }
+        .CodeMirror-dialog { background-color: var(--container-bg); color: var(--text-color); border-color: var(--cm-border-color); padding: 8px; box-shadow: var(--container-shadow); border-radius: 8px; }
+        .CodeMirror-dialog input { background-color: var(--bg-color); color: var(--text-color); border: 2px solid var(--cm-border-color); padding: 8px; border-radius: 6px; transition: border-color 0.3s; }
+        .CodeMirror-dialog input:focus { outline: none; border-color: var(--accent-color); box-shadow: 0 0 0 3px var(--cm-focus-shadow); }
+        .CodeMirror-search-field { width: 20em; }
+        .toast-notification { position: fixed; top: 80px; right: 20px; padding: 12px 20px; border-radius: 8px; color: white; font-size: 0.9rem; font-weight: 500; z-index: 9999; box-shadow: 0 5px 15px rgba(0,0,0,0.2); opacity: 0; transform: translateX(100%); transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55); }
+        .toast-notification.show { opacity: 1; transform: translateX(0); }
+        .toast-notification.success { background: var(--button-success-bg); }
+        .toast-notification.error { background: var(--button-danger-bg); }
     </style>
 </head>
 <body>
-    <div id="loader" class="hidden">
-        <div class="spinner"></div>
-        <p data-lang-key="loaderText">資料處理中，請稍候...</p>
-    </div>
 
-    <div class="header-container">
-        <h1 data-lang-key="pageTitle">智慧型 JSON/XML/CSV/Excel 報表產生器</h1>
-        <button id="lang-toggle-btn">English</button>
-    </div>
-    
-    <div id="drop-area">
-        <input type="file" id="file-input" accept=".json, .xml, .csv, .xls, .xlsx">
-        <p data-lang-key="dropAreaPrompt">拖曳 JSON、XML、CSV 或 Excel (.xls, .xlsx) 檔案到這裡，或點擊選擇檔案</p>
-    </div>
-    
-    <div id="post-load-controls" class="content-box hidden">
-        <p id="file-status"></p>
-        <button id="generate-btn" data-lang-key="generateBtn">生成報表與篩選器</button>
-    </div>
-
-    <div id="main-content" class="hidden">
-        <div class="content-box">
-            <h2 data-lang-key="filterTitle">欄位篩選器</h2>
-            <div id="filter-container"></div>
+    <div class="header-bar">
+        <h1>HTML / Markdown 編輯器</h1>
+        <div class="theme-selector-container">
+            <label for="theme-select">主題</label>
+            <select id="theme-select" onchange="applyTheme(this.value)">
+                <option value="default-light">淺色模式</option>
+                <option value="material">Material Dark</option>
+                <option value="dracula">Dracula</option>
+            </select>
         </div>
-        <div class="content-box">
-            <h2 data-lang-key="tableTitle">資料表格</h2>
-            <div class="table-actions-container">
-                <div class="table-search-controls">
-                    <input type="text" id="search-input" data-lang-key="searchInputPlaceholder">
-                    <button id="search-btn" data-lang-key="searchBtn">送出查詢</button>
-                </div>
-                <div class="export-buttons-group">
-                    <button id="export-excel-btn" disabled data-lang-key="exportExcelBtn">匯出為 Excel</button>
-                    <button id="export-csv-btn" disabled data-lang-key="exportCsvBtn">匯出為 CSV</button>
-                    <button id="export-json-btn" disabled data-lang-key="exportJsonBtn">匯出為 JSON</button>
-                    <button id="export-xml-btn" disabled data-lang-key="exportXmlBtn">匯出為 XML</button>
-                </div>
+    </div>
+
+    <div class="main-content">
+        <div class="navigation-pane">
+            <h2>📑 文件導覽</h2>
+            <div class="nav-filter-container">
+                <select id="nav-filter" onchange="updateOutline()">
+                    <option value="all">🔍 全部</option>
+                    <option value="headings">📝 標題 (H1-H6)</option>
+                    <option value="ids">🔖 ID 元素</option>
+                    <option value="functions">⚙️ JS 函數</option>
+                    <option value="classes">🎨 CSS 類別</option>
+                </select>
             </div>
-            <div id="table-container"></div>
+            <div id="outline-container">
+                <p class="no-outline">貼上 HTML 內容以生成導覽...</p>
+            </div>
+        </div>
+
+        <div id="divider-nav" class="grid-divider"></div>
+
+        <div class="editor-pane">
+            <button id="toggle-nav-btn" title="收合導覽">«</button>
+            <button id="toggle-preview-btn" title="收合預覽">»</button>
+            <div class="button-container">
+                <button type="button" id="formatButton" onclick="formatCode()"><span>✨ 美化格式</span></button>
+                <button type="button" id="checkButton" onclick="checkSyntax()"><span>✓ 檢查語法</span></button>
+                <button type="button" onclick="downloadHTML()"><span>💾 下載檔案</span></button>
+                <button type="button" id="clearButton" onclick="clearContent()"><span>🗑️ 清除內容</span></button>
+            </div>
+            <textarea id="htmlSource" placeholder="貼上您的 HTML 或 Markdown 原始碼..."></textarea>
+        </div>
+
+        <div id="divider-preview" class="grid-divider"></div>
+
+        <div class="preview-pane">
+            <div class="button-container">
+                <span class="preview-label">👁️ 即時預覽</span>
+                <label for="markdown-toggle" class="markdown-toggle-label">
+                    <input type="checkbox" id="markdown-toggle" onchange="triggerUpdate(); triggerOutlineUpdate();">
+                    <span>Markdown 模式</span>
+                </label>
+            </div>
+            <iframe id="preview-frame" title="即時預覽"></iframe>
         </div>
     </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/dialog/dialog.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/search/searchcursor.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/search/search.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/search/jump-to-line.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jshint/2.13.6/jshint.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/lint/javascript-lint.js"></script>
+    <script src="https://unpkg.com/htmlhint@latest/lib/htmlhint.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/lint/html-lint.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/lint/lint.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/xml/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/css/css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/htmlmixed/htmlmixed.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/edit/closetag.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/edit/closebrackets.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/fold/foldcode.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/fold/foldgutter.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/fold/brace-fold.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/fold/xml-fold.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/fold/tag-fold.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/fold/comment-fold.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.7/beautify-html.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const translations = {
-                'zh': {
-                    pageTitle: '智慧型 JSON/XML/CSV/Excel 報表產生器',
-                    toggleLangBtn: 'English',
-                    // 【修改 2】: 更新中文提示文字
-                    dropAreaPrompt: '拖曳 JSON、XML、CSV 或 Excel (.xls, .xlsx) 檔案到這裡，或點擊選擇檔案',
-                    generateBtn: '生成報表與篩選器',
-                    filterTitle: '欄位篩選器',
-                    tableTitle: '資料表格',
-                    searchInputPlaceholder: '對篩選後的結果進行關鍵字查詢...',
-                    searchBtn: '送出查詢',
-                    exportExcelBtn: '匯出為 Excel',
-                    exportCsvBtn: '匯出為 CSV',
-                    exportJsonBtn: '匯出為 JSON',
-                    exportXmlBtn: '匯出為 XML',
-                    loaderText: '資料處理中，請稍候...',
-                    allOption: '-- 全部 --',
-                    noData: '沒有符合條件的資料。',
-                    // 【修改 3】: 更新中文錯誤訊息
-                    fileTypeError: '錯誤：請上傳 JSON、XML、CSV 或 Excel (.xls, .xlsx) 格式的檔案！',
-                    largeFileConfirm: (size) => `您選擇的檔案大小為 ${size} MB，載入與處理可能需要較長時間。\n\n確定要繼續嗎？`,
-                    fileParseError: (msg) => `檔案處理失敗：\n${msg}`,
-                    fileReadError: '讀取檔案時發生錯誤！',
-                    buildError: (msg) => `生成報表時發生錯誤：\n${msg}`,
-                    fileLoaded: (name, count) => `檔案 "${name}" 已成功載入 (${count} 筆資料)。`
-                },
-                'en': {
-                    pageTitle: 'Intelligent JSON/XML/CSV/Excel Report Generator',
-                    toggleLangBtn: '中文',
-                    // 【修改 4】: 更新英文提示文字
-                    dropAreaPrompt: 'Drag & drop a JSON, XML, CSV, or Excel (.xls, .xlsx) file here, or click to select',
-                    generateBtn: 'Generate Report & Filters',
-                    filterTitle: 'Column Filters',
-                    tableTitle: 'Data Table',
-                    searchInputPlaceholder: 'Search keyword in filtered results...',
-                    searchBtn: 'Search',
-                    exportExcelBtn: 'Export to Excel',
-                    exportCsvBtn: 'Export to CSV',
-                    exportJsonBtn: 'Export to JSON',
-                    exportXmlBtn: 'Export to XML',
-                    loaderText: 'Processing data, please wait...',
-                    allOption: '-- All --',
-                    noData: 'No data matches the criteria.',
-                    // 【修改 5】: 更新英文錯誤訊息
-                    fileTypeError: 'Error: Please upload a JSON, XML, CSV, or Excel (.xls, .xlsx) file!',
-                    largeFileConfirm: (size) => `The selected file is ${size} MB, which may take a long time to load and process.\n\nAre you sure you want to continue?`,
-                    fileParseError: (msg) => `File processing failed:\n${msg}`,
-                    fileReadError: 'An error occurred while reading the file!',
-                    buildError: (msg) => `An error occurred while building the report:\n${msg}`,
-                    fileLoaded: (name, count) => `File "${name}" loaded successfully (${count} records).`
+        // --- 核心變數設定 ---
+        var editor = CodeMirror.fromTextArea(document.getElementById('htmlSource'), {
+            mode: "htmlmixed", theme: "default", lineNumbers: true, lineWrapping: true,
+            lint: true, autoCloseTags: true, autoCloseBrackets: true, foldGutter: true,
+            gutters: ["CodeMirror-linenumbers", "CodeMirror-lint-markers", "CodeMirror-foldgutter"],
+            extraKeys: { "Ctrl-F": "find", "Cmd-F": "find", "Ctrl-H": "replace", "Cmd-Alt-F": "replace", "Shift-Ctrl-H": "replaceAll", "Shift-Cmd-Alt-F": "replaceAll" }
+        });
+        
+        var markdownToggle = document.getElementById('markdown-toggle');
+        var currentHighlightMarks = [];
+        const toggleNavBtn = document.getElementById('toggle-nav-btn');
+        const togglePreviewBtn = document.getElementById('toggle-preview-btn');
+        const mainContent = document.querySelector('.main-content');
+        var updateTimeout;
+        var outlineTimeout;
+
+        // --- 介面佈局與主題 ---
+        function toggleNavigation() { 
+            mainContent.classList.toggle('nav-collapsed'); 
+            const isCollapsed = mainContent.classList.contains('nav-collapsed'); 
+            toggleNavBtn.innerHTML = isCollapsed ? '»' : '«'; 
+            toggleNavBtn.title = isCollapsed ? '展開導覽' : '收合導覽'; 
+            setTimeout(() => { editor.refresh(); }, 100);
+        }
+        function togglePreview() { 
+            mainContent.classList.toggle('preview-collapsed'); 
+            const isCollapsed = mainContent.classList.contains('preview-collapsed'); 
+            togglePreviewBtn.innerHTML = isCollapsed ? '«' : '»'; 
+            togglePreviewBtn.title = isCollapsed ? '展開預覽' : '收合預覽'; 
+            setTimeout(() => { editor.refresh(); }, 100);
+        }
+        toggleNavBtn.addEventListener('click', toggleNavigation);
+        togglePreviewBtn.addEventListener('click', togglePreview);
+        function applyTheme(themeName) { let cmTheme = (themeName === 'default-light') ? 'default' : themeName; document.body.dataset.theme = (themeName === 'default-light') ? '' : themeName; if(themeName === 'default-light') document.body.removeAttribute('data-theme'); editor.setOption('theme', cmTheme); }
+        
+        // --- 可拖曳調整窗格大小的功能 ---
+        function initResizablePanes() {
+            const dividers = document.querySelectorAll('.grid-divider');
+            
+            dividers.forEach(divider => {
+                divider.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    
+                    const prevPaneIndex = Array.from(divider.parentElement.children).indexOf(divider) - 1;
+                    const nextPaneIndex = Array.from(divider.parentElement.children).indexOf(divider) + 1;
+                    
+                    const prevPane = divider.parentElement.children[prevPaneIndex];
+                    const nextPane = divider.parentElement.children[nextPaneIndex];
+
+                    if (!prevPane || !nextPane) return;
+
+                    const handleMouseMove = (moveEvent) => {
+                        let gridTemplateColumns = getComputedStyle(mainContent).gridTemplateColumns.split(' ');
+                        const prevPaneWidth = prevPane.offsetWidth;
+                        const newPrevPaneWidth = prevPaneWidth + moveEvent.movementX;
+                        
+                        const minWidth = 50; 
+                        if (newPrevPaneWidth < minWidth) return;
+
+                        gridTemplateColumns[prevPaneIndex] = `${newPrevPaneWidth}px`;
+                        gridTemplateColumns[nextPaneIndex] = '1fr';
+                        
+                        mainContent.style.gridTemplateColumns = gridTemplateColumns.join(' ');
+                        editor.refresh();
+                    };
+
+                    const handleMouseUp = () => {
+                        document.removeEventListener('mousemove', handleMouseMove);
+                        document.removeEventListener('mouseup', handleMouseUp);
+                        editor.refresh();
+                    };
+
+                    document.addEventListener('mousemove', handleMouseMove);
+                    document.addEventListener('mouseup', handleMouseUp);
+                });
+            });
+        }
+
+        // --- 文件導覽 (Outline) 相關功能 (完整未壓縮版) ---
+        function updateOutline() {
+            const container = document.getElementById('outline-container');
+            const filterValue = document.getElementById('nav-filter').value;
+            container.innerHTML = '';
+            
+            if (markdownToggle.checked) {
+                container.innerHTML = '<p class="no-outline">導覽功能僅適用於 HTML 模式。</p>';
+                return;
+            }
+            
+            const doc = editor.getDoc();
+            const fullContent = doc.getValue();
+            const fragment = document.createDocumentFragment();
+            let hasOutline = false;
+            
+            const seenIds = new Set();
+            const seenFunctions = new Set();
+            const seenClasses = new Set();
+            
+            if (filterValue === 'all' || filterValue === 'headings') {
+                const headingRegex = /<\s*(h[1-6])(?:\s+[^>]*)?>(.+?)<\/\s*\1\s*>/gis;
+                let match;
+                while ((match = headingRegex.exec(fullContent)) !== null) {
+                    const level = match[1].toLowerCase();
+                    const text = match[2].replace(/<[^>]+>/g, '').trim();
+                    if (text) {
+                        const line = doc.posFromIndex(match.index).line;
+                        const link = createNavLink(text, line, line, `outline-${level}`);
+                        fragment.appendChild(link);
+                        hasOutline = true;
+                    }
+                }
+            }
+            
+            if (filterValue === 'all' || filterValue === 'ids') {
+                const idRegex = /\bid\s*=\s*["']([^"']+)["']/gi;
+                let match;
+                while ((match = idRegex.exec(fullContent)) !== null) {
+                    const id = match[1];
+                    if (!seenIds.has(id)) {
+                        seenIds.add(id);
+                        const line = doc.posFromIndex(match.index).line;
+                        const link = createNavLink(id, line, line, 'outline-id');
+                        fragment.appendChild(link);
+                        hasOutline = true;
+                    }
+                }
+            }
+            
+            if (filterValue === 'all' || filterValue === 'functions') {
+                const functionRegex = /function\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\(/g;
+                let match;
+                while ((match = functionRegex.exec(fullContent)) !== null) {
+                    const funcName = match[1];
+                    if (!seenFunctions.has(funcName)) {
+                        seenFunctions.add(funcName);
+                        const startLine = doc.posFromIndex(match.index).line;
+                        const endLine = findFunctionEnd(doc, startLine);
+                        const link = createNavLink(funcName + '()', startLine, endLine, 'outline-function');
+                        fragment.appendChild(link);
+                        hasOutline = true;
+                    }
+                }
+            }
+            
+            if (filterValue === 'all' || filterValue === 'classes') {
+                const htmlClassRegex = /\bclass\s*=\s*["']([^"']+)["']/gi;
+                let match;
+                while ((match = htmlClassRegex.exec(fullContent)) !== null) {
+                    const classes = (match[2] ? match[2] : match[1]).split(/\s+/);
+                    classes.forEach(className => {
+                        if (className.trim() && !seenClasses.has(className)) {
+                            seenClasses.add(className);
+                            const line = doc.posFromIndex(match.index).line;
+                            const link = createNavLink(className, line, line, 'outline-class');
+                            fragment.appendChild(link);
+                            hasOutline = true;
+                        }
+                    });
+                }
+            }
+            
+            if (hasOutline) {
+                container.appendChild(fragment);
+            } else {
+                const filterText = {
+                    'all': '可導覽的內容',
+                    'headings': '標題',
+                    'ids': 'ID 元素',
+                    'functions': 'JavaScript 函數',
+                    'classes': 'CSS 類別'
+                };
+                container.innerHTML = `<p class="no-outline">目前文件中沒有${filterText[filterValue]}。</p>`;
+            }
+        }
+        function findFunctionEnd(doc, startLine) { let braceCount = 0; let foundStart = false; for (let i = startLine; i < doc.lineCount(); i++) { const line = doc.getLine(i); for (let char of line) { if (char === '{') { braceCount++; foundStart = true; } else if (char === '}') { braceCount--; if (foundStart && braceCount === 0) { return i; } } } } return startLine; }
+        function createNavLink(text, startLine, endLine, className) { const a = document.createElement('a'); a.textContent = text; a.className = className; a.dataset.startLine = startLine; a.dataset.endLine = endLine; const lineRange = startLine === endLine ? `第 ${startLine + 1} 行` : `第 ${startLine + 1}-${endLine + 1} 行`; a.title = `跳轉至${lineRange}`; a.onclick = function(e) { e.preventDefault(); const start = parseInt(this.dataset.startLine, 10); const end = parseInt(this.dataset.endLine, 10); highlightRange(start, end); editor.setCursor({line: start, ch: 0}); const t = editor.charCoords({line: start, ch: 0}, "local").top; const middleHeight = editor.getScrollerElement().offsetHeight / 2; editor.scrollTo(null, t - middleHeight - 5); editor.focus(); }; return a; }
+
+        // --- 編輯器高亮與更新 ---
+        function clearHighlights() { currentHighlightMarks.forEach(mark => mark.clear()); currentHighlightMarks = []; }
+        function highlightRange(startLine, endLine) { clearHighlights(); const doc = editor.getDoc(); for (let i = startLine; i <= endLine; i++) { const mark = doc.markText({line: i, ch: 0}, {line: i, ch: doc.getLine(i).length}, {className: 'highlight-range'}); currentHighlightMarks.push(mark); } }
+        function triggerUpdate() { clearTimeout(updateTimeout); updateTimeout = setTimeout(updatePreview, 300); }
+        function triggerOutlineUpdate() { clearTimeout(outlineTimeout); outlineTimeout = setTimeout(updateOutline, 500); }
+        editor.on("change", () => { triggerUpdate(); triggerOutlineUpdate(); clearHighlights(); });
+
+        // --- 主要功能區: 預覽與雙向互動 ---
+        function updatePreview() {
+            var isMarkdownMode = markdownToggle.checked;
+            var rawContent = editor.getValue();
+            var processedContent = '';
+
+            if (isMarkdownMode) {
+                if (typeof marked === 'undefined') {
+                    processedContent = '<h1>錯誤：marked.js 函式庫載入失敗！</h1>';
+                } else {
+                    processedContent = marked.parse(rawContent);
+                }
+            } else {
+                processedContent = rawContent;
+            }
+
+            const previewFrame = document.getElementById('preview-frame');
+            previewFrame.srcdoc = processedContent;
+
+            previewFrame.onload = () => {
+                if (!isMarkdownMode) {
+                    const iframeDoc = previewFrame.contentDocument || previewFrame.contentWindow.document;
+                    const style = iframeDoc.createElement('style');
+                    style.innerHTML = `
+                        *:hover {
+                            outline: 2px dashed #667eea !important;
+                            outline-offset: 2px;
+                            cursor: pointer !important;
+                        }
+                    `;
+                    iframeDoc.head.appendChild(style);
+                    iframeDoc.body.addEventListener('click', handlePreviewClick, true);
                 }
             };
-            let currentLang = 'zh';
+        }
+        function handlePreviewClick(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const targetElement = e.target;
+            findAndJumpToCode(targetElement);
+        }
+        function findAndJumpToCode(el) {
+            const code = editor.getValue();
+            const tagName = el.tagName.toLowerCase();
+            let matchResult = null;
 
-            const langToggleBtn = document.getElementById('lang-toggle-btn');
-            const allLangElements = document.querySelectorAll('[data-lang-key]');
-            const dropArea = document.getElementById('drop-area');
-            const fileInput = document.getElementById('file-input');
-            const loader = document.getElementById('loader');
-            const postLoadControls = document.getElementById('post-load-controls');
-            const fileStatus = document.getElementById('file-status');
-            const generateBtn = document.getElementById('generate-btn');
-            const mainContent = document.getElementById('main-content');
-            const searchInput = document.getElementById('search-input');
-            const searchBtn = document.getElementById('search-btn');
-            
-            // 獲取所有匯出按鈕的 DOM 元素
-            const exportExcelBtn = document.getElementById('export-excel-btn');
-            const exportCsvBtn = document.getElementById('export-csv-btn');
-            const exportJsonBtn = document.getElementById('export-json-btn');
-            const exportXmlBtn = document.getElementById('export-xml-btn');
-
-            const filterContainer = document.getElementById('filter-container');
-            const tableContainer = document.getElementById('table-container');
-
-            let originalData = [], currentViewData = [], headers = [], sortState = { column: null, direction: 'none' };
-            const LARGE_FILE_THRESHOLD = 1 * 1024 * 1024; // 1 MB
-
-            function setLanguage(lang) {
-                if (!translations[lang]) return;
-                currentLang = lang;
-                const dict = translations[lang];
-
-                document.documentElement.lang = lang === 'zh' ? 'zh-Hant' : 'en';
-                document.title = dict.pageTitle;
-                
-                allLangElements.forEach(el => {
-                    const key = el.getAttribute('data-lang-key');
-                    if (dict[key]) {
-                        if (el.tagName === 'INPUT' && el.placeholder !== undefined) {
-                            el.placeholder = dict[key];
-                        } else {
-                            el.textContent = dict[key];
-                        }
-                    }
-                });
-                langToggleBtn.textContent = dict.toggleLangBtn;
-                // 需要重新渲染下拉選單和表格中的文字
-                if (originalData.length > 0) {
-                    renderFilters();
-                    renderTable();
+            if (el.id) {
+                const idRegex = new RegExp(`<${tagName}[^>]*\\sid\\s*=\\s*["']${el.id}["'][^>]*>`, 'i');
+                const match = code.match(idRegex);
+                if (match) {
+                    matchResult = { match: match, type: 'ID', value: `#${el.id}` };
                 }
             }
             
-            langToggleBtn.addEventListener('click', () => {
-                const newLang = currentLang === 'zh' ? 'en' : 'zh';
-                setLanguage(newLang);
-            });
-
-            dropArea.addEventListener('click', () => fileInput.click());
-            fileInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
-            dropArea.addEventListener('drop', (e) => handleFile(e.dataTransfer.files[0]));
-            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(e => dropArea.addEventListener(e, p => { p.preventDefault(); p.stopPropagation(); }));
-            ['dragenter', 'dragover'].forEach(e => dropArea.addEventListener(e, () => dropArea.classList.add('highlight')));
-            ['dragleave', 'drop'].forEach(e => dropArea.addEventListener(e, () => dropArea.classList.remove('highlight')));
-            generateBtn.addEventListener('click', buildUI);
-            
-            // 為新的匯出按鈕添加事件監聽器
-            exportExcelBtn.addEventListener('click', exportToExcel);
-            exportCsvBtn.addEventListener('click', exportToCsv);
-            exportJsonBtn.addEventListener('click', exportToJson);
-            exportXmlBtn.addEventListener('click', exportToXml);
-
-            searchBtn.addEventListener('click', updateView);
-            searchInput.addEventListener('keydown', (event) => {
-                if (event.key === 'Enter') {
-                    event.preventDefault();
-                    updateView();
+            if (!matchResult && el.classList.length > 0) {
+                const firstClass = el.classList[0];
+                const classRegex = new RegExp(`<${tagName}[^>]*\\sclass\\s*=\\s*["'][^"']*${firstClass}[^"']*["'][^>]*>`, 'i');
+                const match = code.match(classRegex);
+                if (match) {
+                    matchResult = { match: match, type: 'Class', value: `.${firstClass}` };
                 }
-            });
-
-            function parseXmlToObjects(xmlString) {
-                const parser = new DOMParser();
-                const xmlDoc = parser.parseFromString(xmlString, "application/xml");
-                if (xmlDoc.getElementsByTagName("parsererror").length) {
-                    throw new Error("XML 檔案格式錯誤，無法解析。");
-                }
-
-                const allTags = xmlDoc.getElementsByTagName('*');
-                const tagCounts = {};
-                for (let i = 0; i < allTags.length; i++) {
-                    const tagName = allTags[i].tagName;
-                    tagCounts[tagName] = (tagCounts[tagName] || 0) + 1;
-                }
-
-                let recordTagName = '';
-                let maxCount = 0;
-                for (const tagName in tagCounts) {
-                    if (tagCounts[tagName] > 1 && tagCounts[tagName] > maxCount) {
-                        maxCount = tagCounts[tagName];
-                        recordTagName = tagName;
-                    }
-                }
-
-                if (!recordTagName) {
-                    const rootChildren = xmlDoc.documentElement.children;
-                    if (rootChildren.length > 0) {
-                        recordTagName = rootChildren[0].tagName;
-                    } else {
-                        throw new Error("XML 檔案中找不到任何資料紀錄。");
-                    }
-                }
-
-                const records = xmlDoc.getElementsByTagName(recordTagName);
-                if (records.length === 0) {
-                    throw new Error("無法根據自動偵測找到有效的資料列。");
-                }
-
-                const dataArray = Array.from(records).map(recordNode => {
-                    const obj = {};
-                    const fields = Array.from(recordNode.children);
-                    fields.forEach(fieldNode => {
-                        obj[fieldNode.tagName] = fieldNode.textContent.trim();
-                    });
-                    return obj;
-                }).filter(obj => Object.keys(obj).length > 0);
-
-                if (dataArray.length === 0) {
-                    throw new Error("無法從 XML 檔案中提取任何有效的資料。");
-                }
-                return dataArray;
-            }
-
-            function parseCsvToObjects(csvString) {
-                const lines = csvString.trim().split(/\r\n|\n/);
-                if (lines.length === 0) {
-                    throw new Error("CSV 檔案內容為空。");
-                }
-
-                const parseLine = (line) => {
-                    const result = [];
-                    let inQuote = false;
-                    let currentField = '';
-                    for (let i = 0; i < line.length; i++) {
-                        const char = line[i];
-                        if (char === '"') {
-                            if (inQuote && i + 1 < line.length && line[i+1] === '"') {
-                                currentField += '"';
-                                i++; 
-                            } else {
-                                inQuote = !inQuote;
-                            }
-                        } else if (char === ',' && !inQuote) {
-                            result.push(currentField.trim());
-                            currentField = '';
-                        } else {
-                            currentField += char;
-                        }
-                    }
-                    result.push(currentField.trim());
-                    return result;
-                };
-
-                const headers = parseLine(lines[0]);
-                const data = [];
-
-                for (let i = 1; i < lines.length; i++) {
-                    if (lines[i].trim() === '') continue;
-                    const values = parseLine(lines[i]);
-                    if (values.length !== headers.length) {
-                        console.warn(`警告：第 ${i + 1} 行的欄位數與標頭不符，已跳過。`);
-                        continue;
-                    }
-                    const obj = {};
-                    headers.forEach((header, index) => {
-                        obj[header] = values[index];
-                    });
-                    data.push(obj);
-                }
-                if (data.length === 0) {
-                    throw new Error("無法從 CSV 檔案中提取任何有效的資料。請檢查檔案格式。");
-                }
-                return data;
-            }
-
-            // 【新增函式】: 解析 Excel (XLS/XLSX) 檔案
-            function parseExcelToObjects(arrayBuffer) {
-                // 1. 使用 XLSX 函式庫讀取 ArrayBuffer
-                const data = new Uint8Array(arrayBuffer);
-                const wb = XLSX.read(data, { type: 'array' });
-
-                // 2. 獲取第一個工作表 (Sheet)
-                const sheetName = wb.SheetNames[0];
-                if (!sheetName) {
-                    throw new Error("Excel 檔案中找不到任何工作表。");
-                }
-                const ws = wb.Sheets[sheetName];
-
-                // 3. 將工作表轉換為「陣列的陣列」格式 (header: 1)
-                // 這樣我們才能手動尋找標題列
-                const dataRows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null });
-
-                if (dataRows.length === 0) {
-                    throw new Error("工作表內容為空。");
-                }
-
-                let headerRowIndex = -1;
-                let headers = [];
-
-                // 4. 【核心邏輯】: 尋找標題列
-                // 遍歷每一列，找到第一個「所有儲存格都有值」的列
-                for (let i = 0; i < dataRows.length; i++) {
-                    const row = dataRows[i];
-                    if (!row || row.length === 0) continue; // 略過空行
-
-                    // 檢查此列是否所有儲存格都有值 (不為 null, undefined 或空字串)
-                    const allFilled = row.every(cell => cell !== null && cell !== undefined && String(cell).trim() !== '');
-                    
-                    if (allFilled) {
-                        headerRowIndex = i; // 找到了！
-                        headers = row.map(cell => String(cell).trim()); // 儲存標題
-                        break; // 停止尋找
-                    }
-                }
-
-                if (headerRowIndex === -1) {
-                    throw new Error("無法在檔案中找到符合 '所有欄位都有值' 條件的標題列。");
-                }
-
-                // 5. 根據找到的標題列，建立 JSON 物件陣列
-                const jsonData = [];
-                for (let i = headerRowIndex + 1; i < dataRows.length; i++) {
-                    const row = dataRows[i];
-                    if (!row) continue; // 略過空行
-
-                    const obj = {};
-                    let hasData = false; // 檢查此行是否為空資料行
-                    for (let j = 0; j < headers.length; j++) {
-                        const value = row[j];
-                        obj[headers[j]] = value;
-                        if (value !== null && value !== undefined) {
-                            hasData = true;
-                        }
-                    }
-
-                    // 只有在該行至少有一個欄位有資料時才加入
-                    if (hasData) {
-                        jsonData.push(obj);
-                    }
-                }
-                
-                if (jsonData.length === 0) {
-                     throw new Error("找到了標題列，但標題列下沒有任何可讀取的資料。");
-                }
-                
-                return jsonData;
-            }
-
-            function handleFile(file) {
-                if (!file) return;
-                const dict = translations[currentLang];
-                const fileName = file.name.toLowerCase();
-
-                const isJson = fileName.endsWith('.json');
-                const isXml = fileName.endsWith('.xml');
-                const isCsv = fileName.endsWith('.csv');
-                // 【修改 6】: 增加 Excel 檔案判斷
-                const isExcel = fileName.endsWith('.xls') || fileName.endsWith('.xlsx');
-
-                // 【修改 7】: 更新檔案類型驗證
-                if (!isJson && !isXml && !isCsv && !isExcel) {
-                    alert(dict.fileTypeError);
-                    fileInput.value = '';
-                    return;
-                }
-
-                if (file.size > LARGE_FILE_THRESHOLD) {
-                    const fileSizeMB = (file.size / 1024 / 1024).toFixed(2);
-                    if (!confirm(dict.largeFileConfirm(fileSizeMB))) {
-                        fileInput.value = '';
-                        return;
-                    }
-                }
-
-                showLoader(true);
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    setTimeout(() => {
-                        try {
-                            let data;
-                            // 【修改 8】: 增加 Excel 的解析分支
-                            if (isJson) {
-                                data = JSON.parse(event.target.result);
-                            } else if (isXml) {
-                                data = parseXmlToObjects(event.target.result);
-                            } else if (isCsv) {
-                                data = parseCsvToObjects(event.target.result);
-                            } else if (isExcel) {
-                                // Excel 傳入的是 event.target.result (ArrayBuffer)
-                                data = parseExcelToObjects(event.target.result);
-                            }
-                            
-                            if (!Array.isArray(data) || data.length === 0) throw new Error('檔案內容無法轉換為有效的資料列表。');
-                            prepareForGeneration(data, file.name);
-                        } catch (e) {
-                            alert(dict.fileParseError(e.message));
-                        } finally {
-                            showLoader(false);
-                        }
-                    }, 10);
-                };
-                reader.onerror = () => { showLoader(false); alert(dict.fileReadError); };
-                
-                // 【修改 9】: 根據檔案類型決定讀取方式
-                if (isExcel) {
-                    reader.readAsArrayBuffer(file); // Excel 讀取為 ArrayBuffer
-                } else {
-                    reader.readAsText(file, 'UTF-8'); // 其他檔案 (JSON, XML, CSV) 讀取為 Text
-                }
-            }
-
-            function prepareForGeneration(data, fileName) {
-                originalData = data;
-                mainContent.classList.add('hidden');
-                postLoadControls.classList.remove('hidden');
-                fileStatus.textContent = translations[currentLang].fileLoaded(fileName, originalData.length);
-                generateBtn.disabled = false;
-            }
-
-            function buildUI() {
-                showLoader(true);
-                setTimeout(() => {
-                    try {
-                        if (originalData.length === 0) {
-                            throw new Error("無法從檔案中提取資料，請檢查檔案內容。");
-                        }
-                        headers = Object.keys(originalData[0]);
-                        sortState = { column: null, direction: 'none' };
-                        searchInput.value = '';
-                        renderFilters();
-                        updateView();
-                        mainContent.classList.remove('hidden');
-                        postLoadControls.classList.add('hidden');
-                    } catch (e) {
-                        alert(translations[currentLang].buildError(e.message));
-                    } finally {
-                        showLoader(false);
-                    }
-                }, 10);
-            }
-
-            function renderFilters() {
-                filterContainer.innerHTML = '';
-                const allOptionText = translations[currentLang].allOption;
-                headers.forEach(header => {
-                    const uniqueValues = [...new Set(originalData.map(item => item[header]))].filter(v => v != null).sort((a, b) => String(a).localeCompare(String(b), 'zh-Hant'));
-                    const control = document.createElement('div');
-                    control.className = 'filter-control';
-                    control.innerHTML = `<label for="filter-${header}" title="${header}">${header}</label>
-                        <select id="filter-${header}" data-column="${header}"><option value="">${allOptionText}</option>
-                        ${uniqueValues.map(value => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`).join('')}</select>`;
-                    control.querySelector('select').addEventListener('change', updateView);
-                    filterContainer.appendChild(control);
-                });
-            }
-
-            function renderTable() {
-                tableContainer.innerHTML = '';
-                // 統一控制所有匯出按鈕的禁用狀態
-                const isDisabled = currentViewData.length === 0;
-                exportExcelBtn.disabled = isDisabled;
-                exportCsvBtn.disabled = isDisabled;
-                exportJsonBtn.disabled = isDisabled;
-                exportXmlBtn.disabled = isDisabled;
-
-                if (isDisabled) {
-                    tableContainer.innerHTML = `<p style="text-align:center; color:#999; font-style:italic;">${translations[currentLang].noData}</p>`;
-                    return;
-                }
-                const table = document.createElement('table');
-                table.createTHead().insertRow();
-                table.createTBody();
-                const headerRow = table.tHead.rows[0];
-                headers.forEach(header => {
-                    const th = document.createElement('th');
-                    th.className = 'sortable';
-                    th.textContent = header;
-                    if (sortState.column === header) th.classList.add(`sort-${sortState.direction}`);
-                    th.addEventListener('click', () => handleSort(header));
-                    headerRow.appendChild(th);
-                });
-                currentViewData.forEach(rowObject => {
-                    const row = table.tBodies[0].insertRow();
-                    headers.forEach(header => {
-                        const cell = row.insertCell();
-                        cell.textContent = rowObject[header] ?? "";
-                    });
-                });
-                tableContainer.appendChild(table);
-            }
-
-            function showLoader(show) {
-                show ? loader.classList.remove('hidden') : loader.classList.add('hidden');
-            }
-
-            function escapeHtml(unsafe) {
-                if (typeof unsafe !== 'string') return unsafe;
-                return unsafe.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
-            }
-
-            function updateView() {
-                let filteredData = [...originalData];
-                filterContainer.querySelectorAll('select').forEach(select => {
-                    if (select.value !== "") {
-                        const column = select.dataset.column;
-                        const value = select.value;
-                        filteredData = filteredData.filter(row => String(row[column]) === value);
-                    }
-                });
-                const searchTerm = searchInput.value.toLowerCase().trim();
-                if (searchTerm) {
-                    filteredData = filteredData.filter(row => Object.values(row).some(val => String(val).toLowerCase().includes(searchTerm)));
-                }
-                currentViewData = filteredData;
-                applySort();
-                renderTable();
-            }
-
-            function handleSort(column) {
-                const currentDirection = sortState.column === column ? sortState.direction : 'none';
-                sortState = { column, direction: currentDirection === 'asc' ? 'desc' : 'asc' };
-                applySort();
-                renderTable();
-            }
-
-            function applySort() {
-                const { column, direction } = sortState;
-                if (!column) return;
-                currentViewData.sort((a, b) => {
-                    const valA = a[column];
-                    const valB = b[column];
-
-                    if (valA == null) return 1;
-                    if (valB == null) return -1;
-
-                    const comparison = typeof valA === 'number' && typeof valB === 'number' ? valA - valB : String(valA).localeCompare(String(valB), 'zh-Hant');
-                    return direction === 'asc' ? comparison : -comparison;
-                });
-            }
-
-            // 匯出為 Excel
-            function exportToExcel() {
-                if (currentViewData.length === 0) return;
-                const ws = XLSX.utils.json_to_sheet(currentViewData);
-                const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, ws, "篩選結果");
-                XLSX.writeFile(wb, `report_${new Date().toISOString().slice(0,10)}.xlsx`);
-            }
-
-            // 匯出為 CSV
-            function exportToCsv() {
-                if (currentViewData.length === 0 || headers.length === 0) return;
-
-                // 處理特殊字元，例如逗號和引號
-                const escapeCsvField = (field) => {
-                    if (field == null) return '';
-                    let value = String(field);
-                    if (value.includes(',') || value.includes('"') || value.includes('\n')) {
-                        return `"${value.replace(/"/g, '""')}"`;
-                    }
-                    return value;
-                };
-
-                const csvRows = [];
-                // 添加標頭
-                csvRows.push(headers.map(escapeCsvField).join(','));
-
-                // 添加資料行
-                currentViewData.forEach(row => {
-                    const values = headers.map(header => escapeCsvField(row[header]));
-                    csvRows.push(values.join(','));
-                });
-
-                const csvString = csvRows.join('\n');
-                const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `report_${new Date().toISOString().slice(0,10)}.csv`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-            }
-
-            // 匯出為 JSON
-            function exportToJson() {
-                if (currentViewData.length === 0) return;
-                const jsonString = JSON.stringify(currentViewData, null, 2); // null, 2 for pretty print
-                const blob = new Blob([jsonString], { type: 'application/json;charset=utf-8;' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `report_${new Date().toISOString().slice(0,10)}.json`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-            }
-
-            // 匯出為 XML
-            function exportToXml() {
-                if (currentViewData.length === 0 || headers.length === 0) return;
-
-                const escapeXmlField = (field) => {
-                    if (field == null) return '';
-                    let value = String(field);
-                    return value
-                        .replace(/&/g, "&amp;")
-                        .replace(/</g, "&lt;")
-                        .replace(/>/g, "&gt;")
-                        .replace(/"/g, "&quot;")
-                        .replace(/'/g, "&apos;");
-                };
-
-                let xmlString = '<?xml version="1.0" encoding="UTF-8"?>\n<data>\n';
-                currentViewData.forEach((rowObject, index) => {
-                    xmlString += `  <record id="${index + 1}">\n`;
-                    headers.forEach(header => {
-                        const tagName = header.replace(/[^a-zA-Z0-9_]/g, '_'); // 轉換非法 XML 標籤字元
-                        xmlString += `    <${tagName}>${escapeXmlField(rowObject[header])}</${tagName}>\n`;
-                    });
-                    xmlString += `  </record>\n`;
-                });
-                xmlString += '</data>';
-
-                const blob = new Blob([xmlString], { type: 'application/xml;charset=utf-8;' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `report_${new Date().toISOString().slice(0,10)}.xml`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
             }
             
-            // 初始化語言
-            setLanguage(currentLang);
+            if (!matchResult && el.textContent.trim()) {
+                const text = el.textContent.trim().substring(0, 50);
+                const escapedText = text.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+                const textRegex = new RegExp(`>${escapedText}`, 'i');
+                const match = code.match(textRegex);
+                if (match) {
+                    const searchStartIndex = match.index > 500 ? match.index - 500 : 0;
+                    const lastTagOpen = code.lastIndexOf(`<${tagName}`, match.index);
+                    if (lastTagOpen > searchStartIndex) {
+                        match.index = lastTagOpen;
+                        matchResult = { match: match, type: '文字', value: `"${text.substring(0, 20)}..."` };
+                    }
+                }
+            }
+
+            if (matchResult) {
+                const startPos = editor.posFromIndex(matchResult.match.index);
+                const endTagRange = CodeMirror.findMatchingTag(editor, startPos, true);
+                const endPos = endTagRange && endTagRange.close ? endTagRange.close.to : { line: startPos.line, ch: editor.getLine(startPos.line).length };
+                clearHighlights();
+                const mark = editor.markText(startPos, endPos, { className: 'highlight-range' });
+                currentHighlightMarks.push(mark);
+                editor.setCursor(startPos);
+                const t = editor.charCoords(startPos, "local").top;
+                const middleHeight = editor.getScrollerElement().offsetHeight / 2;
+                editor.scrollTo(null, t - middleHeight - 5);
+                editor.focus();
+                showNotification(`成功定位到 ${matchResult.type}: ${matchResult.value}`, 'success');
+            } else {
+                showNotification(`找不到 <${tagName}> 元素的對應程式碼`, 'error');
+            }
+        }
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `toast-notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 10);
+            setTimeout(() => {
+                notification.classList.remove('show');
+                notification.addEventListener('transitionend', () => {
+                    notification.remove();
+                });
+            }, 2000);
+        }
+
+        // --- 其他工具函數 ---
+        function formatCode() { if (markdownToggle.checked) { alert("「美化格式」功能僅適用於 HTML 模式。"); return; } try { var currentCode = editor.getValue(); var formattedCode = html_beautify(currentCode, { "indent_size": 4, "indent_char": " ", "max_preserve_newlines": 1, "preserve_newlines": true, "indent_scripts": "normal", "brace_style": "collapse", "wrap_line_length": 0, "indent_inner_html": true }); editor.setValue(formattedCode); } catch (e) { console.error("程式碼美化失敗:", e); alert("程式碼美化失敗。"); } }
+        function checkSyntax() { if (markdownToggle.checked) { alert("「檢查語法」功能僅適用於 HTML 模式。"); return; } editor.performLint(); alert("語法檢查已執行完畢！"); }
+        function createHtmlTemplate(content, title = "Markdown 匯出") { return `<!DOCTYPE html><html lang="zh-TW"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>${title}</title><style>body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; line-height: 1.6; padding: 20px; max-width: 800px; margin: 0 auto; color: #333; } h1, h2, h3, h4, h5, h6 { border-bottom: 1px solid #eee; padding-bottom: 5px; } ul, ol { padding-left: 30px; } code { background-color: #f4f4f4; padding: 2px 6px; border-radius: 4px; font-family: monospace; } pre { background-color: #f4f4f4; padding: 10px; border-radius: 4px; overflow-x: auto; } img { max-width: 100%; height: auto; } table { border-collapse: collapse; width: 100%; } th, td { border: 1px solid #ddd; padding: 8px; } th { background-color: #f2f2f2; }</style></head><body>${content}</body></html>`; }
+        function downloadHTML() { var isMarkdownMode = markdownToggle.checked; var rawContent = editor.getValue(); var finalHtmlContent = isMarkdownMode && typeof marked !== 'undefined' ? createHtmlTemplate(marked.parse(rawContent)) : rawContent; var blob = new Blob([finalHtmlContent], { type: 'text/html' }); var a = document.createElement('a'); a.href = window.URL.createObjectURL(blob); a.download = 'generated.html'; a.click(); window.URL.revokeObjectURL(a.href); a.remove(); }
+        function clearContent() { if (confirm('確定要清除所有內容嗎？')) { editor.setValue(''); triggerOutlineUpdate(); } }
+        
+        // --- 初始化 ---
+        document.addEventListener("DOMContentLoaded", () => {
+            triggerUpdate();
+            triggerOutlineUpdate();
+            initResizablePanes();
         });
     </script>
 </body>
