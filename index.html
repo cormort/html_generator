@@ -451,57 +451,139 @@
             findAndJumpToCode(targetElement);
         }
         function findAndJumpToCode(el) {
-            const code = editor.getValue();
             const tagName = el.tagName.toLowerCase();
-            let matchResult = null;
+            let foundMatch = null;
 
+            // 策略 1: 通過 ID 在導覽區查找
             if (el.id) {
-                const idRegex = new RegExp(`<${tagName}[^>]*\\sid\\s*=\\s*["']${el.id}["'][^>]*>`, 'i');
-                const match = code.match(idRegex);
-                if (match) {
-                    matchResult = { match: match, type: 'ID', value: `#${el.id}` };
-                }
-            }
-            
-            if (!matchResult && el.classList.length > 0) {
-                const firstClass = el.classList[0];
-                const classRegex = new RegExp(`<${tagName}[^>]*\\sclass\\s*=\\s*["'][^"']*${firstClass}[^"']*["'][^>]*>`, 'i');
-                const match = code.match(classRegex);
-                if (match) {
-                    matchResult = { match: match, type: 'Class', value: `.${firstClass}` };
-                }
-            }
-            
-            if (!matchResult && el.textContent.trim()) {
-                const text = el.textContent.trim().substring(0, 50);
-                const escapedText = text.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-                const textRegex = new RegExp(`>${escapedText}`, 'i');
-                const match = code.match(textRegex);
-                if (match) {
-                    const searchStartIndex = match.index > 500 ? match.index - 500 : 0;
-                    const lastTagOpen = code.lastIndexOf(`<${tagName}`, match.index);
-                    if (lastTagOpen > searchStartIndex) {
-                        match.index = lastTagOpen;
-                        matchResult = { match: match, type: '文字', value: `"${text.substring(0, 20)}..."` };
+                const navLinks = document.querySelectorAll('#outline-container a.outline-id');
+                for (let link of navLinks) {
+                    if (link.textContent === el.id) {
+                        foundMatch = {
+                            startLine: parseInt(link.dataset.startLine, 10),
+                            endLine: parseInt(link.dataset.endLine, 10),
+                            type: 'ID',
+                            value: `#${el.id}`
+                        };
+                        break;
                     }
                 }
             }
 
-            if (matchResult) {
-                const startPos = editor.posFromIndex(matchResult.match.index);
-                const endTagRange = CodeMirror.findMatchingTag(editor, startPos, true);
-                const endPos = endTagRange && endTagRange.close ? endTagRange.close.to : { line: startPos.line, ch: editor.getLine(startPos.line).length };
+            // 策略 2: 通過 Class 在導覽區查找
+            if (!foundMatch && el.classList.length > 0) {
+                const navLinks = document.querySelectorAll('#outline-container a.outline-class');
+                for (let className of el.classList) {
+                    for (let link of navLinks) {
+                        if (link.textContent === className) {
+                            foundMatch = {
+                                startLine: parseInt(link.dataset.startLine, 10),
+                                endLine: parseInt(link.dataset.endLine, 10),
+                                type: 'Class',
+                                value: `.${className}`
+                            };
+                            break;
+                        }
+                    }
+                    if (foundMatch) break;
+                }
+            }
+
+            // 策略 3: 標題元素通過導覽區查找
+            if (!foundMatch && /^h[1-6]$/i.test(tagName)) {
+                const headingText = el.textContent.trim().replace(/\s+/g, ' ');
+                const navLinks = document.querySelectorAll(`#outline-container a.outline-${tagName}`);
+                for (let link of navLinks) {
+                    const linkText = link.textContent.trim().replace(/\s+/g, ' ');
+                    if (linkText === headingText) {
+                        foundMatch = {
+                            startLine: parseInt(link.dataset.startLine, 10),
+                            endLine: parseInt(link.dataset.endLine, 10),
+                            type: '標題',
+                            value: `<${tagName}>`
+                        };
+                        break;
+                    }
+                }
+            }
+
+            // 策略 4: 直接文本搜索（備用方案）
+            if (!foundMatch) {
+                const code = editor.getValue();
+                let matchResult = null;
+
+                // 嘗試通過 ID 搜索
+                if (el.id) {
+                    const idRegex = new RegExp(`<${tagName}[^>]*\\sid\\s*=\\s*["']${el.id}["'][^>]*>`, 'i');
+                    const match = code.match(idRegex);
+                    if (match) {
+                        matchResult = { match: match, type: 'ID', value: `#${el.id}` };
+                    }
+                }
+                
+                // 嘗試通過 Class 搜索
+                if (!matchResult && el.classList.length > 0) {
+                    const firstClass = el.classList[0];
+                    const classRegex = new RegExp(`<${tagName}[^>]*\\sclass\\s*=\\s*["'][^"']*${firstClass}[^"']*["'][^>]*>`, 'i');
+                    const match = code.match(classRegex);
+                    if (match) {
+                        matchResult = { match: match, type: 'Class', value: `.${firstClass}` };
+                    }
+                }
+                
+                // 嘗試通過文本內容搜索
+                if (!matchResult && el.textContent.trim()) {
+                    const text = el.textContent.trim().substring(0, 50);
+                    const escapedText = text.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+                    const textRegex = new RegExp(`>${escapedText}`, 'i');
+                    const match = code.match(textRegex);
+                    if (match) {
+                        const searchStartIndex = match.index > 500 ? match.index - 500 : 0;
+                        const lastTagOpen = code.lastIndexOf(`<${tagName}`, match.index);
+                        if (lastTagOpen > searchStartIndex) {
+                            match.index = lastTagOpen;
+                            matchResult = { match: match, type: '文字', value: `"${text.substring(0, 20)}..."` };
+                        }
+                    }
+                }
+
+                if (matchResult) {
+                    const startPos = editor.posFromIndex(matchResult.match.index);
+                    foundMatch = {
+                        startLine: startPos.line,
+                        endLine: startPos.line,
+                        type: matchResult.type,
+                        value: matchResult.value
+                    };
+                }
+            }
+
+            // 執行跳轉和高亮
+            if (foundMatch) {
+                const startLine = foundMatch.startLine;
+                const endLine = foundMatch.endLine;
+                
                 clearHighlights();
-                const mark = editor.markText(startPos, endPos, { className: 'highlight-range' });
-                currentHighlightMarks.push(mark);
-                editor.setCursor(startPos);
-                const t = editor.charCoords(startPos, "local").top;
+                const doc = editor.getDoc();
+                
+                for (let i = startLine; i <= endLine; i++) {
+                    const mark = doc.markText(
+                        {line: i, ch: 0}, 
+                        {line: i, ch: doc.getLine(i).length}, 
+                        {className: 'highlight-range'}
+                    );
+                    currentHighlightMarks.push(mark);
+                }
+                
+                editor.setCursor({line: startLine, ch: 0});
+                const t = editor.charCoords({line: startLine, ch: 0}, "local").top;
                 const middleHeight = editor.getScrollerElement().offsetHeight / 2;
                 editor.scrollTo(null, t - middleHeight - 5);
                 editor.focus();
-                showNotification(`成功定位到 ${matchResult.type}: ${matchResult.value}`, 'success');
+                
+                showNotification(`✓ 成功定位到 ${foundMatch.type}: ${foundMatch.value}`, 'success');
             } else {
-                showNotification(`找不到 <${tagName}> 元素的對應程式碼`, 'error');
+                showNotification(`✗ 找不到 <${tagName}> 元素的對應程式碼`, 'error');
             }
         }
         function showNotification(message, type = 'success') {
