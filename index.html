@@ -13,7 +13,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/dialog/dialog.css">
 
     <style>
-        /* ... 您的所有 CSS 變數和大部分樣式保持不變 ... */
         :root { --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%); --bg-color: #f5f7fa; --text-color: #2d3748; --container-bg: #ffffff; --container-shadow: 0 10px 40px rgba(0, 0, 0, 0.1); --heading-color: #1a202c; --button-primary-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%); --button-primary-hover: linear-gradient(135deg, #5568d3 0%, #653a8b 100%); --button-success-bg: linear-gradient(135deg, #48bb78 0%, #38a169 100%); --button-success-hover: linear-gradient(135deg, #38a169 0%, #2f855a 100%); --button-danger-bg: linear-gradient(135deg, #fc8181 0%, #f56565 100%); --button-danger-hover: linear-gradient(135deg, #f56565 0%, #e53e3e 100%); --button-info-bg: linear-gradient(135deg, #4299e1 0%, #3182ce 100%); --cm-border-color: #e2e8f0; --cm-focus-border: #667eea; --cm-focus-shadow: rgba(102, 126, 234, 0.3); --nav-border-color: #e2e8f0; --nav-link-color: #4a5568; --nav-link-hover-bg: #edf2f7; --nav-link-active-bg: #e6fffa; --nav-link-id-color: #667eea; --accent-color: #667eea; --toggle-btn-bg: #ffffff; --toggle-btn-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); }
         [data-theme="material"] { --bg-gradient: linear-gradient(135deg, #1a237e 0%, #0d47a1 100%); --bg-color: #1e1e1e; --text-color: #e0e0e0; --container-bg: #2d2d2d; --container-shadow: 0 10px 40px rgba(0, 0, 0, 0.5); --heading-color: #ffffff; --button-primary-bg: linear-gradient(135deg, #26c6da 0%, #00acc1 100%); --button-primary-hover: linear-gradient(135deg, #00acc1 0%, #0097a7 100%); --button-success-bg: linear-gradient(135deg, #66bb6a 0%, #43a047 100%); --button-success-hover: linear-gradient(135deg, #43a047 0%, #2e7d32 100%); --button-danger-bg: linear-gradient(135deg, #ef5350 0%, #e53935 100%); --button-danger-hover: linear-gradient(135deg, #e53935 0%, #c62828 100%); --button-info-bg: linear-gradient(135deg, #5c6bc0 0%, #3949ab 100%); --cm-border-color: #424242; --cm-focus-border: #26c6da; --nav-link-color: #b0bec5; --nav-link-hover-bg: #424242; --nav-link-active-bg: #1a237e; --nav-link-id-color: #26c6da; --accent-color: #26c6da; --toggle-btn-bg: #424242; --toggle-btn-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); }
         [data-theme="dracula"] { --bg-gradient: linear-gradient(135deg, #6272a4 0%, #44475a 100%); --bg-color: #282a36; --text-color: #f8f8f2; --container-bg: #44475a; --container-shadow: 0 10px 40px rgba(0, 0, 0, 0.5); --heading-color: #bd93f9; --button-primary-bg: linear-gradient(135deg, #bd93f9 0%, #9580d6 100%); --button-primary-hover: linear-gradient(135deg, #9580d6 0%, #7d6dbd 100%); --button-success-bg: linear-gradient(135deg, #50fa7b 0%, #3ee76a 100%); --button-success-hover: linear-gradient(135deg, #3ee76a 0%, #2cd459 100%); --button-danger-bg: linear-gradient(135deg, #ff5555 0%, #ff3838 100%); --button-danger-hover: linear-gradient(135deg, #ff3838 0%, #ff1b1b 100%); --button-info-bg: linear-gradient(135deg, #8be9fd 0%, #6fe9fb 100%); --cm-border-color: #6272a4; --cm-focus-border: #bd93f9; --nav-link-color: #f8f8f2; --nav-link-hover-bg: #6272a4; --nav-link-active-bg: #44475a; --nav-link-id-color: #8be9fd; --accent-color: #bd93f9; --toggle-btn-bg: #6272a4; --toggle-btn-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); }
@@ -34,7 +33,7 @@
         .main-content.nav-collapsed.preview-collapsed { grid-template-columns: 0px 1fr 0px; }
         .editor-pane, .preview-pane, .navigation-pane { height: 100%; display: flex; flex-direction: column; overflow: hidden; background: var(--container-bg); }
         .editor-pane { position: relative; border-left: 1px solid var(--nav-border-color); border-right: 1px solid var(--nav-border-color); }
-        .preview-pane { position: relative; min-width: 0; /* (修正) 允許面板寬度收縮至 0 */ }
+        .preview-pane { position: relative; min-width: 0; }
         .navigation-pane { background: var(--container-bg); border-right: 1px solid var(--nav-border-color); box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05); min-width: 0; }
         .navigation-pane h2 { font-size: 1rem; padding: 16px; margin: 0; color: var(--heading-color); border-bottom: 2px solid var(--nav-border-color); text-align: center; font-weight: 600; letter-spacing: 0.5px; background: var(--bg-color); }
         .nav-filter-container { padding: 12px; background: var(--bg-color); border-bottom: 1px solid var(--nav-border-color); }
@@ -69,38 +68,10 @@
         #toggle-nav-btn:hover { transform: scale(1.1); box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4); background: var(--accent-color); color: white; }
         #toggle-nav-btn:active { transform: scale(0.95); }
         .main-content.nav-collapsed #toggle-nav-btn { left: 8px; }
-
-        /* (修正) 預覽區收合按鈕樣式 */
-        #toggle-preview-btn {
-            position: absolute;
-            top: 12px;
-            right: -18px; /* 定位在右邊 */
-            z-index: 20;
-            background: var(--toggle-btn-bg);
-            color: var(--accent-color);
-            border: 2px solid var(--accent-color);
-            border-radius: 50%;
-            width: 36px;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.3rem;
-            font-weight: bold;
-            line-height: 1;
-            padding: 0;
-            cursor: pointer;
-            box-shadow: var(--toggle-btn-shadow);
-            transition: all 0.3s ease;
-        }
+        #toggle-preview-btn { position: absolute; top: 12px; right: -18px; z-index: 20; background: var(--toggle-btn-bg); color: var(--accent-color); border: 2px solid var(--accent-color); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: bold; line-height: 1; padding: 0; cursor: pointer; box-shadow: var(--toggle-btn-shadow); transition: all 0.3s ease; }
         #toggle-preview-btn:hover { transform: scale(1.1); box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4); background: var(--accent-color); color: white; }
         #toggle-preview-btn:active { transform: scale(0.95); }
-        
-        /* (修正) 收合時，按鈕向內移動 */
-        .main-content.preview-collapsed #toggle-preview-btn {
-            right: 8px;
-        }
-
+        .main-content.preview-collapsed #toggle-preview-btn { right: 8px; }
         .button-container { padding: 12px 16px; background: var(--bg-color); border-bottom: 1px solid var(--nav-border-color); display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 8px; }
         button { padding: 10px 20px; font-size: 0.9rem; font-weight: 500; cursor: pointer; margin: 0; border: none; border-radius: 8px; color: white; transition: all 0.2s ease; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); position: relative; overflow: hidden; }
         button::before { content: ''; position: absolute; top: 50%; left: 50%; width: 0; height: 0; border-radius: 50%; background: rgba(255, 255, 255, 0.3); transform: translate(-50%, -50%); transition: width 0.6s, height 0.6s; }
@@ -125,6 +96,35 @@
         .CodeMirror-dialog input { background-color: var(--bg-color); color: var(--text-color); border: 2px solid var(--cm-border-color); padding: 8px; border-radius: 6px; transition: border-color 0.3s; }
         .CodeMirror-dialog input:focus { outline: none; border-color: var(--accent-color); box-shadow: 0 0 0 3px var(--cm-focus-shadow); }
         .CodeMirror-search-field { width: 20em; }
+
+        /* --- ✨ 新增: 通知提示樣式 --- */
+        .toast-notification {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            color: white;
+            font-size: 0.9rem;
+            font-weight: 500;
+            z-index: 9999;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        }
+        .toast-notification.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        .toast-notification.success {
+            background: var(--button-success-bg);
+        }
+        .toast-notification.error {
+            background: var(--button-danger-bg);
+        }
+        /* --- ✨ 結束: 新增樣式 --- */
+
         @media (max-width: 1200px) { .main-content { grid-template-columns: 240px 1fr 1fr; } .main-content.nav-collapsed { grid-template-columns: 0px 1fr 1fr; } .main-content.preview-collapsed { grid-template-columns: 240px 1fr 0px; } .main-content.nav-collapsed.preview-collapsed { grid-template-columns: 0px 1fr 0px; } }
         @media (max-width: 768px) { .header-bar { flex-direction: column; gap: 10px; padding: 12px 16px; } .main-content { grid-template-columns: 200px 1fr 1fr; } .main-content.nav-collapsed { grid-template-columns: 0px 1fr 1fr; } .main-content.preview-collapsed { grid-template-columns: 200px 1fr 0px; } .main-content.nav-collapsed.preview-collapsed { grid-template-columns: 0px 1fr 0px; } button { padding: 8px 16px; font-size: 0.85rem; } }
     </style>
@@ -162,7 +162,6 @@
 
         <div class="editor-pane">
             <button id="toggle-nav-btn" title="收合導覽">«</button>
-            <!-- (修正) 將預覽收合按鈕移到這裡 -->
             <button id="toggle-preview-btn" title="收合預覽">»</button>
             
             <div class="button-container">
@@ -175,7 +174,6 @@
         </div>
 
         <div class="preview-pane">
-            <!-- (修正) 按鈕已移出 -->
             <div class="button-container">
                 <span class="preview-label">👁️ 即時預覽</span>
                 <label for="markdown-toggle" class="markdown-toggle-label">
@@ -187,7 +185,6 @@
         </div>
     </div>
 
-    <!-- 所有 Script 標籤保持不變 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/dialog/dialog.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/search/searchcursor.js"></script>
@@ -214,8 +211,7 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
     <script>
-        // (修正) JavaScript 部分完全不需要修改，因為問題出在 HTML 和 CSS 結構
-        // 為了方便，這裡仍提供完整的 JS 程式碼
+        // --- 核心變數設定 ---
         var editor = CodeMirror.fromTextArea(document.getElementById('htmlSource'), {
             mode: "htmlmixed", theme: "default", lineNumbers: true, lineWrapping: true,
             lint: true, autoCloseTags: true, autoCloseBrackets: true, foldGutter: true,
@@ -228,26 +224,17 @@
         const toggleNavBtn = document.getElementById('toggle-nav-btn');
         const togglePreviewBtn = document.getElementById('toggle-preview-btn');
         const mainContent = document.querySelector('.main-content');
+        var updateTimeout;
+        var outlineTimeout;
 
-        function toggleNavigation() {
-            mainContent.classList.toggle('nav-collapsed');
-            const isCollapsed = mainContent.classList.contains('nav-collapsed');
-            toggleNavBtn.innerHTML = isCollapsed ? '»' : '«';
-            toggleNavBtn.title = isCollapsed ? '展開導覽' : '收合導覽';
-            setTimeout(() => { editor.refresh(); }, 310);
-        }
-        
-        function togglePreview() {
-            mainContent.classList.toggle('preview-collapsed');
-            const isCollapsed = mainContent.classList.contains('preview-collapsed');
-            togglePreviewBtn.innerHTML = isCollapsed ? '«' : '»';
-            togglePreviewBtn.title = isCollapsed ? '展開預覽' : '收合預覽';
-            setTimeout(() => { editor.refresh(); }, 310);
-        }
-        
+        // --- 介面佈局與主題 ---
+        function toggleNavigation() { mainContent.classList.toggle('nav-collapsed'); const isCollapsed = mainContent.classList.contains('nav-collapsed'); toggleNavBtn.innerHTML = isCollapsed ? '»' : '«'; toggleNavBtn.title = isCollapsed ? '展開導覽' : '收合導覽'; setTimeout(() => { editor.refresh(); }, 310); }
+        function togglePreview() { mainContent.classList.toggle('preview-collapsed'); const isCollapsed = mainContent.classList.contains('preview-collapsed'); togglePreviewBtn.innerHTML = isCollapsed ? '«' : '»'; togglePreviewBtn.title = isCollapsed ? '展開預覽' : '收合預覽'; setTimeout(() => { editor.refresh(); }, 310); }
         toggleNavBtn.addEventListener('click', toggleNavigation);
         togglePreviewBtn.addEventListener('click', togglePreview);
+        function applyTheme(themeName) { let cmTheme = (themeName === 'default-light') ? 'default' : themeName; document.body.dataset.theme = (themeName === 'default-light') ? '' : themeName; if(themeName === 'default-light') document.body.removeAttribute('data-theme'); editor.setOption('theme', cmTheme); }
 
+        // --- 文件導覽 (Outline) 相關功能 (完整版) ---
         function updateOutline() {
             const container = document.getElementById('outline-container');
             const filterValue = document.getElementById('nav-filter').value;
@@ -263,19 +250,16 @@
             const fragment = document.createDocumentFragment();
             let hasOutline = false;
             
-            // 用於去重的 Set
             const seenIds = new Set();
             const seenFunctions = new Set();
             const seenClasses = new Set();
-            const seenElements = new Set();
             
-            // 1. 處理標題 (支援跨行)
             if (filterValue === 'all' || filterValue === 'headings') {
                 const headingRegex = /<\s*(h[1-6])(?:\s+[^>]*)?>(.+?)<\/\s*\1\s*>/gis;
                 let match;
                 while ((match = headingRegex.exec(fullContent)) !== null) {
                     const level = match[1].toLowerCase();
-                    const text = match[2].replace(/<[^>]+>/g, '').trim(); // 移除內部標籤
+                    const text = match[2].replace(/<[^>]+>/g, '').trim();
                     if (text) {
                         const line = doc.posFromIndex(match.index).line;
                         const link = createNavLink(text, line, line, `outline-${level}`);
@@ -285,7 +269,6 @@
                 }
             }
             
-            // 2. 處理 ID (更精確，避免重複)
             if (filterValue === 'all' || filterValue === 'ids') {
                 const idRegex = /\bid\s*=\s*["']([^"']+)["']/gi;
                 let match;
@@ -301,68 +284,7 @@
                 }
             }
             
-            // 2.5 處理 DOM 元素 (按鈕、輸入框等重要元素)
-            if (filterValue === 'all' || filterValue === 'elements') {
-                // 定義需要追蹤的重要元素
-                const importantTags = ['button', 'input', 'select', 'textarea', 'form', 'a', 'img', 'video', 'audio', 'iframe', 'canvas', 'table', 'nav', 'header', 'footer', 'section', 'article', 'aside', 'main'];
-                
-                // 匹配這些元素
-                const elementRegex = new RegExp(`<(${importantTags.join('|')})([^>]*)>`, 'gi');
-                let match;
-                while ((match = elementRegex.exec(fullContent)) !== null) {
-                    const tagName = match[1].toLowerCase();
-                    const attributes = match[2];
-                    
-                    // 提取 id
-                    const idMatch = attributes.match(/\bid\s*=\s*["']([^"']+)["']/i);
-                    const id = idMatch ? idMatch[1] : '';
-                    
-                    // 提取 class
-                    const classMatch = attributes.match(/\bclass\s*=\s*["']([^"']+)["']/i);
-                    const classes = classMatch ? classMatch[1] : '';
-                    
-                    // 提取文字內容或特殊屬性
-                    let label = '';
-                    if (tagName === 'button') {
-                        const contentMatch = fullContent.slice(match.index).match(/<button[^>]*>(.+?)<\/button>/is);
-                        label = contentMatch ? contentMatch[1].replace(/<[^>]+>/g, '').trim().slice(0, 30) : '';
-                    } else if (tagName === 'input') {
-                        const typeMatch = attributes.match(/\btype\s*=\s*["']([^"']+)["']/i);
-                        const placeholderMatch = attributes.match(/\bplaceholder\s*=\s*["']([^"']+)["']/i);
-                        label = typeMatch ? `[${typeMatch[1]}]` : '';
-                        if (placeholderMatch) label += ` ${placeholderMatch[1].slice(0, 20)}`;
-                    } else if (tagName === 'a') {
-                        const hrefMatch = attributes.match(/\bhref\s*=\s*["']([^"']+)["']/i);
-                        const contentMatch = fullContent.slice(match.index).match(/<a[^>]*>(.+?)<\/a>/is);
-                        label = contentMatch ? contentMatch[1].replace(/<[^>]+>/g, '').trim().slice(0, 30) : '';
-                        if (hrefMatch && !label) label = hrefMatch[1].slice(0, 30);
-                    } else if (tagName === 'img') {
-                        const altMatch = attributes.match(/\balt\s*=\s*["']([^"']+)["']/i);
-                        const srcMatch = attributes.match(/\bsrc\s*=\s*["']([^"']+)["']/i);
-                        label = altMatch ? altMatch[1].slice(0, 30) : (srcMatch ? srcMatch[1].split('/').pop().slice(0, 30) : '');
-                    }
-                    
-                    // 組合顯示文字
-                    let displayText = `<${tagName}>`;
-                    if (id) displayText += ` #${id}`;
-                    if (classes) displayText += ` .${classes.split(/\s+/).join('.')}`;
-                    if (label) displayText += ` "${label}"`;
-                    
-                    // 創建唯一鍵避免重複
-                    const uniqueKey = `${tagName}-${id}-${classes}-${match.index}`;
-                    if (!seenElements.has(uniqueKey)) {
-                        seenElements.add(uniqueKey);
-                        const line = doc.posFromIndex(match.index).line;
-                        const link = createNavLink(displayText, line, line, 'outline-element');
-                        fragment.appendChild(link);
-                        hasOutline = true;
-                    }
-                }
-            }
-            
-            // 3. 處理 JavaScript 函數和類別
             if (filterValue === 'all' || filterValue === 'functions') {
-                // 一般函數聲明
                 const functionRegex = /function\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\(/g;
                 let match;
                 while ((match = functionRegex.exec(fullContent)) !== null) {
@@ -376,109 +298,22 @@
                         hasOutline = true;
                     }
                 }
-                
-                // 箭頭函數
-                const arrowRegex = /(?:const|let|var)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*(?:\([^)]*\)|[a-zA-Z_$][a-zA-Z0-9_$]*)\s*=>/g;
-                while ((match = arrowRegex.exec(fullContent)) !== null) {
-                    const funcName = match[1];
-                    if (!seenFunctions.has(funcName)) {
-                        seenFunctions.add(funcName);
-                        const startLine = doc.posFromIndex(match.index).line;
-                        const endLine = findFunctionEnd(doc, startLine);
-                        const link = createNavLink(funcName + '()', startLine, endLine, 'outline-function');
-                        fragment.appendChild(link);
-                        hasOutline = true;
-                    }
-                }
-                
-                // 類別定義
-                const classDefRegex = /class\s+([a-zA-Z_$][a-zA-Z0-9_$]*)/g;
-                while ((match = classDefRegex.exec(fullContent)) !== null) {
-                    const className = match[1];
-                    if (!seenFunctions.has(className)) {
-                        seenFunctions.add(className);
-                        const startLine = doc.posFromIndex(match.index).line;
-                        const endLine = findFunctionEnd(doc, startLine);
-                        const link = createNavLink('class ' + className, startLine, endLine, 'outline-function');
-                        fragment.appendChild(link);
-                        hasOutline = true;
-                    }
-                }
-                
-                // 物件方法
-                const methodRegex = /([a-zA-Z_$][a-zA-Z0-9_$]*)\s*:\s*function\s*\(/g;
-                while ((match = methodRegex.exec(fullContent)) !== null) {
-                    const methodName = match[1];
-                    if (!seenFunctions.has(methodName)) {
-                        seenFunctions.add(methodName);
-                        const startLine = doc.posFromIndex(match.index).line;
-                        const endLine = findFunctionEnd(doc, startLine);
-                        const link = createNavLink(methodName + '()', startLine, endLine, 'outline-function');
-                        fragment.appendChild(link);
-                        hasOutline = true;
-                    }
-                }
             }
             
-            // 4. 處理 CSS 類別 (HTML 屬性 + style 標籤中的定義)
             if (filterValue === 'all' || filterValue === 'classes') {
-                // 先收集 CSS 定義的類別
-                const cssDefinedClasses = new Set();
-                const cssClassRegex = /\.([a-zA-Z_-][a-zA-Z0-9_-]*)\s*\{/g;
+                const htmlClassRegex = /\bclass\s*=\s*["']([^"']+)["']/gi;
                 let match;
-                while ((match = cssClassRegex.exec(fullContent)) !== null) {
-                    cssDefinedClasses.add(match[1]);
-                }
-                
-                // HTML class 屬性（帶上下文）
-                const htmlClassRegex = /<([a-zA-Z][a-zA-Z0-9]*)[^>]*\bclass\s*=\s*["']([^"']+)["'][^>]*>/gi;
                 while ((match = htmlClassRegex.exec(fullContent)) !== null) {
-                    const tagName = match[1].toLowerCase();
-                    const classes = match[2].split(/\s+/);
-                    
-                    // 嘗試獲取 id 屬性
-                    const fullTag = match[0];
-                    const idMatch = fullTag.match(/\bid\s*=\s*["']([^"']+)["']/i);
-                    const idContext = idMatch ? `#${idMatch[1]}` : '';
-                    
+                    const classes = (match[2] ? match[2] : match[1]).split(/\s+/);
                     classes.forEach(className => {
-                        if (className.trim()) {
-                            const uniqueKey = `html-${className}-${tagName}-${idContext}`;
-                            if (!seenClasses.has(uniqueKey)) {
-                                seenClasses.add(uniqueKey);
-                                const line = doc.posFromIndex(match.index).line;
-                                
-                                // 顯示格式：類別名 <標籤名#id>
-                                let displayText = className;
-                                let contextInfo = `<${tagName}${idContext}>`;
-                                
-                                // 檢查是否在 CSS 中定義過
-                                if (cssDefinedClasses.has(className)) {
-                                    displayText += ` ${contextInfo} [已定義]`;
-                                } else {
-                                    displayText += ` ${contextInfo}`;
-                                }
-                                
-                                const link = createNavLink(displayText, line, line, 'outline-class');
-                                fragment.appendChild(link);
-                                hasOutline = true;
-                            }
+                        if (className.trim() && !seenClasses.has(className)) {
+                            seenClasses.add(className);
+                            const line = doc.posFromIndex(match.index).line;
+                            const link = createNavLink(className, line, line, 'outline-class');
+                            fragment.appendChild(link);
+                            hasOutline = true;
                         }
                     });
-                }
-                
-                // CSS 選擇器定義（顯示為定義）
-                cssClassRegex.lastIndex = 0; // 重置正則
-                while ((match = cssClassRegex.exec(fullContent)) !== null) {
-                    const className = match[1];
-                    const uniqueKey = `css-def-${className}`;
-                    if (!seenClasses.has(uniqueKey)) {
-                        seenClasses.add(uniqueKey);
-                        const line = doc.posFromIndex(match.index).line;
-                        const link = createNavLink(`${className} [CSS定義]`, line, line, 'outline-class');
-                        fragment.appendChild(link);
-                        hasOutline = true;
-                    }
                 }
             }
             
@@ -489,30 +324,153 @@
                     'all': '可導覽的內容',
                     'headings': '標題',
                     'ids': 'ID 元素',
-                    'elements': 'DOM 元素',
                     'functions': 'JavaScript 函數',
                     'classes': 'CSS 類別'
                 };
                 container.innerHTML = `<p class="no-outline">目前文件中沒有${filterText[filterValue]}。</p>`;
             }
         }
-        
         function findFunctionEnd(doc, startLine) { let braceCount = 0; let foundStart = false; for (let i = startLine; i < doc.lineCount(); i++) { const line = doc.getLine(i); for (let char of line) { if (char === '{') { braceCount++; foundStart = true; } else if (char === '}') { braceCount--; if (foundStart && braceCount === 0) { return i; } } } } return startLine; }
+        function createNavLink(text, startLine, endLine, className) { const a = document.createElement('a'); a.textContent = text; a.className = className; a.dataset.startLine = startLine; a.dataset.endLine = endLine; const lineRange = startLine === endLine ? `第 ${startLine + 1} 行` : `第 ${startLine + 1}-${endLine + 1} 行`; a.title = `跳轉至${lineRange}`; a.onclick = function(e) { e.preventDefault(); const start = parseInt(this.dataset.startLine, 10); const end = parseInt(this.dataset.endLine, 10); highlightRange(start, end); editor.setCursor({line: start, ch: 0}); const t = editor.charCoords({line: start, ch: 0}, "local").top; const middleHeight = editor.getScrollerElement().offsetHeight / 2; editor.scrollTo(null, t - middleHeight - 5); editor.focus(); }; return a; }
+
+        // --- 編輯器高亮與更新 ---
         function clearHighlights() { currentHighlightMarks.forEach(mark => mark.clear()); currentHighlightMarks = []; }
         function highlightRange(startLine, endLine) { clearHighlights(); const doc = editor.getDoc(); for (let i = startLine; i <= endLine; i++) { const mark = doc.markText({line: i, ch: 0}, {line: i, ch: doc.getLine(i).length}, {className: 'highlight-range'}); currentHighlightMarks.push(mark); } }
-        function createNavLink(text, startLine, endLine, className) { const a = document.createElement('a'); a.textContent = text; a.className = className; a.dataset.startLine = startLine; a.dataset.endLine = endLine; const lineRange = startLine === endLine ? `第 ${startLine + 1} 行` : `第 ${startLine + 1}-${endLine + 1} 行`; a.title = `跳轉至${lineRange}`; a.onclick = function(e) { e.preventDefault(); const start = parseInt(this.dataset.startLine, 10); const end = parseInt(this.dataset.endLine, 10); highlightRange(start, end); editor.setCursor({line: start, ch: 0}); const t = editor.charCoords({line: start, ch: 0}, "local").top; const middleHeight = editor.getScrollerElement().offsetHeight / 2; editor.scrollTo(null, t - middleHeight - 5); editor.focus(); }; return a; }
-        var updateTimeout; var outlineTimeout;
         function triggerUpdate() { clearTimeout(updateTimeout); updateTimeout = setTimeout(updatePreview, 300); }
         function triggerOutlineUpdate() { clearTimeout(outlineTimeout); outlineTimeout = setTimeout(updateOutline, 500); }
         editor.on("change", () => { triggerUpdate(); triggerOutlineUpdate(); clearHighlights(); });
-        function updatePreview() { var isMarkdownMode = markdownToggle.checked; var rawContent = editor.getValue(); var processedContent = ''; if (isMarkdownMode) { if (typeof marked === 'undefined') { processedContent = '<h1>錯誤：marked.js 函式庫載入失敗！</h1>'; } else { processedContent = marked.parse(rawContent); } } else { processedContent = rawContent; } document.getElementById('preview-frame').srcdoc = processedContent; }
+
+        // --- ✨ 主要功能區: 預覽與雙向互動 ---
+        function updatePreview() {
+            var isMarkdownMode = markdownToggle.checked;
+            var rawContent = editor.getValue();
+            var processedContent = '';
+
+            if (isMarkdownMode) {
+                if (typeof marked === 'undefined') {
+                    processedContent = '<h1>錯誤：marked.js 函式庫載入失敗！</h1>';
+                } else {
+                    processedContent = marked.parse(rawContent);
+                }
+            } else {
+                processedContent = rawContent;
+            }
+
+            const previewFrame = document.getElementById('preview-frame');
+            previewFrame.srcdoc = processedContent;
+
+            previewFrame.onload = () => {
+                if (!isMarkdownMode) {
+                    const iframeDoc = previewFrame.contentDocument || previewFrame.contentWindow.document;
+                    const style = iframeDoc.createElement('style');
+                    style.innerHTML = `
+                        *:hover {
+                            outline: 2px dashed #667eea !important;
+                            outline-offset: 2px;
+                            cursor: pointer !important;
+                        }
+                    `;
+                    iframeDoc.head.appendChild(style);
+                    iframeDoc.body.addEventListener('click', handlePreviewClick, true);
+                }
+            };
+        }
+
+        function handlePreviewClick(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const targetElement = e.target;
+            findAndJumpToCode(targetElement);
+        }
+
+        function findAndJumpToCode(el) {
+            const code = editor.getValue();
+            const tagName = el.tagName.toLowerCase();
+            let matchResult = null;
+
+            if (el.id) {
+                const idRegex = new RegExp(`<${tagName}[^>]*\\sid\\s*=\\s*["']${el.id}["'][^>]*>`, 'i');
+                const match = code.match(idRegex);
+                if (match) {
+                    matchResult = { match: match, type: 'ID', value: `#${el.id}` };
+                }
+            }
+            
+            if (!matchResult && el.classList.length > 0) {
+                const firstClass = el.classList[0];
+                const classRegex = new RegExp(`<${tagName}[^>]*\\sclass\\s*=\\s*["'][^"']*${firstClass}[^"']*["'][^>]*>`, 'i');
+                const match = code.match(classRegex);
+                if (match) {
+                    matchResult = { match: match, type: 'Class', value: `.${firstClass}` };
+                }
+            }
+            
+            if (!matchResult && el.textContent.trim()) {
+                const text = el.textContent.trim().substring(0, 50);
+                const escapedText = text.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+                const textRegex = new RegExp(`>${escapedText}`, 'i');
+                const match = code.match(textRegex);
+                if (match) {
+                    const searchStartIndex = match.index > 500 ? match.index - 500 : 0;
+                    const lastTagOpen = code.lastIndexOf(`<${tagName}`, match.index);
+                    if (lastTagOpen > searchStartIndex) {
+                        match.index = lastTagOpen;
+                        matchResult = { match: match, type: '文字', value: `"${text.substring(0, 20)}..."` };
+                    }
+                }
+            }
+
+            if (matchResult) {
+                const startPos = editor.posFromIndex(matchResult.match.index);
+                const endTagRange = CodeMirror.findMatchingTag(editor, startPos, true);
+                const endPos = endTagRange && endTagRange.close ? endTagRange.close.to : { line: startPos.line, ch: editor.getLine(startPos.line).length };
+
+                clearHighlights();
+                const mark = editor.markText(startPos, endPos, { className: 'highlight-range' });
+                currentHighlightMarks.push(mark);
+                
+                editor.setCursor(startPos);
+                const t = editor.charCoords(startPos, "local").top;
+                const middleHeight = editor.getScrollerElement().offsetHeight / 2;
+                editor.scrollTo(null, t - middleHeight - 5);
+                editor.focus();
+
+                showNotification(`成功定位到 ${matchResult.type}: ${matchResult.value}`, 'success');
+            } else {
+                showNotification(`找不到 <${tagName}> 元素的對應程式碼`, 'error');
+            }
+        }
+        
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `toast-notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 10);
+
+            setTimeout(() => {
+                notification.classList.remove('show');
+                notification.addEventListener('transitionend', () => {
+                    notification.remove();
+                });
+            }, 2000);
+        }
+
+        // --- 其他工具函數 ---
         function formatCode() { if (markdownToggle.checked) { alert("「美化格式」功能僅適用於 HTML 模式。"); return; } try { var currentCode = editor.getValue(); var formattedCode = html_beautify(currentCode, { "indent_size": 4, "indent_char": " ", "max_preserve_newlines": 1, "preserve_newlines": true, "indent_scripts": "normal", "brace_style": "collapse", "wrap_line_length": 0, "indent_inner_html": true }); editor.setValue(formattedCode); } catch (e) { console.error("程式碼美化失敗:", e); alert("程式碼美化失敗。"); } }
-        function applyTheme(themeName) { let cmTheme = (themeName === 'default-light') ? 'default' : themeName; document.body.dataset.theme = (themeName === 'default-light') ? '' : themeName; if(themeName === 'default-light') document.body.removeAttribute('data-theme'); editor.setOption('theme', cmTheme); }
         function checkSyntax() { if (markdownToggle.checked) { alert("「檢查語法」功能僅適用於 HTML 模式。"); return; } editor.performLint(); alert("語法檢查已執行完畢！"); }
         function createHtmlTemplate(content, title = "Markdown 匯出") { return `<!DOCTYPE html><html lang="zh-TW"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>${title}</title><style>body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; line-height: 1.6; padding: 20px; max-width: 800px; margin: 0 auto; color: #333; } h1, h2, h3, h4, h5, h6 { border-bottom: 1px solid #eee; padding-bottom: 5px; } ul, ol { padding-left: 30px; } code { background-color: #f4f4f4; padding: 2px 6px; border-radius: 4px; font-family: monospace; } pre { background-color: #f4f4f4; padding: 10px; border-radius: 4px; overflow-x: auto; } img { max-width: 100%; height: auto; } table { border-collapse: collapse; width: 100%; } th, td { border: 1px solid #ddd; padding: 8px; } th { background-color: #f2f2f2; }</style></head><body>${content}</body></html>`; }
         function downloadHTML() { var isMarkdownMode = markdownToggle.checked; var rawContent = editor.getValue(); var finalHtmlContent = isMarkdownMode && typeof marked !== 'undefined' ? createHtmlTemplate(marked.parse(rawContent)) : rawContent; var blob = new Blob([finalHtmlContent], { type: 'text/html' }); var a = document.createElement('a'); a.href = window.URL.createObjectURL(blob); a.download = 'generated.html'; a.click(); window.URL.revokeObjectURL(a.href); a.remove(); }
         function clearContent() { if (confirm('確定要清除所有內容嗎？')) { editor.setValue(''); triggerOutlineUpdate(); } }
-        document.addEventListener("DOMContentLoaded", () => { triggerUpdate(); triggerOutlineUpdate(); });
+        
+        // --- 初始化 ---
+        document.addEventListener("DOMContentLoaded", () => {
+            triggerUpdate();
+            triggerOutlineUpdate();
+        });
     </script>
 </body>
 </html>
