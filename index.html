@@ -284,7 +284,7 @@
         }
 
         // --- 文件導覽 (Outline) 相關功能 (完整未壓縮版) ---
-        function updateOutline() {
+function updateOutline() {
             const container = document.getElementById('outline-container');
             const filterValue = document.getElementById('nav-filter').value;
             container.innerHTML = '';
@@ -304,31 +304,27 @@
             const seenClasses = new Set();
             
             if (filterValue === 'all' || filterValue === 'headings') {
-                // 改進的標題偵測，使用非貪婪匹配和更嚴格的結束標籤匹配
+                // 改進的標題偵測，處理跨行和屬性
                 const headingRegex = /<(h[1-6])(?:\s+[^>]*)?>(.+?)<\/\1>/gis;
                 let match;
-                const matches = [];
                 
-                // 先收集所有匹配
                 while ((match = headingRegex.exec(fullContent)) !== null) {
-                    matches.push({
-                        level: match[1].toLowerCase(),
-                        text: match[2],
-                        index: match.index
-                    });
-                }
-                
-                // 處理每個匹配
-                matches.forEach(item => {
-                    // 移除內部 HTML 標籤並清理文字
-                    const text = item.text.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+                    const level = match[1].toLowerCase();
+                    let text = match[2];
+                    
+                    // 移除所有 HTML 標籤
+                    text = text.replace(/<[^>]+>/g, '');
+                    // 移除多餘的空白字符和換行
+                    text = text.replace(/\s+/g, ' ').trim();
+                    
+                    // 只有當文字不為空且長度大於 0 時才添加
                     if (text && text.length > 0) {
-                        const line = doc.posFromIndex(item.index).line;
-                        const link = createNavLink(text, line, line, `outline-${item.level}`);
+                        const line = doc.posFromIndex(match.index).line;
+                        const link = createNavLink(text, line, line, `outline-${level}`);
                         fragment.appendChild(link);
                         hasOutline = true;
                     }
-                });
+                }
             }
             
             if (filterValue === 'all' || filterValue === 'ids') {
