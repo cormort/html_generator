@@ -18,8 +18,8 @@
         [data-theme="dracula"] { --bg-gradient: linear-gradient(135deg, #6272a4 0%, #44475a 100%); --bg-color: #282a36; --text-color: #f8f8f2; --container-bg: #44475a; --container-shadow: 0 10px 40px rgba(0, 0, 0, 0.5); --heading-color: #bd93f9; --button-primary-bg: linear-gradient(135deg, #bd93f9 0%, #9580d6 100%); --button-primary-hover: linear-gradient(135deg, #9580d6 0%, #7d6dbd 100%); --button-success-bg: linear-gradient(135deg, #50fa7b 0%, #3ee76a 100%); --button-success-hover: linear-gradient(135deg, #3ee76a 0%, #2cd459 100%); --button-danger-bg: linear-gradient(135deg, #ff5555 0%, #ff3838 100%); --button-danger-hover: linear-gradient(135deg, #ff3838 0%, #ff1b1b 100%); --button-info-bg: linear-gradient(135deg, #8be9fd 0%, #6fe9fb 100%); --cm-border-color: #6272a4; --cm-focus-border: #bd93f9; --nav-link-color: #f8f8f2; --nav-link-hover-bg: #6272a4; --nav-link-active-bg: #44475a; --nav-link-id-color: #8be9fd; --accent-color: #bd93f9; --toggle-btn-bg: #6272a4; --toggle-btn-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body { height: 100%; overflow: hidden; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif; background: var(--bg-color); color: var(--text-color); line-height: 1.6; display: flex; flex-direction: column; transition: all 0.3s ease; }
-        .header-bar { padding: 16px 24px; background: var(--bg-gradient); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15); display: flex; justify-content: space-between; align-items: center; z-index: 10; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif; background: var(--bg-color); color: var(--text-color); line-height: 1.6; display: flex; flex-direction: column; transition: background-color 0.3s, color 0.3s; }
+        .header-bar { padding: 16px 24px; background: var(--bg-gradient); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15); display: flex; justify-content: space-between; align-items: center; z-index: 10; flex-shrink: 0; }
         .header-bar h1 { font-size: 1.5rem; color: white; margin: 0; font-weight: 600; letter-spacing: 0.5px; display: flex; align-items: center; gap: 10px; }
         .header-bar h1::before { content: '⚡'; font-size: 1.8rem; }
         .theme-selector-container { display: flex; align-items: center; gap: 10px; }
@@ -27,14 +27,32 @@
         #theme-select { padding: 8px 16px; border-radius: 8px; border: 2px solid rgba(255, 255, 255, 0.3); background-color: rgba(255, 255, 255, 0.15); color: white; font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: all 0.3s ease; backdrop-filter: blur(10px); }
         #theme-select:hover { background-color: rgba(255, 255, 255, 0.25); border-color: rgba(255, 255, 255, 0.5); }
         #theme-select option { background-color: var(--container-bg); color: var(--text-color); }
-        .main-content { display: grid; grid-template-columns: 280px 1fr 1fr; flex-grow: 1; overflow: hidden; height: 100%; gap: 0; transition: grid-template-columns 0.3s ease; }
-        .main-content.nav-collapsed { grid-template-columns: 0px 1fr 1fr; }
-        .main-content.preview-collapsed { grid-template-columns: 280px 1fr 0px; }
-        .main-content.nav-collapsed.preview-collapsed { grid-template-columns: 0px 1fr 0px; }
-        .editor-pane, .preview-pane, .navigation-pane { height: 100%; display: flex; flex-direction: column; overflow: hidden; background: var(--container-bg); }
-        .editor-pane { position: relative; border-left: 1px solid var(--nav-border-color); border-right: 1px solid var(--nav-border-color); }
-        .preview-pane { position: relative; min-width: 0; }
-        .navigation-pane { background: var(--container-bg); border-right: 1px solid var(--nav-border-color); box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05); min-width: 0; }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 280px 5px 1fr 5px 1fr;
+            flex-grow: 1;
+            overflow: hidden;
+            height: 100%;
+        }
+        
+        .grid-divider {
+            background-color: var(--nav-border-color);
+            cursor: col-resize;
+            transition: background-color 0.2s ease;
+        }
+        .grid-divider:hover {
+            background-color: var(--accent-color);
+        }
+        
+        .main-content.nav-collapsed { grid-template-columns: 0px 0px 1fr 5px 1fr !important; }
+        .main-content.preview-collapsed { grid-template-columns: 280px 5px 1fr 0px 0px !important; }
+        .main-content.nav-collapsed.preview-collapsed { grid-template-columns: 0px 0px 1fr 0px 0px !important; }
+        
+        .editor-pane, .preview-pane, .navigation-pane { height: 100%; display: flex; flex-direction: column; overflow: hidden; background: var(--container-bg); min-width: 0; }
+        .editor-pane { position: relative; }
+        .preview-pane { position: relative; }
+        .navigation-pane { background: var(--container-bg); box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05); }
         .navigation-pane h2 { font-size: 1rem; padding: 16px; margin: 0; color: var(--heading-color); border-bottom: 2px solid var(--nav-border-color); text-align: center; font-weight: 600; letter-spacing: 0.5px; background: var(--bg-color); }
         .nav-filter-container { padding: 12px; background: var(--bg-color); border-bottom: 1px solid var(--nav-border-color); }
         #nav-filter { width: 100%; padding: 10px; border: 2px solid var(--cm-border-color); border-radius: 8px; background: var(--container-bg); color: var(--text-color); font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: all 0.3s ease; }
@@ -96,37 +114,10 @@
         .CodeMirror-dialog input { background-color: var(--bg-color); color: var(--text-color); border: 2px solid var(--cm-border-color); padding: 8px; border-radius: 6px; transition: border-color 0.3s; }
         .CodeMirror-dialog input:focus { outline: none; border-color: var(--accent-color); box-shadow: 0 0 0 3px var(--cm-focus-shadow); }
         .CodeMirror-search-field { width: 20em; }
-
-        /* --- ✨ 新增: 通知提示樣式 --- */
-        .toast-notification {
-            position: fixed;
-            top: 80px;
-            right: 20px;
-            padding: 12px 20px;
-            border-radius: 8px;
-            color: white;
-            font-size: 0.9rem;
-            font-weight: 500;
-            z-index: 9999;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            opacity: 0;
-            transform: translateX(100%);
-            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-        }
-        .toast-notification.show {
-            opacity: 1;
-            transform: translateX(0);
-        }
-        .toast-notification.success {
-            background: var(--button-success-bg);
-        }
-        .toast-notification.error {
-            background: var(--button-danger-bg);
-        }
-        /* --- ✨ 結束: 新增樣式 --- */
-
-        @media (max-width: 1200px) { .main-content { grid-template-columns: 240px 1fr 1fr; } .main-content.nav-collapsed { grid-template-columns: 0px 1fr 1fr; } .main-content.preview-collapsed { grid-template-columns: 240px 1fr 0px; } .main-content.nav-collapsed.preview-collapsed { grid-template-columns: 0px 1fr 0px; } }
-        @media (max-width: 768px) { .header-bar { flex-direction: column; gap: 10px; padding: 12px 16px; } .main-content { grid-template-columns: 200px 1fr 1fr; } .main-content.nav-collapsed { grid-template-columns: 0px 1fr 1fr; } .main-content.preview-collapsed { grid-template-columns: 200px 1fr 0px; } .main-content.nav-collapsed.preview-collapsed { grid-template-columns: 0px 1fr 0px; } button { padding: 8px 16px; font-size: 0.85rem; } }
+        .toast-notification { position: fixed; top: 80px; right: 20px; padding: 12px 20px; border-radius: 8px; color: white; font-size: 0.9rem; font-weight: 500; z-index: 9999; box-shadow: 0 5px 15px rgba(0,0,0,0.2); opacity: 0; transform: translateX(100%); transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55); }
+        .toast-notification.show { opacity: 1; transform: translateX(0); }
+        .toast-notification.success { background: var(--button-success-bg); }
+        .toast-notification.error { background: var(--button-danger-bg); }
     </style>
 </head>
 <body>
@@ -160,10 +151,11 @@
             </div>
         </div>
 
+        <div id="divider-nav" class="grid-divider"></div>
+
         <div class="editor-pane">
             <button id="toggle-nav-btn" title="收合導覽">«</button>
             <button id="toggle-preview-btn" title="收合預覽">»</button>
-            
             <div class="button-container">
                 <button type="button" id="formatButton" onclick="formatCode()"><span>✨ 美化格式</span></button>
                 <button type="button" id="checkButton" onclick="checkSyntax()"><span>✓ 檢查語法</span></button>
@@ -172,6 +164,8 @@
             </div>
             <textarea id="htmlSource" placeholder="貼上您的 HTML 或 Markdown 原始碼..."></textarea>
         </div>
+
+        <div id="divider-preview" class="grid-divider"></div>
 
         <div class="preview-pane">
             <div class="button-container">
@@ -228,13 +222,68 @@
         var outlineTimeout;
 
         // --- 介面佈局與主題 ---
-        function toggleNavigation() { mainContent.classList.toggle('nav-collapsed'); const isCollapsed = mainContent.classList.contains('nav-collapsed'); toggleNavBtn.innerHTML = isCollapsed ? '»' : '«'; toggleNavBtn.title = isCollapsed ? '展開導覽' : '收合導覽'; setTimeout(() => { editor.refresh(); }, 310); }
-        function togglePreview() { mainContent.classList.toggle('preview-collapsed'); const isCollapsed = mainContent.classList.contains('preview-collapsed'); togglePreviewBtn.innerHTML = isCollapsed ? '«' : '»'; togglePreviewBtn.title = isCollapsed ? '展開預覽' : '收合預覽'; setTimeout(() => { editor.refresh(); }, 310); }
+        function toggleNavigation() { 
+            mainContent.classList.toggle('nav-collapsed'); 
+            const isCollapsed = mainContent.classList.contains('nav-collapsed'); 
+            toggleNavBtn.innerHTML = isCollapsed ? '»' : '«'; 
+            toggleNavBtn.title = isCollapsed ? '展開導覽' : '收合導覽'; 
+            setTimeout(() => { editor.refresh(); }, 100);
+        }
+        function togglePreview() { 
+            mainContent.classList.toggle('preview-collapsed'); 
+            const isCollapsed = mainContent.classList.contains('preview-collapsed'); 
+            togglePreviewBtn.innerHTML = isCollapsed ? '«' : '»'; 
+            togglePreviewBtn.title = isCollapsed ? '展開預覽' : '收合預覽'; 
+            setTimeout(() => { editor.refresh(); }, 100);
+        }
         toggleNavBtn.addEventListener('click', toggleNavigation);
         togglePreviewBtn.addEventListener('click', togglePreview);
         function applyTheme(themeName) { let cmTheme = (themeName === 'default-light') ? 'default' : themeName; document.body.dataset.theme = (themeName === 'default-light') ? '' : themeName; if(themeName === 'default-light') document.body.removeAttribute('data-theme'); editor.setOption('theme', cmTheme); }
+        
+        // --- 可拖曳調整窗格大小的功能 ---
+        function initResizablePanes() {
+            const dividers = document.querySelectorAll('.grid-divider');
+            
+            dividers.forEach(divider => {
+                divider.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    
+                    const prevPaneIndex = Array.from(divider.parentElement.children).indexOf(divider) - 1;
+                    const nextPaneIndex = Array.from(divider.parentElement.children).indexOf(divider) + 1;
+                    
+                    const prevPane = divider.parentElement.children[prevPaneIndex];
+                    const nextPane = divider.parentElement.children[nextPaneIndex];
 
-        // --- 文件導覽 (Outline) 相關功能 (完整版) ---
+                    if (!prevPane || !nextPane) return;
+
+                    const handleMouseMove = (moveEvent) => {
+                        let gridTemplateColumns = getComputedStyle(mainContent).gridTemplateColumns.split(' ');
+                        const prevPaneWidth = prevPane.offsetWidth;
+                        const newPrevPaneWidth = prevPaneWidth + moveEvent.movementX;
+                        
+                        const minWidth = 50; 
+                        if (newPrevPaneWidth < minWidth) return;
+
+                        gridTemplateColumns[prevPaneIndex] = `${newPrevPaneWidth}px`;
+                        gridTemplateColumns[nextPaneIndex] = '1fr';
+                        
+                        mainContent.style.gridTemplateColumns = gridTemplateColumns.join(' ');
+                        editor.refresh();
+                    };
+
+                    const handleMouseUp = () => {
+                        document.removeEventListener('mousemove', handleMouseMove);
+                        document.removeEventListener('mouseup', handleMouseUp);
+                        editor.refresh();
+                    };
+
+                    document.addEventListener('mousemove', handleMouseMove);
+                    document.addEventListener('mouseup', handleMouseUp);
+                });
+            });
+        }
+
+        // --- 文件導覽 (Outline) 相關功能 (完整未壓縮版) ---
         function updateOutline() {
             const container = document.getElementById('outline-container');
             const filterValue = document.getElementById('nav-filter').value;
@@ -340,7 +389,7 @@
         function triggerOutlineUpdate() { clearTimeout(outlineTimeout); outlineTimeout = setTimeout(updateOutline, 500); }
         editor.on("change", () => { triggerUpdate(); triggerOutlineUpdate(); clearHighlights(); });
 
-        // --- ✨ 主要功能區: 預覽與雙向互動 ---
+        // --- 主要功能區: 預覽與雙向互動 ---
         function updatePreview() {
             var isMarkdownMode = markdownToggle.checked;
             var rawContent = editor.getValue();
@@ -375,14 +424,12 @@
                 }
             };
         }
-
         function handlePreviewClick(e) {
             e.preventDefault();
             e.stopPropagation();
             const targetElement = e.target;
             findAndJumpToCode(targetElement);
         }
-
         function findAndJumpToCode(el) {
             const code = editor.getValue();
             const tagName = el.tagName.toLowerCase();
@@ -424,33 +471,27 @@
                 const startPos = editor.posFromIndex(matchResult.match.index);
                 const endTagRange = CodeMirror.findMatchingTag(editor, startPos, true);
                 const endPos = endTagRange && endTagRange.close ? endTagRange.close.to : { line: startPos.line, ch: editor.getLine(startPos.line).length };
-
                 clearHighlights();
                 const mark = editor.markText(startPos, endPos, { className: 'highlight-range' });
                 currentHighlightMarks.push(mark);
-                
                 editor.setCursor(startPos);
                 const t = editor.charCoords(startPos, "local").top;
                 const middleHeight = editor.getScrollerElement().offsetHeight / 2;
                 editor.scrollTo(null, t - middleHeight - 5);
                 editor.focus();
-
                 showNotification(`成功定位到 ${matchResult.type}: ${matchResult.value}`, 'success');
             } else {
                 showNotification(`找不到 <${tagName}> 元素的對應程式碼`, 'error');
             }
         }
-        
         function showNotification(message, type = 'success') {
             const notification = document.createElement('div');
             notification.className = `toast-notification ${type}`;
             notification.textContent = message;
             document.body.appendChild(notification);
-
             setTimeout(() => {
                 notification.classList.add('show');
             }, 10);
-
             setTimeout(() => {
                 notification.classList.remove('show');
                 notification.addEventListener('transitionend', () => {
@@ -470,6 +511,7 @@
         document.addEventListener("DOMContentLoaded", () => {
             triggerUpdate();
             triggerOutlineUpdate();
+            initResizablePanes();
         });
     </script>
 </body>
