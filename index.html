@@ -249,44 +249,161 @@
         togglePreviewBtn.addEventListener('click', togglePreview);
 
         function updateOutline() {
-            const container = document.getElementById('outline-container'); const filterValue = document.getElementById('nav-filter').value; container.innerHTML = '';
-            if (markdownToggle.checked) { container.innerHTML = '<p class="no-outline">導覽功能僅適用於 HTML 模式。</p>'; return; }
-            const doc = editor.getDoc(); const lineCount = doc.lineCount(); const fragment = document.createDocumentFragment(); let hasOutline = false; const processedLines = new Set();
-            for (let i = 0; i < lineCount; i++) {
-                if (processedLines.has(i)) continue;
-                const lineContent = doc.getLine(i);
-                if (filterValue === 'all' || filterValue === 'headings') {
-                    const headingMatch = lineContent.match(/<\s*(h[1-6])[^>]*>([^<]+)<\/\s*\1\s*>/i);
-                    if (headingMatch) {
-                        const level = headingMatch[1].toLowerCase(); const text = headingMatch[2].trim();
-                        if (text) { const link = createNavLink(text, i, i, `outline-${level}`); fragment.appendChild(link); hasOutline = true; processedLines.add(i); continue; }
-                    }
-                }
-                if (filterValue === 'all' || filterValue === 'ids') {
-                    const idMatch = lineContent.match(/id\s*=\s*["']([^"']+)["']/i);
-                    if (idMatch) { const id = idMatch[1]; const link = createNavLink(id, i, i, 'outline-id'); fragment.appendChild(link); hasOutline = true; processedLines.add(i); }
-                }
-                if (filterValue === 'all' || filterValue === 'functions') {
-                    const functionMatch = lineContent.match(/function\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\(/);
-                    const arrowFunctionMatch = lineContent.match(/(?:const|let|var)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*(?:\([^)]*\)|[a-zA-Z_$][a-zA-Z0-9_$]*)\s*=>/);
-                    if (functionMatch || arrowFunctionMatch) {
-                        const funcName = functionMatch ? functionMatch[1] : arrowFunctionMatch[1];
-                        let endLine = findFunctionEnd(doc, i);
-                        const link = createNavLink(funcName + '()', i, endLine, 'outline-function'); fragment.appendChild(link); hasOutline = true; processedLines.add(i);
-                    }
-                }
-                if (filterValue === 'all' || filterValue === 'classes') {
-                    const classMatch = lineContent.match(/class\s*=\s*["']([^"']+)["']/i);
-                    if (classMatch) {
-                        const classes = classMatch[1].split(/\s+/);
-                        classes.forEach(className => {
-                            if (className.trim()) { const link = createNavLink(className, i, i, 'outline-class'); fragment.appendChild(link); hasOutline = true; }
-                        });
-                        processedLines.add(i);
+            const container = document.getElementById('outline-container');
+            const filterValue = document.getElementById('nav-filter').value;
+            container.innerHTML = '';
+            
+            if (markdownToggle.checked) {
+                container.innerHTML = '<p class="no-outline">導覽功能僅適用於 HTML 模式。</p>';
+                return;
+            }
+            
+            const doc = editor.getDoc();
+            const fullContent = doc.getValue();
+            const fragment = document.createDocumentFragment();
+            let hasOutline = false;
+            
+            // 用於去重的 Set
+            const seenIds = new Set();
+            const seenFunctions = new Set();
+            const seenClasses = new Set();
+            
+            // 1. 處理標題 (支援跨行)
+            if (filterValue === 'all' || filterValue === 'headings') {
+                const headingRegex = /<\s*(h[1-6])(?:\s+[^>]*)?>(.+?)<\/\s*\1\s*>/gis;
+                let match;
+                while ((match = headingRegex.exec(fullContent)) !== null) {
+                    const level = match[1].toLowerCase();
+                    const text = match[2].replace(/<[^>]+>/g, '').trim(); // 移除內部標籤
+                    if (text) {
+                        const line = doc.posFromIndex(match.index).line;
+                        const link = createNavLink(text, line, line, `outline-${level}`);
+                        fragment.appendChild(link);
+                        hasOutline = true;
                     }
                 }
             }
-            if (hasOutline) { container.appendChild(fragment); } else { const filterText = { 'all': '可導覽的內容', 'headings': '標題', 'ids': 'ID 元素', 'functions': 'JavaScript 函數', 'classes': 'CSS 類別' }; container.innerHTML = `<p class="no-outline">目前文件中沒有${filterText[filterValue]}。</p>`; }
+            
+            // 2. 處理 ID (更精確，避免重複)
+            if (filterValue === 'all' || filterValue === 'ids') {
+                const idRegex = /\bid\s*=\s*["']([^"']+)["']/gi;
+                let match;
+                while ((match = idRegex.exec(fullContent)) !== null) {
+                    const id = match[1];
+                    if (!seenIds.has(id)) {
+                        seenIds.add(id);
+                        const line = doc.posFromIndex(match.index).line;
+                        const link = createNavLink(id, line, line, 'outline-id');
+                        fragment.appendChild(link);
+                        hasOutline = true;
+                    }
+                }
+            }
+            
+            // 3. 處理 JavaScript 函數和類別
+            if (filterValue === 'all' || filterValue === 'functions') {
+                // 一般函數聲明
+                const functionRegex = /function\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\(/g;
+                let match;
+                while ((match = functionRegex.exec(fullContent)) !== null) {
+                    const funcName = match[1];
+                    if (!seenFunctions.has(funcName)) {
+                        seenFunctions.add(funcName);
+                        const startLine = doc.posFromIndex(match.index).line;
+                        const endLine = findFunctionEnd(doc, startLine);
+                        const link = createNavLink(funcName + '()', startLine, endLine, 'outline-function');
+                        fragment.appendChild(link);
+                        hasOutline = true;
+                    }
+                }
+                
+                // 箭頭函數
+                const arrowRegex = /(?:const|let|var)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*(?:\([^)]*\)|[a-zA-Z_$][a-zA-Z0-9_$]*)\s*=>/g;
+                while ((match = arrowRegex.exec(fullContent)) !== null) {
+                    const funcName = match[1];
+                    if (!seenFunctions.has(funcName)) {
+                        seenFunctions.add(funcName);
+                        const startLine = doc.posFromIndex(match.index).line;
+                        const endLine = findFunctionEnd(doc, startLine);
+                        const link = createNavLink(funcName + '()', startLine, endLine, 'outline-function');
+                        fragment.appendChild(link);
+                        hasOutline = true;
+                    }
+                }
+                
+                // 類別定義
+                const classDefRegex = /class\s+([a-zA-Z_$][a-zA-Z0-9_$]*)/g;
+                while ((match = classDefRegex.exec(fullContent)) !== null) {
+                    const className = match[1];
+                    if (!seenFunctions.has(className)) {
+                        seenFunctions.add(className);
+                        const startLine = doc.posFromIndex(match.index).line;
+                        const endLine = findFunctionEnd(doc, startLine);
+                        const link = createNavLink('class ' + className, startLine, endLine, 'outline-function');
+                        fragment.appendChild(link);
+                        hasOutline = true;
+                    }
+                }
+                
+                // 物件方法
+                const methodRegex = /([a-zA-Z_$][a-zA-Z0-9_$]*)\s*:\s*function\s*\(/g;
+                while ((match = methodRegex.exec(fullContent)) !== null) {
+                    const methodName = match[1];
+                    if (!seenFunctions.has(methodName)) {
+                        seenFunctions.add(methodName);
+                        const startLine = doc.posFromIndex(match.index).line;
+                        const endLine = findFunctionEnd(doc, startLine);
+                        const link = createNavLink(methodName + '()', startLine, endLine, 'outline-function');
+                        fragment.appendChild(link);
+                        hasOutline = true;
+                    }
+                }
+            }
+            
+            // 4. 處理 CSS 類別 (HTML 屬性 + style 標籤中的定義)
+            if (filterValue === 'all' || filterValue === 'classes') {
+                // HTML class 屬性
+                const htmlClassRegex = /\bclass\s*=\s*["']([^"']+)["']/gi;
+                let match;
+                while ((match = htmlClassRegex.exec(fullContent)) !== null) {
+                    const classes = match[1].split(/\s+/);
+                    classes.forEach(className => {
+                        if (className.trim() && !seenClasses.has(className)) {
+                            seenClasses.add(className);
+                            const line = doc.posFromIndex(match.index).line;
+                            const link = createNavLink(className, line, line, 'outline-class');
+                            fragment.appendChild(link);
+                            hasOutline = true;
+                        }
+                    });
+                }
+                
+                // CSS 選擇器定義
+                const cssClassRegex = /\.([a-zA-Z_-][a-zA-Z0-9_-]*)\s*\{/g;
+                while ((match = cssClassRegex.exec(fullContent)) !== null) {
+                    const className = match[1];
+                    if (!seenClasses.has(className)) {
+                        seenClasses.add(className);
+                        const line = doc.posFromIndex(match.index).line;
+                        const link = createNavLink(className, line, line, 'outline-class');
+                        fragment.appendChild(link);
+                        hasOutline = true;
+                    }
+                }
+            }
+            
+            if (hasOutline) {
+                container.appendChild(fragment);
+            } else {
+                const filterText = {
+                    'all': '可導覽的內容',
+                    'headings': '標題',
+                    'ids': 'ID 元素',
+                    'functions': 'JavaScript 函數',
+                    'classes': 'CSS 類別'
+                };
+                container.innerHTML = `<p class="no-outline">目前文件中沒有${filterText[filterValue]}。</p>`;
+            }
         }
 
         function findFunctionEnd(doc, startLine) { let braceCount = 0; let foundStart = false; for (let i = startLine; i < doc.lineCount(); i++) { const line = doc.getLine(i); for (let char of line) { if (char === '{') { braceCount++; foundStart = true; } else if (char === '}') { braceCount--; if (foundStart && braceCount === 0) { return i; } } } } return startLine; }
