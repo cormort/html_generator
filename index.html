@@ -284,7 +284,7 @@
         }
 
         // --- 文件導覽 (Outline) 相關功能 (完整未壓縮版) ---
-function updateOutline() {
+        function updateOutline() {
             const container = document.getElementById('outline-container');
             const filterValue = document.getElementById('nav-filter').value;
             container.innerHTML = '';
@@ -304,23 +304,34 @@ function updateOutline() {
             const seenClasses = new Set();
             
             if (filterValue === 'all' || filterValue === 'headings') {
-                // 改進的標題偵測，處理跨行和屬性
+                // 改進的標題偵測，處理跨行、屬性和各種格式
                 const headingRegex = /<(h[1-6])(?:\s+[^>]*)?>(.+?)<\/\1>/gis;
                 let match;
+                
+                // 重置 lastIndex 確保從頭開始匹配
+                headingRegex.lastIndex = 0;
                 
                 while ((match = headingRegex.exec(fullContent)) !== null) {
                     const level = match[1].toLowerCase();
                     let text = match[2];
                     
-                    // 移除所有 HTML 標籤
+                    // 移除所有 HTML 標籤（包括屬性）
                     text = text.replace(/<[^>]+>/g, '');
-                    // 移除多餘的空白字符和換行
-                    text = text.replace(/\s+/g, ' ').trim();
+                    // 移除換行符
+                    text = text.replace(/[\r\n]+/g, ' ');
+                    // 移除多餘的空白字符
+                    text = text.replace(/\s+/g, ' ');
+                    // 去除前後空白
+                    text = text.trim();
                     
                     // 只有當文字不為空且長度大於 0 時才添加
                     if (text && text.length > 0) {
-                        const line = doc.posFromIndex(match.index).line;
-                        const link = createNavLink(text, line, line, `outline-${level}`);
+                        // 計算開始和結束行
+                        const startLine = doc.posFromIndex(match.index).line;
+                        const endIndex = match.index + match[0].length - 1;
+                        const endLine = doc.posFromIndex(endIndex).line;
+                        
+                        const link = createNavLink(text, startLine, endLine, `outline-${level}`);
                         fragment.appendChild(link);
                         hasOutline = true;
                     }
