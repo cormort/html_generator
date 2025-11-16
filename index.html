@@ -304,18 +304,31 @@
             const seenClasses = new Set();
             
             if (filterValue === 'all' || filterValue === 'headings') {
-                const headingRegex = /<\s*(h[1-6])(?:\s+[^>]*)?>(.+?)<\/\s*\1\s*>/gis;
+                // 改進的標題偵測，使用非貪婪匹配和更嚴格的結束標籤匹配
+                const headingRegex = /<(h[1-6])(?:\s+[^>]*)?>(.+?)<\/\1>/gis;
                 let match;
+                const matches = [];
+                
+                // 先收集所有匹配
                 while ((match = headingRegex.exec(fullContent)) !== null) {
-                    const level = match[1].toLowerCase();
-                    const text = match[2].replace(/<[^>]+>/g, '').trim();
-                    if (text) {
-                        const line = doc.posFromIndex(match.index).line;
-                        const link = createNavLink(text, line, line, `outline-${level}`);
+                    matches.push({
+                        level: match[1].toLowerCase(),
+                        text: match[2],
+                        index: match.index
+                    });
+                }
+                
+                // 處理每個匹配
+                matches.forEach(item => {
+                    // 移除內部 HTML 標籤並清理文字
+                    const text = item.text.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+                    if (text && text.length > 0) {
+                        const line = doc.posFromIndex(item.index).line;
+                        const link = createNavLink(text, line, line, `outline-${item.level}`);
                         fragment.appendChild(link);
                         hasOutline = true;
                     }
-                }
+                });
             }
             
             if (filterValue === 'all' || filterValue === 'ids') {
