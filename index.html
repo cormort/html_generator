@@ -2,8 +2,8 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HTML Editor Ultimate (高亮同步版)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>HTML Editor Ultimate (全區域捲動版)</title>
 
     <!-- 樣式庫 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.css" crossorigin="anonymous">
@@ -46,16 +46,23 @@
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body { height: 100%; overflow: hidden; }
+        
+        /* 1. 確保視窗高度固定，禁止外層捲動 */
+        html, body { 
+            height: 100%; 
+            width: 100%;
+            overflow: hidden; 
+        }
+        
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: var(--bg-color);
             color: var(--text-color);
-            display: flex;
-            flex-direction: column;
+            display: flex;           
+            flex-direction: column;  
         }
 
-        /* Header */
+        /* 2. Header 固定高度 */
         .header-bar {
             padding: 0 20px;
             height: 50px;
@@ -63,20 +70,22 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-shrink: 0;
+            flex: 0 0 auto; /* 禁止縮放 */
             box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-            z-index: 10;
+            z-index: 1000;
+            position: relative;
         }
         .header-bar h1 { font-size: 1.1rem; color: white; font-weight: 600; }
         .controls { display: flex; gap: 10px; align-items: center; }
         select { padding: 4px 8px; border-radius: 4px; border: none; font-size: 0.85rem; }
 
-        /* Main Layout */
+        /* 3. 主內容區：填滿剩餘高度 */
         .main-content {
             display: grid;
             grid-template-columns: 250px 4px 1fr 4px 1fr;
-            height: calc(100% - 50px);
+            flex: 1; 
             width: 100%;
+            overflow: hidden; /* 關鍵：防止網格本身撐開 */
             position: relative;
             transition: grid-template-columns 0.3s ease;
         }
@@ -85,8 +94,17 @@
         .resizer { background: var(--nav-border-color); cursor: col-resize; z-index: 5; transition: background 0.2s; }
         .resizer:hover { background: var(--accent-color); }
 
-        /* Panes */
-        .pane { background: var(--container-bg); display: flex; flex-direction: column; overflow: hidden; position: relative; min-width: 0; }
+        /* 4. 窗格容器：Flex Column 佈局 */
+        .pane { 
+            background: var(--container-bg); 
+            display: flex; 
+            flex-direction: column; 
+            height: 100%;      /* 填滿網格高度 */
+            min-height: 0;     /* 關鍵：允許 Flex 子元素縮小到 0，防止溢出 */
+            overflow: hidden;  /* 隱藏溢出，交給子元素捲動 */
+            position: relative; 
+        }
+
         .pane-header {
             padding: 8px 12px;
             border-bottom: 1px solid var(--nav-border-color);
@@ -96,6 +114,7 @@
             background: rgba(0,0,0,0.02);
             gap: 5px;
             white-space: nowrap;
+            flex: 0 0 auto; /* 標題列固定高度 */
         }
         .pane-title { font-size: 0.85rem; font-weight: bold; opacity: 0.8; }
 
@@ -116,8 +135,13 @@
         /* Navigation Filter */
         #nav-filter { flex-grow: 1; max-width: 120px; padding: 2px 5px; border: 1px solid var(--nav-border-color); border-radius: 4px; font-size: 0.8rem; background: var(--container-bg); color: var(--text-color); }
 
-        /* Navigation List */
-        #outline-container { flex: 1; overflow-y: auto; padding: 5px 0; }
+        /* 5. 左側導覽列：獨立捲動 */
+        #outline-container { 
+            flex: 1;           /* 填滿剩餘空間 */
+            overflow-y: auto;  /* 允許垂直捲動 */
+            padding: 5px 0; 
+            min-height: 0;     /* 防止 Flex 溢出 */
+        }
         #outline-container a { display: block; padding: 6px 15px; text-decoration: none; color: var(--text-color); font-size: 0.85rem; border-left: 3px solid transparent; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         #outline-container a:hover { background: rgba(128,128,128,0.1); border-left-color: var(--accent-color); }
         .outline-h1 { font-weight: bold; }
@@ -126,9 +150,25 @@
         .outline-id { color: var(--accent-color) !important; font-family: monospace; padding-left: 15px !important; }
         .outline-class { color: #d97706 !important; font-family: monospace; padding-left: 15px !important; }
 
-        /* Editor & Preview */
-        .CodeMirror { flex: 1; height: auto; font-size: 14px; font-family: 'Fira Code', monospace; }
-        iframe { flex: 1; border: none; background: white; width: 100%; height: 100%; display: block; }
+        /* 6. 中間編輯器：獨立捲動 */
+        .CodeMirror { 
+            flex: 1;           /* 填滿剩餘空間 */
+            height: auto !important; /* 覆蓋預設高度 */
+            min-height: 0;     /* 防止 Flex 溢出 */
+            font-size: 14px; 
+            font-family: 'Fira Code', monospace; 
+        }
+        
+        /* 7. 右側預覽：獨立捲動 */
+        iframe { 
+            flex: 1;           /* 填滿剩餘空間 */
+            border: none; 
+            background: white; 
+            width: 100%; 
+            height: 100%;      /* 確保 iframe 撐滿容器 */
+            display: block; 
+            min-height: 0;     /* 防止 Flex 溢出 */
+        }
 
         /* Buttons */
         .btn-group { display: flex; gap: 5px; }
@@ -143,15 +183,25 @@
         /* Highlighting */
         .CodeMirror-selected { background: #d9d9d9 !important; }
         .CodeMirror-focused .CodeMirror-selected { background: #d7d4f0 !important; }
-        /* 這是高亮的關鍵樣式 */
         .highlight-line { background-color: rgba(255, 255, 0, 0.4) !important; }
 
-        /* RWD */
+        /* RWD: 手機版設定 */
         @media (max-width: 768px) {
-            .main-content { display: flex; flex-direction: column; }
+            .main-content { 
+                display: flex; 
+                flex-direction: column; 
+                overflow-y: auto; 
+                -webkit-overflow-scrolling: touch;
+            }
             .resizer, .toggle-btn { display: none; }
-            .pane { height: 33%; width: 100%; }
+            .pane { 
+                height: auto; 
+                width: 100%; 
+                flex-shrink: 0; 
+            }
             #pane-nav { display: none; }
+            #pane-editor { height: 50vh; }
+            #pane-preview { height: 50vh; border-top: 4px solid var(--nav-border-color); }
         }
     </style>
 </head>
@@ -244,7 +294,7 @@
         let updateTimer;
         let currentMark = null;
 
-        // 預設內容
+        // 預設內容 (加長內容以測試捲動)
         const defaultHTML = `<!DOCTYPE html>
 <html>
 <head>
@@ -259,6 +309,7 @@
         .box:hover { transform: scale(1.02); }
         h1 { margin: 0; }
         button { margin-top: 20px; padding: 10px 20px; cursor: pointer; }
+        .content-area { margin-top: 30px; text-align: left; line-height: 1.8; }
     </style>
 </head>
 <body>
@@ -267,30 +318,38 @@
         <p>點擊這裡的任何元素，左側會自動跳轉到對應程式碼。</p>
         <button onclick="alert('JS 運作正常！')">點擊測試 JS</button>
     </div>
+
+    <div class="content-area">
+        <h2 id="section-1">測試捲動區域 1</h2>
+        <p>這是一段很長的內容，用來測試編輯器和預覽視窗的捲動功能是否正常。當內容超過視窗高度時，應該要出現捲軸。</p>
+        <ul>
+            <li>項目 1</li><li>項目 2</li><li>項目 3</li><li>項目 4</li><li>項目 5</li>
+        </ul>
+        
+        <h2 id="section-2">測試捲動區域 2</h2>
+        <p>繼續增加內容以確保捲軸出現...</p>
+        <ul>
+            <li>項目 6</li><li>項目 7</li><li>項目 8</li><li>項目 9</li><li>項目 10</li>
+        </ul>
+
+        <h2 id="section-3">測試捲動區域 3</h2>
+        <p>更多內容...</p>
+        <ul>
+            <li>項目 11</li><li>項目 12</li><li>項目 13</li><li>項目 14</li><li>項目 15</li>
+        </ul>
+        <p>頁面底部。</p>
+    </div>
 </body>
 </html>`;
 
-        // --- 核心功能：高亮並跳轉 (共用函式) ---
+        // --- 核心功能：高亮並跳轉 ---
         function highlightAndJump(line) {
-            // 1. 清除舊的高亮
             if (currentMark) currentMark.clear();
-            
-            // 2. 游標跳轉與捲動
             editor.setCursor(line, 0);
-            editor.scrollIntoView({line: line, ch: 0}, 200); // 200px 的垂直邊距
+            editor.scrollIntoView({line: line, ch: 0}, 200);
             editor.focus();
-
-            // 3. 設定新的高亮 (整行)
-            currentMark = editor.markText(
-                {line: line, ch: 0},
-                {line: line + 1, ch: 0},
-                {className: "highlight-line"}
-            );
-
-            // 4. 1.5秒後自動消失
-            setTimeout(() => {
-                if (currentMark) currentMark.clear();
-            }, 1500);
+            currentMark = editor.markText({line: line, ch: 0}, {line: line + 1, ch: 0}, {className: "highlight-line"});
+            setTimeout(() => { if (currentMark) currentMark.clear(); }, 1500);
         }
 
         // --- 收合功能 ---
@@ -330,7 +389,7 @@
             previewFrame.srcdoc = content;
         }
 
-        // --- 雙向同步 (預覽 -> 編輯器) ---
+        // --- 雙向同步 ---
         window.addEventListener('message', (e) => {
             if (e.data.type === 'sync') {
                 const { tag, id, text } = e.data;
@@ -348,15 +407,12 @@
                     if (!bestMatch) bestMatch = { from, to };
                     if (isMatch) { bestMatch = { from, to }; break; }
                 }
-                if (bestMatch) {
-                    // 呼叫共用的高亮函式
-                    highlightAndJump(bestMatch.from.line);
-                    showToast(`定位到 <${tag}>`);
-                } else { showToast(`找不到 <${tag}>`); }
+                if (bestMatch) { highlightAndJump(bestMatch.from.line); showToast(`定位到 <${tag}>`); }
+                else { showToast(`找不到 <${tag}>`); }
             }
         });
 
-        // --- 導覽列 (導覽 -> 編輯器) ---
+        // --- 導覽列 ---
         function updateOutline() {
             const container = document.getElementById('outline-container');
             const filter = document.getElementById('nav-filter').value;
@@ -380,11 +436,7 @@
                 } else if ((filter === 'all' || filter === 'classes') && (match = line.match(reClass))) {
                     text = '.' + match[1].split(' ')[0]; className = 'outline-class'; shouldAdd = true;
                 }
-                if (shouldAdd && text) { 
-                    hasItem = true; 
-                    // 這裡改為呼叫 highlightAndJump
-                    html += `<a class="${className}" onclick="highlightAndJump(${index})">${text}</a>`; 
-                }
+                if (shouldAdd && text) { hasItem = true; html += `<a class="${className}" onclick="highlightAndJump(${index})">${text}</a>`; }
             });
             container.innerHTML = hasItem ? html : '<div style="padding:10px;color:#888;text-align:center">無符合項目</div>';
         }
@@ -415,7 +467,13 @@
             });
         });
 
-        loadFromLocal();
+        window.addEventListener('load', () => {
+            loadFromLocal();
+            setTimeout(() => {
+                editor.refresh();
+                updatePreview();
+            }, 100);
+        });
     </script>
 </body>
 </html>
