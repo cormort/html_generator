@@ -3,618 +3,419 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HTML 生成器 (專業版) - 含 Markdown</title>
+    <title>HTML Editor Ultimate (高亮同步版)</title>
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/theme/material.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/theme/dracula.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/lint/lint.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/fold/foldgutter.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/dialog/dialog.css">
+    <!-- 樣式庫 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.css" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/theme/material.min.css" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/theme/dracula.min.css" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/lint/lint.css" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/fold/foldgutter.css" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/dialog/dialog.css" crossorigin="anonymous">
 
     <style>
-        :root { --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%); --bg-color: #f5f7fa; --text-color: #2d3748; --container-bg: #ffffff; --container-shadow: 0 10px 40px rgba(0, 0, 0, 0.1); --heading-color: #1a202c; --button-primary-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%); --button-primary-hover: linear-gradient(135deg, #5568d3 0%, #653a8b 100%); --button-success-bg: linear-gradient(135deg, #48bb78 0%, #38a169 100%); --button-success-hover: linear-gradient(135deg, #38a169 0%, #2f855a 100%); --button-danger-bg: linear-gradient(135deg, #fc8181 0%, #f56565 100%); --button-danger-hover: linear-gradient(135deg, #f56565 0%, #e53e3e 100%); --button-info-bg: linear-gradient(135deg, #4299e1 0%, #3182ce 100%); --cm-border-color: #e2e8f0; --cm-focus-border: #667eea; --cm-focus-shadow: rgba(102, 126, 234, 0.3); --nav-border-color: #e2e8f0; --nav-link-color: #4a5568; --nav-link-hover-bg: #edf2f7; --nav-link-active-bg: #e6fffa; --nav-link-id-color: #667eea; --accent-color: #667eea; --toggle-btn-bg: #ffffff; --toggle-btn-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); }
-        [data-theme="material"] { --bg-gradient: linear-gradient(135deg, #1a237e 0%, #0d47a1 100%); --bg-color: #1e1e1e; --text-color: #e0e0e0; --container-bg: #2d2d2d; --container-shadow: 0 10px 40px rgba(0, 0, 0, 0.5); --heading-color: #ffffff; --button-primary-bg: linear-gradient(135deg, #26c6da 0%, #00acc1 100%); --button-primary-hover: linear-gradient(135deg, #00acc1 0%, #0097a7 100%); --button-success-bg: linear-gradient(135deg, #66bb6a 0%, #43a047 100%); --button-success-hover: linear-gradient(135deg, #43a047 0%, #2e7d32 100%); --button-danger-bg: linear-gradient(135deg, #ef5350 0%, #e53935 100%); --button-danger-hover: linear-gradient(135deg, #e53935 0%, #c62828 100%); --button-info-bg: linear-gradient(135deg, #5c6bc0 0%, #3949ab 100%); --cm-border-color: #424242; --cm-focus-border: #26c6da; --nav-link-color: #b0bec5; --nav-link-hover-bg: #424242; --nav-link-active-bg: #1a237e; --nav-link-id-color: #26c6da; --accent-color: #26c6da; --toggle-btn-bg: #424242; --toggle-btn-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); }
-        [data-theme="dracula"] { --bg-gradient: linear-gradient(135deg, #6272a4 0%, #44475a 100%); --bg-color: #282a36; --text-color: #f8f8f2; --container-bg: #44475a; --container-shadow: 0 10px 40px rgba(0, 0, 0, 0.5); --heading-color: #bd93f9; --button-primary-bg: linear-gradient(135deg, #bd93f9 0%, #9580d6 100%); --button-primary-hover: linear-gradient(135deg, #9580d6 0%, #7d6dbd 100%); --button-success-bg: linear-gradient(135deg, #50fa7b 0%, #3ee76a 100%); --button-success-hover: linear-gradient(135deg, #3ee76a 0%, #2cd459 100%); --button-danger-bg: linear-gradient(135deg, #ff5555 0%, #ff3838 100%); --button-danger-hover: linear-gradient(135deg, #ff3838 0%, #ff1b1b 100%); --button-info-bg: linear-gradient(135deg, #8be9fd 0%, #6fe9fb 100%); --cm-border-color: #6272a4; --cm-focus-border: #bd93f9; --nav-link-color: #f8f8f2; --nav-link-hover-bg: #6272a4; --nav-link-active-bg: #44475a; --nav-link-id-color: #8be9fd; --accent-color: #bd93f9; --toggle-btn-bg: #6272a4; --toggle-btn-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); }
+        /* --- CSS 變數 --- */
+        :root {
+            --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --bg-color: #f5f7fa;
+            --text-color: #2d3748;
+            --container-bg: #ffffff;
+            --nav-border-color: #e2e8f0;
+            --accent-color: #667eea;
+            --button-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        [data-theme="material"] {
+            --bg-gradient: linear-gradient(135deg, #1a237e 0%, #0d47a1 100%);
+            --bg-color: #1e1e1e;
+            --text-color: #e0e0e0;
+            --container-bg: #2d2d2d;
+            --nav-border-color: #424242;
+            --accent-color: #26c6da;
+            --button-bg: linear-gradient(135deg, #26c6da 0%, #00acc1 100%);
+        }
+
+        [data-theme="dracula"] {
+            --bg-gradient: linear-gradient(135deg, #6272a4 0%, #44475a 100%);
+            --bg-color: #282a36;
+            --text-color: #f8f8f2;
+            --container-bg: #44475a;
+            --nav-border-color: #6272a4;
+            --accent-color: #bd93f9;
+            --button-bg: linear-gradient(135deg, #bd93f9 0%, #9580d6 100%);
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body { height: 100%; overflow: hidden; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif; background: var(--bg-color); color: var(--text-color); line-height: 1.6; display: flex; flex-direction: column; transition: background-color 0.3s, color 0.3s; }
-        .header-bar { padding: 16px 24px; background: var(--bg-gradient); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15); display: flex; justify-content: space-between; align-items: center; z-index: 10; flex-shrink: 0; }
-        .header-bar h1 { font-size: 1.5rem; color: white; margin: 0; font-weight: 600; letter-spacing: 0.5px; display: flex; align-items: center; gap: 10px; }
-        .header-bar h1::before { content: '⚡'; font-size: 1.8rem; }
-        .theme-selector-container { display: flex; align-items: center; gap: 10px; }
-        .theme-selector-container label { color: white; font-weight: 500; font-size: 0.9rem; }
-        #theme-select { padding: 8px 16px; border-radius: 8px; border: 2px solid rgba(255, 255, 255, 0.3); background-color: rgba(255, 255, 255, 0.15); color: white; font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: all 0.3s ease; backdrop-filter: blur(10px); }
-        #theme-select:hover { background-color: rgba(255, 255, 255, 0.25); border-color: rgba(255, 255, 255, 0.5); }
-        #theme-select option { background-color: var(--container-bg); color: var(--text-color); }
-        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header-bar {
+            padding: 0 20px;
+            height: 50px;
+            background: var(--bg-gradient);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 10;
+        }
+        .header-bar h1 { font-size: 1.1rem; color: white; font-weight: 600; }
+        .controls { display: flex; gap: 10px; align-items: center; }
+        select { padding: 4px 8px; border-radius: 4px; border: none; font-size: 0.85rem; }
+
+        /* Main Layout */
         .main-content {
             display: grid;
-            grid-template-columns: 280px 5px 1fr 5px 1fr;
-            flex-grow: 1;
-            overflow: hidden;
-            height: 100%;
+            grid-template-columns: 250px 4px 1fr 4px 1fr;
+            height: calc(100% - 50px);
+            width: 100%;
+            position: relative;
+            transition: grid-template-columns 0.3s ease;
         }
-        
-        .grid-divider {
-            background-color: var(--nav-border-color);
-            cursor: col-resize;
-            transition: background-color 0.2s ease;
+
+        /* Resizer */
+        .resizer { background: var(--nav-border-color); cursor: col-resize; z-index: 5; transition: background 0.2s; }
+        .resizer:hover { background: var(--accent-color); }
+
+        /* Panes */
+        .pane { background: var(--container-bg); display: flex; flex-direction: column; overflow: hidden; position: relative; min-width: 0; }
+        .pane-header {
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--nav-border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0,0,0,0.02);
+            gap: 5px;
+            white-space: nowrap;
         }
-        .grid-divider:hover {
-            background-color: var(--accent-color);
+        .pane-title { font-size: 0.85rem; font-weight: bold; opacity: 0.8; }
+
+        /* Toggle Buttons */
+        .toggle-btn {
+            position: absolute; top: 50%; width: 24px; height: 24px; border-radius: 50%;
+            background: var(--container-bg); border: 1px solid var(--accent-color);
+            color: var(--accent-color); display: flex; align-items: center; justify-content: center;
+            cursor: pointer; z-index: 20; font-weight: bold; line-height: 1;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15); transition: all 0.2s; user-select: none;
         }
+        .toggle-btn:hover { background: var(--accent-color); color: white; transform: scale(1.1); }
+        #btn-toggle-nav { left: 0; transform: translate(-50%, -50%); }
+        #btn-toggle-preview { right: 0; transform: translate(50%, -50%); }
+        #btn-toggle-nav:hover { transform: translate(-50%, -50%) scale(1.1); }
+        #btn-toggle-preview:hover { transform: translate(50%, -50%) scale(1.1); }
+
+        /* Navigation Filter */
+        #nav-filter { flex-grow: 1; max-width: 120px; padding: 2px 5px; border: 1px solid var(--nav-border-color); border-radius: 4px; font-size: 0.8rem; background: var(--container-bg); color: var(--text-color); }
+
+        /* Navigation List */
+        #outline-container { flex: 1; overflow-y: auto; padding: 5px 0; }
+        #outline-container a { display: block; padding: 6px 15px; text-decoration: none; color: var(--text-color); font-size: 0.85rem; border-left: 3px solid transparent; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        #outline-container a:hover { background: rgba(128,128,128,0.1); border-left-color: var(--accent-color); }
+        .outline-h1 { font-weight: bold; }
+        .outline-h2 { padding-left: 25px !important; }
+        .outline-h3 { padding-left: 35px !important; opacity: 0.8; }
+        .outline-id { color: var(--accent-color) !important; font-family: monospace; padding-left: 15px !important; }
+        .outline-class { color: #d97706 !important; font-family: monospace; padding-left: 15px !important; }
+
+        /* Editor & Preview */
+        .CodeMirror { flex: 1; height: auto; font-size: 14px; font-family: 'Fira Code', monospace; }
+        iframe { flex: 1; border: none; background: white; width: 100%; height: 100%; display: block; }
+
+        /* Buttons */
+        .btn-group { display: flex; gap: 5px; }
+        button.action-btn { padding: 4px 10px; border: none; border-radius: 4px; background: var(--button-bg); color: white; font-size: 0.8rem; cursor: pointer; opacity: 0.9; transition: opacity 0.2s; }
+        button.action-btn:hover { opacity: 1; }
+        button.btn-danger { background: #e53e3e; }
+
+        /* Toast */
+        .toast { position: fixed; bottom: 20px; right: 20px; padding: 10px 20px; background: #48bb78; color: white; border-radius: 4px; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 100; }
+        .toast.show { opacity: 1; }
         
-        .main-content.nav-collapsed { grid-template-columns: 0px 0px 1fr 5px 1fr !important; }
-        .main-content.preview-collapsed { grid-template-columns: 280px 5px 1fr 0px 0px !important; }
-        .main-content.nav-collapsed.preview-collapsed { grid-template-columns: 0px 0px 1fr 0px 0px !important; }
-        
-        .editor-pane, .preview-pane, .navigation-pane { height: 100%; display: flex; flex-direction: column; overflow: hidden; background: var(--container-bg); min-width: 0; }
-        .editor-pane { position: relative; }
-        .preview-pane { position: relative; }
-        .navigation-pane { background: var(--container-bg); box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05); }
-        .navigation-pane h2 { font-size: 1rem; padding: 16px; margin: 0; color: var(--heading-color); border-bottom: 2px solid var(--nav-border-color); text-align: center; font-weight: 600; letter-spacing: 0.5px; background: var(--bg-color); }
-        .nav-filter-container { padding: 12px; background: var(--bg-color); border-bottom: 1px solid var(--nav-border-color); }
-        #nav-filter { width: 100%; padding: 10px; border: 2px solid var(--cm-border-color); border-radius: 8px; background: var(--container-bg); color: var(--text-color); font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: all 0.3s ease; }
-        #nav-filter:hover { border-color: var(--accent-color); }
-        #nav-filter:focus { outline: none; border-color: var(--accent-color); box-shadow: 0 0 0 3px var(--cm-focus-shadow); }
-        #outline-container { flex-grow: 1; overflow-y: auto; padding: 8px 0; }
-        #outline-container::-webkit-scrollbar { width: 6px; }
-        #outline-container::-webkit-scrollbar-track { background: transparent; }
-        #outline-container::-webkit-scrollbar-thumb { background: var(--cm-border-color); border-radius: 3px; }
-        #outline-container::-webkit-scrollbar-thumb:hover { background: var(--nav-link-color); }
-        #outline-container a { display: block; padding: 10px 16px; text-decoration: none; color: var(--nav-link-color); font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: all 0.2s ease; cursor: pointer; border-left: 3px solid transparent; margin: 2px 0; }
-        #outline-container a:hover { background-color: var(--nav-link-hover-bg); border-left-color: var(--accent-color); padding-left: 20px; }
-        #outline-container a:active { background-color: var(--nav-link-active-bg); }
-        .outline-h1 { padding-left: 16px !important; font-weight: 600; font-size: 0.95rem; }
-        .outline-h2 { padding-left: 28px !important; font-size: 0.9rem; }
-        .outline-h3 { padding-left: 40px !important; font-size: 0.875rem; }
-        .outline-h4 { padding-left: 52px !important; font-size: 0.85rem; }
-        .outline-h5 { padding-left: 64px !important; font-size: 0.85rem; }
-        .outline-h6 { padding-left: 76px !important; font-size: 0.85rem; }
-        .outline-id { padding-left: 28px !important; color: var(--nav-link-id-color) !important; font-style: italic; font-size: 0.875rem; }
-        .outline-id::before { content: '#'; margin-right: 6px; font-weight: 600; }
-        .outline-function { padding-left: 28px !important; color: #f59e0b !important; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.875rem; }
-        .outline-function::before { content: 'ƒ'; margin-right: 6px; font-weight: bold; }
-        .outline-class { padding-left: 28px !important; color: #8b5cf6 !important; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.875rem; }
-        .outline-class::before { content: '.'; margin-right: 4px; font-weight: bold; }
-        .CodeMirror .highlight-range { background-color: rgba(102, 126, 234, 0.2); }
-        [data-theme="material"] .CodeMirror .highlight-range { background-color: rgba(38, 198, 218, 0.25); }
-        [data-theme="dracula"] .CodeMirror .highlight-range { background-color: rgba(189, 147, 249, 0.25); }
-        .no-outline { padding: 32px 20px; color: #999; font-style: italic; font-size: 0.9rem; text-align: center; line-height: 1.8; }
-        #toggle-nav-btn { position: absolute; top: 12px; left: -18px; z-index: 20; background: var(--toggle-btn-bg); color: var(--accent-color); border: 2px solid var(--accent-color); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: bold; line-height: 1; padding: 0; cursor: pointer; box-shadow: var(--toggle-btn-shadow); transition: all 0.3s ease; }
-        #toggle-nav-btn:hover { transform: scale(1.1); box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4); background: var(--accent-color); color: white; }
-        #toggle-nav-btn:active { transform: scale(0.95); }
-        .main-content.nav-collapsed #toggle-nav-btn { left: 8px; }
-        #toggle-preview-btn { position: absolute; top: 12px; right: -18px; z-index: 20; background: var(--toggle-btn-bg); color: var(--accent-color); border: 2px solid var(--accent-color); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: bold; line-height: 1; padding: 0; cursor: pointer; box-shadow: var(--toggle-btn-shadow); transition: all 0.3s ease; }
-        #toggle-preview-btn:hover { transform: scale(1.1); box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4); background: var(--accent-color); color: white; }
-        #toggle-preview-btn:active { transform: scale(0.95); }
-        .main-content.preview-collapsed #toggle-preview-btn { right: 8px; }
-        .button-container { padding: 12px 16px; background: var(--bg-color); border-bottom: 1px solid var(--nav-border-color); display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 8px; }
-        button { padding: 10px 20px; font-size: 0.9rem; font-weight: 500; cursor: pointer; margin: 0; border: none; border-radius: 8px; color: white; transition: all 0.2s ease; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); position: relative; overflow: hidden; }
-        button::before { content: ''; position: absolute; top: 50%; left: 50%; width: 0; height: 0; border-radius: 50%; background: rgba(255, 255, 255, 0.3); transform: translate(-50%, -50%); transition: width 0.6s, height 0.6s; }
-        button:hover::before { width: 300px; height: 300px; }
-        button span { position: relative; z-index: 1; }
-        .CodeMirror { border: none; height: auto; font-size: 1rem; flex-grow: 1; }
-        #preview-frame { width: 100%; height: 100%; border: none; background-color: #ffffff; flex-grow: 1; }
-        button:not(#clearButton):not(#checkButton):not(#formatButton) { background: var(--button-primary-bg); }
-        button:not(#clearButton):not(#checkButton):not(#formatButton):hover { background: var(--button-primary-hover); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4); }
-        #checkButton { background: var(--button-success-bg); }
-        #checkButton:hover { background: var(--button-success-hover); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(72, 187, 120, 0.4); }
-        #clearButton { background: var(--button-danger-bg); }
-        #clearButton:hover { background: var(--button-danger-hover); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(252, 129, 129, 0.4); }
-        button:active { transform: translateY(0px); }
-        #formatButton { background: var(--button-info-bg); }
-        #formatButton:hover { background: linear-gradient(135deg, #3182ce 0%, #2c5282 100%); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(66, 153, 225, 0.4); }
-        .markdown-toggle-label { display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background-color 0.2s; }
-        .markdown-toggle-label:hover { background-color: var(--nav-link-hover-bg); }
-        #markdown-toggle { width: 18px; height: 18px; cursor: pointer; accent-color: var(--accent-color); }
-        .preview-label { font-weight: 600; color: var(--heading-color); font-size: 1rem; letter-spacing: 0.5px; }
-        .CodeMirror-dialog { background-color: var(--container-bg); color: var(--text-color); border-color: var(--cm-border-color); padding: 8px; box-shadow: var(--container-shadow); border-radius: 8px; }
-        .CodeMirror-dialog input { background-color: var(--bg-color); color: var(--text-color); border: 2px solid var(--cm-border-color); padding: 8px; border-radius: 6px; transition: border-color 0.3s; }
-        .CodeMirror-dialog input:focus { outline: none; border-color: var(--accent-color); box-shadow: 0 0 0 3px var(--cm-focus-shadow); }
-        .CodeMirror-search-field { width: 20em; }
-        .toast-notification { position: fixed; top: 80px; right: 20px; padding: 12px 20px; border-radius: 8px; color: white; font-size: 0.9rem; font-weight: 500; z-index: 9999; box-shadow: 0 5px 15px rgba(0,0,0,0.2); opacity: 0; transform: translateX(100%); transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55); }
-        .toast-notification.show { opacity: 1; transform: translateX(0); }
-        .toast-notification.success { background: var(--button-success-bg); }
-        .toast-notification.error { background: var(--button-danger-bg); }
+        /* Highlighting */
+        .CodeMirror-selected { background: #d9d9d9 !important; }
+        .CodeMirror-focused .CodeMirror-selected { background: #d7d4f0 !important; }
+        /* 這是高亮的關鍵樣式 */
+        .highlight-line { background-color: rgba(255, 255, 0, 0.4) !important; }
+
+        /* RWD */
+        @media (max-width: 768px) {
+            .main-content { display: flex; flex-direction: column; }
+            .resizer, .toggle-btn { display: none; }
+            .pane { height: 33%; width: 100%; }
+            #pane-nav { display: none; }
+        }
     </style>
 </head>
 <body>
 
     <div class="header-bar">
-        <h1>HTML / Markdown 編輯器</h1>
-        <div class="theme-selector-container">
-            <label for="theme-select">主題</label>
-            <select id="theme-select" onchange="applyTheme(this.value)">
-                <option value="default-light">淺色模式</option>
-                <option value="material">Material Dark</option>
+        <h1>HTML Editor <small>Ultimate</small></h1>
+        <div class="controls">
+            <div id="save-status" style="font-size: 0.8rem; opacity: 0.8;"></div>
+            <select onchange="setTheme(this.value)">
+                <option value="default">Light</option>
+                <option value="material">Material</option>
                 <option value="dracula">Dracula</option>
             </select>
         </div>
     </div>
 
-    <div class="main-content">
-        <div class="navigation-pane">
-            <h2>📑 文件導覽</h2>
-            <div class="nav-filter-container">
+    <div class="main-content" id="grid">
+        <!-- 導覽窗格 -->
+        <div class="pane" id="pane-nav">
+            <div class="pane-header">
+                <span class="pane-title">結構</span>
                 <select id="nav-filter" onchange="updateOutline()">
-                    <option value="all">🔍 全部</option>
-                    <option value="headings">📝 標題 (H1-H6)</option>
-                    <option value="ids">🔖 ID 元素</option>
-                    <option value="functions">⚙️ JS 函數</option>
-                    <option value="classes">🎨 CSS 類別</option>
+                    <option value="all">全部</option>
+                    <option value="headings">標題</option>
+                    <option value="ids">ID</option>
+                    <option value="classes">Class</option>
                 </select>
+                <button class="action-btn" onclick="updateOutline()" title="重新整理">⟳</button>
             </div>
-            <div id="outline-container">
-                <p class="no-outline">貼上 HTML 內容以生成導覽...</p>
-            </div>
+            <div id="outline-container"></div>
         </div>
 
-        <div id="divider-nav" class="grid-divider"></div>
+        <div class="resizer" data-target="pane-nav"></div>
 
-        <div class="editor-pane">
-            <button id="toggle-nav-btn" title="收合導覽">«</button>
-            <button id="toggle-preview-btn" title="收合預覽">»</button>
-            <div class="button-container">
-                <button type="button" id="formatButton" onclick="formatCode()"><span>✨ 美化格式</span></button>
-                <button type="button" id="checkButton" onclick="checkSyntax()"><span>✓ 檢查語法</span></button>
-                <button type="button" onclick="downloadHTML()"><span>💾 下載檔案</span></button>
-                <button type="button" id="clearButton" onclick="clearContent()"><span>🗑️ 清除內容</span></button>
+        <!-- 編輯窗格 -->
+        <div class="pane" id="pane-editor" style="overflow: visible;">
+            <div id="btn-toggle-nav" class="toggle-btn" onclick="togglePane('nav')" title="收合/展開導覽">«</div>
+            <div id="btn-toggle-preview" class="toggle-btn" onclick="togglePane('preview')" title="收合/展開預覽">»</div>
+
+            <div class="pane-header">
+                <span class="pane-title">原始碼</span>
+                <div class="btn-group">
+                    <button class="action-btn" onclick="formatCode()">美化</button>
+                    <button class="action-btn" onclick="downloadFile()">下載</button>
+                    <button class="action-btn btn-danger" onclick="clearCode()">清空</button>
+                </div>
             </div>
-            <textarea id="htmlSource" placeholder="貼上您的 HTML 或 Markdown 原始碼..."></textarea>
+            <textarea id="editor"></textarea>
         </div>
 
-        <div id="divider-preview" class="grid-divider"></div>
+        <div class="resizer" data-target="pane-editor"></div>
 
-        <div class="preview-pane">
-            <div class="button-container">
-                <span class="preview-label">👁️ 即時預覽</span>
-                <label for="markdown-toggle" class="markdown-toggle-label">
-                    <input type="checkbox" id="markdown-toggle" onchange="triggerUpdate(); triggerOutlineUpdate();">
-                    <span>Markdown 模式</span>
+        <!-- 預覽窗格 -->
+        <div class="pane" id="pane-preview">
+            <div class="pane-header">
+                <span class="pane-title">預覽</span>
+                <label style="font-size: 0.8rem; display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                    <input type="checkbox" id="md-toggle" onchange="toggleMode()"> Markdown
                 </label>
             </div>
-            <iframe id="preview-frame" title="即時預覽"></iframe>
+            <iframe id="preview" sandbox="allow-scripts allow-modals"></iframe>
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/dialog/dialog.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/search/searchcursor.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/search/search.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/search/jump-to-line.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jshint/2.13.6/jshint.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/lint/javascript-lint.js"></script>
-    <script src="https://unpkg.com/htmlhint@latest/lib/htmlhint.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/lint/html-lint.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/lint/lint.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/xml/xml.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/javascript/javascript.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/css/css.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/htmlmixed/htmlmixed.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/edit/closetag.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/edit/closebrackets.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/fold/foldcode.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/fold/foldgutter.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/fold/brace-fold.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/fold/xml-fold.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/fold/tag-fold.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/fold/comment-fold.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.7/beautify-html.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <div id="toast" class="toast">已儲存</div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/dialog/dialog.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/search/searchcursor.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/search/search.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/edit/closetag.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/fold/xml-fold.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/xml/xml.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/javascript/javascript.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/css/css.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/htmlmixed/htmlmixed.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/markdown/markdown.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.7/beautify-html.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" crossorigin="anonymous"></script>
 
     <script>
-        // --- 核心變數設定 ---
-        var editor = CodeMirror.fromTextArea(document.getElementById('htmlSource'), {
-            mode: "htmlmixed", theme: "default", lineNumbers: true, lineWrapping: true,
-            lint: true, autoCloseTags: true, autoCloseBrackets: true, foldGutter: true,
-            gutters: ["CodeMirror-linenumbers", "CodeMirror-lint-markers", "CodeMirror-foldgutter"],
-            extraKeys: { "Ctrl-F": "find", "Cmd-F": "find", "Ctrl-H": "replace", "Cmd-Alt-F": "replace", "Shift-Ctrl-H": "replaceAll", "Shift-Cmd-Alt-F": "replaceAll" }
+        // 初始化編輯器
+        const editor = CodeMirror.fromTextArea(document.getElementById('editor'), {
+            mode: "htmlmixed", theme: "default", lineNumbers: true, lineWrapping: true, autoCloseTags: true, styleActiveLine: true
         });
-        
-        var markdownToggle = document.getElementById('markdown-toggle');
-        var currentHighlightMarks = [];
-        const toggleNavBtn = document.getElementById('toggle-nav-btn');
-        const togglePreviewBtn = document.getElementById('toggle-preview-btn');
-        const mainContent = document.querySelector('.main-content');
-        var updateTimeout;
-        var outlineTimeout;
 
-        // --- 介面佈局與主題 ---
-        function toggleNavigation() { 
-            mainContent.classList.toggle('nav-collapsed'); 
-            const isCollapsed = mainContent.classList.contains('nav-collapsed'); 
-            toggleNavBtn.innerHTML = isCollapsed ? '»' : '«'; 
-            toggleNavBtn.title = isCollapsed ? '展開導覽' : '收合導覽'; 
-            setTimeout(() => { editor.refresh(); }, 100);
+        const previewFrame = document.getElementById('preview');
+        let updateTimer;
+        let currentMark = null;
+
+        // 預設內容
+        const defaultHTML = `<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: sans-serif; padding: 20px; text-align: center; }
+        .box { 
+            background: linear-gradient(135deg, #667eea, #764ba2); 
+            color: white; padding: 40px; border-radius: 10px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
         }
-        function togglePreview() { 
-            mainContent.classList.toggle('preview-collapsed'); 
-            const isCollapsed = mainContent.classList.contains('preview-collapsed'); 
-            togglePreviewBtn.innerHTML = isCollapsed ? '«' : '»'; 
-            togglePreviewBtn.title = isCollapsed ? '展開預覽' : '收合預覽'; 
-            setTimeout(() => { editor.refresh(); }, 100);
-        }
-        toggleNavBtn.addEventListener('click', toggleNavigation);
-        togglePreviewBtn.addEventListener('click', togglePreview);
-        function applyTheme(themeName) { let cmTheme = (themeName === 'default-light') ? 'default' : themeName; document.body.dataset.theme = (themeName === 'default-light') ? '' : themeName; if(themeName === 'default-light') document.body.removeAttribute('data-theme'); editor.setOption('theme', cmTheme); }
-        
-        // --- 可拖曳調整窗格大小的功能 ---
-        function initResizablePanes() {
-            const dividers = document.querySelectorAll('.grid-divider');
+        .box:hover { transform: scale(1.02); }
+        h1 { margin: 0; }
+        button { margin-top: 20px; padding: 10px 20px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="box" id="main-box">
+        <h1>Hello World!</h1>
+        <p>點擊這裡的任何元素，左側會自動跳轉到對應程式碼。</p>
+        <button onclick="alert('JS 運作正常！')">點擊測試 JS</button>
+    </div>
+</body>
+</html>`;
+
+        // --- 核心功能：高亮並跳轉 (共用函式) ---
+        function highlightAndJump(line) {
+            // 1. 清除舊的高亮
+            if (currentMark) currentMark.clear();
             
-            dividers.forEach(divider => {
-                divider.addEventListener('mousedown', (e) => {
-                    e.preventDefault();
-                    
-                    const prevPaneIndex = Array.from(divider.parentElement.children).indexOf(divider) - 1;
-                    const nextPaneIndex = Array.from(divider.parentElement.children).indexOf(divider) + 1;
-                    
-                    const prevPane = divider.parentElement.children[prevPaneIndex];
-                    const nextPane = divider.parentElement.children[nextPaneIndex];
+            // 2. 游標跳轉與捲動
+            editor.setCursor(line, 0);
+            editor.scrollIntoView({line: line, ch: 0}, 200); // 200px 的垂直邊距
+            editor.focus();
 
-                    if (!prevPane || !nextPane) return;
+            // 3. 設定新的高亮 (整行)
+            currentMark = editor.markText(
+                {line: line, ch: 0},
+                {line: line + 1, ch: 0},
+                {className: "highlight-line"}
+            );
 
-                    const handleMouseMove = (moveEvent) => {
-                        let gridTemplateColumns = getComputedStyle(mainContent).gridTemplateColumns.split(' ');
-                        const prevPaneWidth = prevPane.offsetWidth;
-                        const newPrevPaneWidth = prevPaneWidth + moveEvent.movementX;
-                        
-                        const minWidth = 50; 
-                        if (newPrevPaneWidth < minWidth) return;
-
-                        gridTemplateColumns[prevPaneIndex] = `${newPrevPaneWidth}px`;
-                        gridTemplateColumns[nextPaneIndex] = '1fr';
-                        
-                        mainContent.style.gridTemplateColumns = gridTemplateColumns.join(' ');
-                        editor.refresh();
-                    };
-
-                    const handleMouseUp = () => {
-                        document.removeEventListener('mousemove', handleMouseMove);
-                        document.removeEventListener('mouseup', handleMouseUp);
-                        editor.refresh();
-                    };
-
-                    document.addEventListener('mousemove', handleMouseMove);
-                    document.addEventListener('mouseup', handleMouseUp);
-                });
-            });
+            // 4. 1.5秒後自動消失
+            setTimeout(() => {
+                if (currentMark) currentMark.clear();
+            }, 1500);
         }
 
-        // --- 文件導覽 (Outline) 相關功能 (完整未壓縮版) ---
+        // --- 收合功能 ---
+        function togglePane(target) {
+            const grid = document.getElementById('grid');
+            const cols = getComputedStyle(grid).gridTemplateColumns.split(' ');
+            if (target === 'nav') {
+                const btn = document.getElementById('btn-toggle-nav');
+                if (cols[0] === '0px') { grid.style.gridTemplateColumns = `250px 4px 1fr ${cols[3]} ${cols[4]}`; btn.innerText = '«'; }
+                else { grid.style.gridTemplateColumns = `0px 0px 1fr ${cols[3]} ${cols[4]}`; btn.innerText = '»'; }
+            } else if (target === 'preview') {
+                const btn = document.getElementById('btn-toggle-preview');
+                if (parseFloat(cols[4]) < 10) { grid.style.gridTemplateColumns = `${cols[0]} ${cols[1]} 1fr 4px 1fr`; btn.innerText = '»'; }
+                else { grid.style.gridTemplateColumns = `${cols[0]} ${cols[1]} 1fr 0px 0px`; btn.innerText = '«'; }
+            }
+            setTimeout(() => editor.refresh(), 300);
+        }
+
+        // --- 預覽更新 ---
+        function updatePreview() {
+            const isMd = document.getElementById('md-toggle').checked;
+            let content = editor.getValue();
+            if (isMd) {
+                content = `<style>body{font-family:sans-serif;padding:20px;line-height:1.6}img{max-width:100%}</style>${marked.parse(content)}`;
+            } else {
+                const syncScript = `<script>
+                    document.addEventListener('click', function(e) {
+                        e.stopPropagation(); e.preventDefault();
+                        window.parent.postMessage({
+                            type: 'sync', tag: e.target.tagName, id: e.target.id,
+                            class: e.target.className, text: e.target.innerText ? e.target.innerText.slice(0, 20) : ''
+                        }, '*');
+                    }, true);
+                <\/script>`;
+                content = content.includes('</body>') ? content.replace('</body>', syncScript + '</body>') : content + syncScript;
+            }
+            previewFrame.srcdoc = content;
+        }
+
+        // --- 雙向同步 (預覽 -> 編輯器) ---
+        window.addEventListener('message', (e) => {
+            if (e.data.type === 'sync') {
+                const { tag, id, text } = e.data;
+                if (!editor.getSearchCursor) return;
+                const cursor = editor.getSearchCursor(new RegExp(`<${tag}`, 'i'));
+                let bestMatch = null;
+                while(cursor.findNext()) {
+                    const from = cursor.from();
+                    const to = cursor.to();
+                    const context = editor.getRange(from, {line: to.line + 5, ch: 0});
+                    let isMatch = false;
+                    if (id && context.includes(`id="${id}"`)) isMatch = true;
+                    else if (id && context.includes(`id='${id}'`)) isMatch = true;
+                    else if (text && context.includes(text.trim())) isMatch = true;
+                    if (!bestMatch) bestMatch = { from, to };
+                    if (isMatch) { bestMatch = { from, to }; break; }
+                }
+                if (bestMatch) {
+                    // 呼叫共用的高亮函式
+                    highlightAndJump(bestMatch.from.line);
+                    showToast(`定位到 <${tag}>`);
+                } else { showToast(`找不到 <${tag}>`); }
+            }
+        });
+
+        // --- 導覽列 (導覽 -> 編輯器) ---
         function updateOutline() {
             const container = document.getElementById('outline-container');
-            const filterValue = document.getElementById('nav-filter').value;
-            container.innerHTML = '';
-            
-            if (markdownToggle.checked) {
-                container.innerHTML = '<p class="no-outline">導覽功能僅適用於 HTML 模式。</p>';
-                return;
-            }
-            
-            const doc = editor.getDoc();
-            const fullContent = doc.getValue();
-            const fragment = document.createDocumentFragment();
-            let hasOutline = false;
-            
-            const seenIds = new Set();
-            const seenFunctions = new Set();
-            const seenClasses = new Set();
-            
-            if (filterValue === 'all' || filterValue === 'headings') {
-                // 改進的標題偵測，處理跨行、屬性和各種格式
-                const headingRegex = /<(h[1-6])(?:\s+[^>]*)?>(.+?)<\/\1>/gis;
-                let match;
-                
-                // 重置 lastIndex 確保從頭開始匹配
-                headingRegex.lastIndex = 0;
-                
-                while ((match = headingRegex.exec(fullContent)) !== null) {
-                    const level = match[1].toLowerCase();
-                    let text = match[2];
-                    
-                    // 移除所有 HTML 標籤（包括屬性）
-                    text = text.replace(/<[^>]+>/g, '');
-                    // 移除換行符
-                    text = text.replace(/[\r\n]+/g, ' ');
-                    // 移除多餘的空白字符
-                    text = text.replace(/\s+/g, ' ');
-                    // 去除前後空白
-                    text = text.trim();
-                    
-                    // 只有當文字不為空且長度大於 0 時才添加
-                    if (text && text.length > 0) {
-                        // 計算開始和結束行
-                        const startLine = doc.posFromIndex(match.index).line;
-                        const endIndex = match.index + match[0].length - 1;
-                        const endLine = doc.posFromIndex(endIndex).line;
-                        
-                        const link = createNavLink(text, startLine, endLine, `outline-${level}`);
-                        fragment.appendChild(link);
-                        hasOutline = true;
-                    }
-                }
-            }
-            
-            if (filterValue === 'all' || filterValue === 'ids') {
-                const idRegex = /\bid\s*=\s*["']([^"']+)["']/gi;
-                let match;
-                while ((match = idRegex.exec(fullContent)) !== null) {
-                    const id = match[1];
-                    if (!seenIds.has(id)) {
-                        seenIds.add(id);
-                        const line = doc.posFromIndex(match.index).line;
-                        const link = createNavLink(id, line, line, 'outline-id');
-                        fragment.appendChild(link);
-                        hasOutline = true;
-                    }
-                }
-            }
-            
-            if (filterValue === 'all' || filterValue === 'functions') {
-                const functionRegex = /function\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\(/g;
-                let match;
-                while ((match = functionRegex.exec(fullContent)) !== null) {
-                    const funcName = match[1];
-                    if (!seenFunctions.has(funcName)) {
-                        seenFunctions.add(funcName);
-                        const startLine = doc.posFromIndex(match.index).line;
-                        const endLine = findFunctionEnd(doc, startLine);
-                        const link = createNavLink(funcName + '()', startLine, endLine, 'outline-function');
-                        fragment.appendChild(link);
-                        hasOutline = true;
-                    }
-                }
-            }
-            
-            if (filterValue === 'all' || filterValue === 'classes') {
-                const htmlClassRegex = /\bclass\s*=\s*["']([^"']+)["']/gi;
-                let match;
-                while ((match = htmlClassRegex.exec(fullContent)) !== null) {
-                    const classes = (match[2] ? match[2] : match[1]).split(/\s+/);
-                    classes.forEach(className => {
-                        if (className.trim() && !seenClasses.has(className)) {
-                            seenClasses.add(className);
-                            const line = doc.posFromIndex(match.index).line;
-                            const link = createNavLink(className, line, line, 'outline-class');
-                            fragment.appendChild(link);
-                            hasOutline = true;
-                        }
-                    });
-                }
-            }
-            
-            if (hasOutline) {
-                container.appendChild(fragment);
-            } else {
-                const filterText = {
-                    'all': '可導覽的內容',
-                    'headings': '標題',
-                    'ids': 'ID 元素',
-                    'functions': 'JavaScript 函數',
-                    'classes': 'CSS 類別'
-                };
-                container.innerHTML = `<p class="no-outline">目前文件中沒有${filterText[filterValue]}。</p>`;
-            }
-        }
-        function findFunctionEnd(doc, startLine) { let braceCount = 0; let foundStart = false; for (let i = startLine; i < doc.lineCount(); i++) { const line = doc.getLine(i); for (let char of line) { if (char === '{') { braceCount++; foundStart = true; } else if (char === '}') { braceCount--; if (foundStart && braceCount === 0) { return i; } } } } return startLine; }
-        function createNavLink(text, startLine, endLine, className) { const a = document.createElement('a'); a.textContent = text; a.className = className; a.dataset.startLine = startLine; a.dataset.endLine = endLine; const lineRange = startLine === endLine ? `第 ${startLine + 1} 行` : `第 ${startLine + 1}-${endLine + 1} 行`; a.title = `跳轉至${lineRange}`; a.onclick = function(e) { e.preventDefault(); const start = parseInt(this.dataset.startLine, 10); const end = parseInt(this.dataset.endLine, 10); highlightRange(start, end); editor.setCursor({line: start, ch: 0}); const t = editor.charCoords({line: start, ch: 0}, "local").top; const middleHeight = editor.getScrollerElement().offsetHeight / 2; editor.scrollTo(null, t - middleHeight - 5); editor.focus(); }; return a; }
+            const filter = document.getElementById('nav-filter').value;
+            const isMd = document.getElementById('md-toggle').checked;
+            if (isMd) { container.innerHTML = '<div style="padding:10px;color:#888">Markdown 模式不支援結構</div>'; return; }
 
-        // --- 編輯器高亮與更新 ---
-        function clearHighlights() { currentHighlightMarks.forEach(mark => mark.clear()); currentHighlightMarks = []; }
-        function highlightRange(startLine, endLine) { clearHighlights(); const doc = editor.getDoc(); for (let i = startLine; i <= endLine; i++) { const mark = doc.markText({line: i, ch: 0}, {line: i, ch: doc.getLine(i).length}, {className: 'highlight-range'}); currentHighlightMarks.push(mark); } }
-        function triggerUpdate() { clearTimeout(updateTimeout); updateTimeout = setTimeout(updatePreview, 300); }
-        function triggerOutlineUpdate() { clearTimeout(outlineTimeout); outlineTimeout = setTimeout(updateOutline, 500); }
-        editor.on("change", () => { triggerUpdate(); triggerOutlineUpdate(); clearHighlights(); });
+            const code = editor.getValue();
+            const lines = code.split('\n');
+            let html = '';
+            let hasItem = false;
+            const reH = /<(h[1-6])(.*?)>(.*?)<\/\1>/i;
+            const reId = /id=["']([^"']+)["']/i;
+            const reClass = /class=["']([^"']+)["']/i;
 
-        // --- 主要功能區: 預覽與雙向互動 ---
-        function updatePreview() {
-            var isMarkdownMode = markdownToggle.checked;
-            var rawContent = editor.getValue();
-            var processedContent = '';
-
-            if (isMarkdownMode) {
-                if (typeof marked === 'undefined') {
-                    processedContent = '<h1>錯誤：marked.js 函式庫載入失敗！</h1>';
-                } else {
-                    processedContent = marked.parse(rawContent);
+            lines.forEach((line, index) => {
+                let match, text = '', className = '', shouldAdd = false;
+                if ((filter === 'all' || filter === 'headings') && (match = line.match(reH))) {
+                    text = match[3].replace(/<[^>]+>/g, ''); className = `outline-${match[1].toLowerCase()}`; shouldAdd = true;
+                } else if ((filter === 'all' || filter === 'ids') && (match = line.match(reId))) {
+                    text = '#' + match[1]; className = 'outline-id'; shouldAdd = true;
+                } else if ((filter === 'all' || filter === 'classes') && (match = line.match(reClass))) {
+                    text = '.' + match[1].split(' ')[0]; className = 'outline-class'; shouldAdd = true;
                 }
-            } else {
-                processedContent = rawContent;
-            }
-
-            const previewFrame = document.getElementById('preview-frame');
-            previewFrame.srcdoc = processedContent;
-
-            previewFrame.onload = () => {
-                if (!isMarkdownMode) {
-                    const iframeDoc = previewFrame.contentDocument || previewFrame.contentWindow.document;
-                    const style = iframeDoc.createElement('style');
-                    style.innerHTML = `
-                        *:hover {
-                            outline: 2px dashed #667eea !important;
-                            outline-offset: 2px;
-                            cursor: pointer !important;
-                        }
-                    `;
-                    iframeDoc.head.appendChild(style);
-                    iframeDoc.body.addEventListener('click', handlePreviewClick, true);
+                if (shouldAdd && text) { 
+                    hasItem = true; 
+                    // 這裡改為呼叫 highlightAndJump
+                    html += `<a class="${className}" onclick="highlightAndJump(${index})">${text}</a>`; 
                 }
-            };
-        }
-        function handlePreviewClick(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            const targetElement = e.target;
-            findAndJumpToCode(targetElement);
-        }
-        function findAndJumpToCode(el) {
-            const tagName = el.tagName.toLowerCase();
-            let foundMatch = null;
-
-            // 策略 1: 通過 ID 在導覽區查找
-            if (el.id) {
-                const navLinks = document.querySelectorAll('#outline-container a.outline-id');
-                for (let link of navLinks) {
-                    if (link.textContent === el.id) {
-                        foundMatch = {
-                            startLine: parseInt(link.dataset.startLine, 10),
-                            endLine: parseInt(link.dataset.endLine, 10),
-                            type: 'ID',
-                            value: `#${el.id}`
-                        };
-                        break;
-                    }
-                }
-            }
-
-            // 策略 2: 通過 Class 在導覽區查找
-            if (!foundMatch && el.classList.length > 0) {
-                const navLinks = document.querySelectorAll('#outline-container a.outline-class');
-                for (let className of el.classList) {
-                    for (let link of navLinks) {
-                        if (link.textContent === className) {
-                            foundMatch = {
-                                startLine: parseInt(link.dataset.startLine, 10),
-                                endLine: parseInt(link.dataset.endLine, 10),
-                                type: 'Class',
-                                value: `.${className}`
-                            };
-                            break;
-                        }
-                    }
-                    if (foundMatch) break;
-                }
-            }
-
-            // 策略 3: 標題元素通過導覽區查找
-            if (!foundMatch && /^h[1-6]$/i.test(tagName)) {
-                const headingText = el.textContent.trim().replace(/\s+/g, ' ');
-                const navLinks = document.querySelectorAll(`#outline-container a.outline-${tagName}`);
-                for (let link of navLinks) {
-                    const linkText = link.textContent.trim().replace(/\s+/g, ' ');
-                    if (linkText === headingText) {
-                        foundMatch = {
-                            startLine: parseInt(link.dataset.startLine, 10),
-                            endLine: parseInt(link.dataset.endLine, 10),
-                            type: '標題',
-                            value: `<${tagName}>`
-                        };
-                        break;
-                    }
-                }
-            }
-
-            // 策略 4: 直接文本搜索（備用方案）
-            if (!foundMatch) {
-                const code = editor.getValue();
-                let matchResult = null;
-
-                // 嘗試通過 ID 搜索
-                if (el.id) {
-                    const idRegex = new RegExp(`<${tagName}[^>]*\\sid\\s*=\\s*["']${el.id}["'][^>]*>`, 'i');
-                    const match = code.match(idRegex);
-                    if (match) {
-                        matchResult = { match: match, type: 'ID', value: `#${el.id}` };
-                    }
-                }
-                
-                // 嘗試通過 Class 搜索
-                if (!matchResult && el.classList.length > 0) {
-                    const firstClass = el.classList[0];
-                    const classRegex = new RegExp(`<${tagName}[^>]*\\sclass\\s*=\\s*["'][^"']*${firstClass}[^"']*["'][^>]*>`, 'i');
-                    const match = code.match(classRegex);
-                    if (match) {
-                        matchResult = { match: match, type: 'Class', value: `.${firstClass}` };
-                    }
-                }
-                
-                // 嘗試通過文本內容搜索
-                if (!matchResult && el.textContent.trim()) {
-                    const text = el.textContent.trim().substring(0, 50);
-                    const escapedText = text.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-                    const textRegex = new RegExp(`>${escapedText}`, 'i');
-                    const match = code.match(textRegex);
-                    if (match) {
-                        const searchStartIndex = match.index > 500 ? match.index - 500 : 0;
-                        const lastTagOpen = code.lastIndexOf(`<${tagName}`, match.index);
-                        if (lastTagOpen > searchStartIndex) {
-                            match.index = lastTagOpen;
-                            matchResult = { match: match, type: '文字', value: `"${text.substring(0, 20)}..."` };
-                        }
-                    }
-                }
-
-                if (matchResult) {
-                    const startPos = editor.posFromIndex(matchResult.match.index);
-                    foundMatch = {
-                        startLine: startPos.line,
-                        endLine: startPos.line,
-                        type: matchResult.type,
-                        value: matchResult.value
-                    };
-                }
-            }
-
-            // 執行跳轉和高亮
-            if (foundMatch) {
-                const startLine = foundMatch.startLine;
-                const endLine = foundMatch.endLine;
-                
-                clearHighlights();
-                const doc = editor.getDoc();
-                
-                for (let i = startLine; i <= endLine; i++) {
-                    const mark = doc.markText(
-                        {line: i, ch: 0}, 
-                        {line: i, ch: doc.getLine(i).length}, 
-                        {className: 'highlight-range'}
-                    );
-                    currentHighlightMarks.push(mark);
-                }
-                
-                editor.setCursor({line: startLine, ch: 0});
-                const t = editor.charCoords({line: startLine, ch: 0}, "local").top;
-                const middleHeight = editor.getScrollerElement().offsetHeight / 2;
-                editor.scrollTo(null, t - middleHeight - 5);
-                editor.focus();
-                
-                showNotification(`✓ 成功定位到 ${foundMatch.type}: ${foundMatch.value}`, 'success');
-            } else {
-                showNotification(`✗ 找不到 <${tagName}> 元素的對應程式碼`, 'error');
-            }
-        }
-        function showNotification(message, type = 'success') {
-            const notification = document.createElement('div');
-            notification.className = `toast-notification ${type}`;
-            notification.textContent = message;
-            document.body.appendChild(notification);
-            setTimeout(() => {
-                notification.classList.add('show');
-            }, 10);
-            setTimeout(() => {
-                notification.classList.remove('show');
-                notification.addEventListener('transitionend', () => {
-                    notification.remove();
-                });
-            }, 2000);
+            });
+            container.innerHTML = hasItem ? html : '<div style="padding:10px;color:#888;text-align:center">無符合項目</div>';
         }
 
-        // --- 其他工具函數 ---
-        function formatCode() { if (markdownToggle.checked) { alert("「美化格式」功能僅適用於 HTML 模式。"); return; } try { var currentCode = editor.getValue(); var formattedCode = html_beautify(currentCode, { "indent_size": 4, "indent_char": " ", "max_preserve_newlines": 1, "preserve_newlines": true, "indent_scripts": "normal", "brace_style": "collapse", "wrap_line_length": 0, "indent_inner_html": true }); editor.setValue(formattedCode); } catch (e) { console.error("程式碼美化失敗:", e); alert("程式碼美化失敗。"); } }
-        function checkSyntax() { if (markdownToggle.checked) { alert("「檢查語法」功能僅適用於 HTML 模式。"); return; } editor.performLint(); alert("語法檢查已執行完畢！"); }
-        function createHtmlTemplate(content, title = "Markdown 匯出") { return `<!DOCTYPE html><html lang="zh-TW"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>${title}</title><style>body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; line-height: 1.6; padding: 20px; max-width: 800px; margin: 0 auto; color: #333; } h1, h2, h3, h4, h5, h6 { border-bottom: 1px solid #eee; padding-bottom: 5px; } ul, ol { padding-left: 30px; } code { background-color: #f4f4f4; padding: 2px 6px; border-radius: 4px; font-family: monospace; } pre { background-color: #f4f4f4; padding: 10px; border-radius: 4px; overflow-x: auto; } img { max-width: 100%; height: auto; } table { border-collapse: collapse; width: 100%; } th, td { border: 1px solid #ddd; padding: 8px; } th { background-color: #f2f2f2; }</style></head><body>${content}</body></html>`; }
-        function downloadHTML() { var isMarkdownMode = markdownToggle.checked; var rawContent = editor.getValue(); var finalHtmlContent = isMarkdownMode && typeof marked !== 'undefined' ? createHtmlTemplate(marked.parse(rawContent)) : rawContent; var blob = new Blob([finalHtmlContent], { type: 'text/html' }); var a = document.createElement('a'); a.href = window.URL.createObjectURL(blob); a.download = 'generated.html'; a.click(); window.URL.revokeObjectURL(a.href); a.remove(); }
-        function clearContent() { if (confirm('確定要清除所有內容嗎？')) { editor.setValue(''); triggerOutlineUpdate(); } }
-        
-        // --- 初始化 ---
-        document.addEventListener("DOMContentLoaded", () => {
-            triggerUpdate();
-            triggerOutlineUpdate();
-            initResizablePanes();
+        // --- 其他功能 ---
+        editor.on('change', () => { clearTimeout(updateTimer); updateTimer = setTimeout(() => { updatePreview(); updateOutline(); saveToLocal(); }, 500); });
+        function saveToLocal() { try { localStorage.setItem('safe_editor_content', editor.getValue()); localStorage.setItem('safe_editor_mode', document.getElementById('md-toggle').checked); document.getElementById('save-status').innerText = '已儲存'; setTimeout(() => document.getElementById('save-status').innerText = '', 2000); } catch (e) {} }
+        function loadFromLocal() { try { const content = localStorage.getItem('safe_editor_content'); const mode = localStorage.getItem('safe_editor_mode') === 'true'; if (content) editor.setValue(content); else editor.setValue(defaultHTML); document.getElementById('md-toggle').checked = mode; toggleMode(); } catch (e) { editor.setValue(defaultHTML); } }
+        function toggleMode() { const isMd = document.getElementById('md-toggle').checked; editor.setOption('mode', isMd ? 'markdown' : 'htmlmixed'); updatePreview(); updateOutline(); }
+        function formatCode() { if(document.getElementById('md-toggle').checked) return; editor.setValue(html_beautify(editor.getValue(), { indent_size: 4, preserve_newlines: true })); }
+        function downloadFile() { const isMd = document.getElementById('md-toggle').checked; const blob = new Blob([editor.getValue()], {type: isMd ? 'text/markdown' : 'text/html'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = isMd ? 'doc.md' : 'index.html'; a.click(); }
+        function clearCode() { if(confirm('確定清空？')) editor.setValue(''); }
+        function setTheme(theme) { if(theme === 'default') document.body.removeAttribute('data-theme'); else document.body.setAttribute('data-theme', theme); editor.setOption('theme', theme); }
+        function showToast(msg) { const t = document.getElementById('toast'); t.innerText = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2000); }
+
+        // 拖曳調整
+        document.querySelectorAll('.resizer').forEach(resizer => {
+            resizer.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                const grid = document.getElementById('grid');
+                const isNav = resizer.dataset.target === 'pane-nav';
+                function onMove(e) {
+                    const cols = getComputedStyle(grid).gridTemplateColumns.split(' ');
+                    if (isNav) grid.style.gridTemplateColumns = `${e.clientX}px 4px 1fr ${cols[3]} ${cols[4]}`;
+                }
+                function onUp() { window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); editor.refresh(); }
+                window.addEventListener('mousemove', onMove); window.addEventListener('mouseup', onUp);
+            });
         });
+
+        loadFromLocal();
     </script>
 </body>
 </html>
