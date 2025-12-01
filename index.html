@@ -1,11 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HTML Editor Ultimate (全區域捲動版)</title>
-
-    <!-- 樣式庫 -->
+    <title>HTML Editor Ultimate (AI 輔助版)</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.css" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/theme/material.min.css" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/theme/dracula.min.css" crossorigin="anonymous">
@@ -58,7 +57,7 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: var(--bg-color);
             color: var(--text-color);
-            display: flex;           
+            display: flex;   
             flex-direction: column;  
         }
 
@@ -129,8 +128,6 @@
         .toggle-btn:hover { background: var(--accent-color); color: white; transform: scale(1.1); }
         #btn-toggle-nav { left: 0; transform: translate(-50%, -50%); }
         #btn-toggle-preview { right: 0; transform: translate(50%, -50%); }
-        #btn-toggle-nav:hover { transform: translate(-50%, -50%) scale(1.1); }
-        #btn-toggle-preview:hover { transform: translate(50%, -50%) scale(1.1); }
 
         /* Navigation Filter */
         #nav-filter { flex-grow: 1; max-width: 120px; padding: 2px 5px; border: 1px solid var(--nav-border-color); border-radius: 4px; font-size: 0.8rem; background: var(--container-bg); color: var(--text-color); }
@@ -175,6 +172,7 @@
         button.action-btn { padding: 4px 10px; border: none; border-radius: 4px; background: var(--button-bg); color: white; font-size: 0.8rem; cursor: pointer; opacity: 0.9; transition: opacity 0.2s; }
         button.action-btn:hover { opacity: 1; }
         button.btn-danger { background: #e53e3e; }
+        button.btn-magic { background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); color: #333; font-weight: bold; }
 
         /* Toast */
         .toast { position: fixed; bottom: 20px; right: 20px; padding: 10px 20px; background: #48bb78; color: white; border-radius: 4px; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 100; }
@@ -185,7 +183,14 @@
         .CodeMirror-focused .CodeMirror-selected { background: #d7d4f0 !important; }
         .highlight-line { background-color: rgba(255, 255, 0, 0.4) !important; }
 
-        /* RWD: 手機版設定 */
+        /* Modal for AI Replace */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center; }
+        .modal-content { background: var(--container-bg); padding: 20px; border-radius: 8px; width: 90%; max-width: 600px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); display: flex; flex-direction: column; gap: 15px; }
+        .modal-header { font-weight: bold; font-size: 1.1rem; border-bottom: 1px solid var(--nav-border-color); padding-bottom: 10px; }
+        .modal-textarea { width: 100%; height: 200px; padding: 10px; border: 1px solid var(--nav-border-color); border-radius: 4px; background: var(--bg-color); color: var(--text-color); font-family: monospace; resize: vertical; }
+        .modal-footer { display: flex; justify-content: flex-end; gap: 10px; }
+
+        /* RWD */
         @media (max-width: 768px) {
             .main-content { 
                 display: flex; 
@@ -220,7 +225,6 @@
     </div>
 
     <div class="main-content" id="grid">
-        <!-- 導覽窗格 -->
         <div class="pane" id="pane-nav">
             <div class="pane-header">
                 <span class="pane-title">結構</span>
@@ -237,7 +241,6 @@
 
         <div class="resizer" data-target="pane-nav"></div>
 
-        <!-- 編輯窗格 -->
         <div class="pane" id="pane-editor" style="overflow: visible;">
             <div id="btn-toggle-nav" class="toggle-btn" onclick="togglePane('nav')" title="收合/展開導覽">«</div>
             <div id="btn-toggle-preview" class="toggle-btn" onclick="togglePane('preview')" title="收合/展開預覽">»</div>
@@ -245,6 +248,7 @@
             <div class="pane-header">
                 <span class="pane-title">原始碼</span>
                 <div class="btn-group">
+                    <button class="action-btn btn-magic" onclick="openAiReplace()" title="貼上AI產生的程式碼以替換舊功能">🪄 智能替換</button>
                     <button class="action-btn" onclick="formatCode()">美化</button>
                     <button class="action-btn" onclick="downloadFile()">下載</button>
                     <button class="action-btn btn-danger" onclick="clearCode()">清空</button>
@@ -255,7 +259,6 @@
 
         <div class="resizer" data-target="pane-editor"></div>
 
-        <!-- 預覽窗格 -->
         <div class="pane" id="pane-preview">
             <div class="pane-header">
                 <span class="pane-title">預覽</span>
@@ -269,7 +272,21 @@
 
     <div id="toast" class="toast">已儲存</div>
 
-    <!-- Scripts -->
+    <div id="ai-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">🪄 AI 智慧程式碼替換</div>
+            <p style="font-size: 0.9rem; opacity: 0.8;">請貼上 AI 產生的完整 Function 或 CSS 區塊，系統會根據第一行自動尋找舊程式碼並替換。</p>
+            <textarea id="ai-input" class="modal-textarea" placeholder="例如：
+function updatePreview() {
+   ...
+}"></textarea>
+            <div class="modal-footer">
+                <button class="action-btn" style="background: #718096;" onclick="closeAiReplace()">取消</button>
+                <button class="action-btn btn-magic" onclick="performAiReplace()">自動搜尋並替換</button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.js" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/dialog/dialog.min.js" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/search/searchcursor.min.js" crossorigin="anonymous"></script>
@@ -294,53 +311,8 @@
         let updateTimer;
         let currentMark = null;
 
-        // 預設內容 (加長內容以測試捲動)
-        const defaultHTML = `<!DOCTYPE html>
-<html>
-<head>
-    <style>
-        body { font-family: sans-serif; padding: 20px; text-align: center; }
-        .box { 
-            background: linear-gradient(135deg, #667eea, #764ba2); 
-            color: white; padding: 40px; border-radius: 10px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-            transition: transform 0.2s;
-        }
-        .box:hover { transform: scale(1.02); }
-        h1 { margin: 0; }
-        button { margin-top: 20px; padding: 10px 20px; cursor: pointer; }
-        .content-area { margin-top: 30px; text-align: left; line-height: 1.8; }
-    </style>
-</head>
-<body>
-    <div class="box" id="main-box">
-        <h1>Hello World!</h1>
-        <p>點擊這裡的任何元素，左側會自動跳轉到對應程式碼。</p>
-        <button onclick="alert('JS 運作正常！')">點擊測試 JS</button>
-    </div>
-
-    <div class="content-area">
-        <h2 id="section-1">測試捲動區域 1</h2>
-        <p>這是一段很長的內容，用來測試編輯器和預覽視窗的捲動功能是否正常。當內容超過視窗高度時，應該要出現捲軸。</p>
-        <ul>
-            <li>項目 1</li><li>項目 2</li><li>項目 3</li><li>項目 4</li><li>項目 5</li>
-        </ul>
-        
-        <h2 id="section-2">測試捲動區域 2</h2>
-        <p>繼續增加內容以確保捲軸出現...</p>
-        <ul>
-            <li>項目 6</li><li>項目 7</li><li>項目 8</li><li>項目 9</li><li>項目 10</li>
-        </ul>
-
-        <h2 id="section-3">測試捲動區域 3</h2>
-        <p>更多內容...</p>
-        <ul>
-            <li>項目 11</li><li>項目 12</li><li>項目 13</li><li>項目 14</li><li>項目 15</li>
-        </ul>
-        <p>頁面底部。</p>
-    </div>
-</body>
-</html>`;
+        // 預設內容
+        const defaultHTML = `<!DOCTYPE html><html><head>    <style>        body { font-family: sans-serif; padding: 20px; text-align: center; }        .box {             background: linear-gradient(135deg, #667eea, #764ba2);             color: white; padding: 40px; border-radius: 10px;            box-shadow: 0 10px 20px rgba(0,0,0,0.2);            transition: transform 0.2s;        }        .box:hover { transform: scale(1.02); }        h1 { margin: 0; }        button { margin-top: 20px; padding: 10px 20px; cursor: pointer; }        .content-area { margin-top: 30px; text-align: left; line-height: 1.8; }    </style></head><body>    <div class="box" id="main-box">        <h1>Hello World!</h1>        <p>點擊這裡的任何元素，左側會自動跳轉到對應程式碼。</p>        <button onclick="alert('JS 運作正常！')">點擊測試 JS</button>    </div>    <script>        function testFunc() {            console.log("這是一個測試函式");            // 試著讓 AI 修改這個函式，然後用「AI 替換」功能更新它        }    <\/script></body></html>`;
 
         // --- 核心功能：高亮並跳轉 ---
         function highlightAndJump(line) {
@@ -350,6 +322,91 @@
             editor.focus();
             currentMark = editor.markText({line: line, ch: 0}, {line: line + 1, ch: 0}, {className: "highlight-line"});
             setTimeout(() => { if (currentMark) currentMark.clear(); }, 1500);
+        }
+
+        // --- AI 智慧替換功能 ---
+        function openAiReplace() {
+            document.getElementById('ai-modal').style.display = 'flex';
+            document.getElementById('ai-input').value = '';
+            document.getElementById('ai-input').focus();
+        }
+
+        function closeAiReplace() {
+            document.getElementById('ai-modal').style.display = 'none';
+        }
+
+        function performAiReplace() {
+            const inputCode = document.getElementById('ai-input').value.trim();
+            if (!inputCode) { showToast('請先貼上程式碼'); return; }
+
+            // 1. 取得第一行作為搜尋關鍵字 (忽略空白)
+            const lines = inputCode.split('\n');
+            let searchLine = lines[0].trim();
+            
+            // 處理括號，如果第一行只有 "function foo() {" 這樣比較好找
+            // 移除尾端可能多餘的空白
+            
+            if (!searchLine) { showToast('無法識別程式碼'); return; }
+
+            // 2. 在編輯器中搜尋
+            const cursor = editor.getSearchCursor(searchLine);
+            if (cursor.findNext()) {
+                const foundLine = cursor.from().line;
+                
+                // 3. 嘗試找出該區塊的結束點 (利用括號計數)
+                // 從找到的那一行開始往下掃描
+                const doc = editor.getDoc();
+                const lastLine = doc.lineCount();
+                let balance = 0;
+                let endLine = foundLine;
+                let foundStartBrace = false;
+
+                for (let i = foundLine; i < lastLine; i++) {
+                    const lineText = doc.getLine(i);
+                    for (let char of lineText) {
+                        if (char === '{') {
+                            balance++;
+                            foundStartBrace = true;
+                        } else if (char === '}') {
+                            balance--;
+                        }
+                    }
+                    // 如果曾經開始過區塊，且平衡回到0，代表結束
+                    if (foundStartBrace && balance === 0) {
+                        endLine = i;
+                        break;
+                    }
+                    // 安全機制：如果在非 JS/CSS 區域 (如 HTML Tag) 這種邏輯可能不適用，
+                    // 但通常 AI 給的都是 JS Function 或 CSS Rule
+                }
+
+                // 4. 選取並替換
+                // 為了視覺確認，我們先選取
+                editor.setSelection({line: foundLine, ch: 0}, {line: endLine, ch: doc.getLine(endLine).length});
+                
+                // 稍微延遲後詢問是否替換 (或直接替換並通知)
+                if(confirm(`找到位於第 ${foundLine + 1} 行的舊程式碼，是否替換？`)) {
+                    editor.replaceSelection(inputCode);
+                    closeAiReplace();
+                    showToast('替換成功！');
+                    // 重新排版選取區域 (可選)
+                    // editor.indentSelection("smart"); 
+                }
+            } else {
+                // 如果完全符合找不到，嘗試放寬搜尋 (只找前半段)
+                const simpleKey = searchLine.split('(')[0].split('{')[0].trim();
+                if (simpleKey && simpleKey !== searchLine) {
+                     const looseCursor = editor.getSearchCursor(simpleKey);
+                     if (looseCursor.findNext()) {
+                         highlightAndJump(looseCursor.from().line);
+                         closeAiReplace();
+                         showToast(`找不到完全符合，已定位到 "${simpleKey}"，請手動確認。`);
+                         return;
+                     }
+                }
+                
+                showToast(`找不到 "${searchLine.substring(0, 20)}..." 對應的原始碼`);
+            }
         }
 
         // --- 收合功能 ---
