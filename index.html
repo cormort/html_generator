@@ -2,9 +2,9 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HTML Editor Ultimate (完整修復版)</title>
+    <title>HTML Editor Ultimate (桌面完整版)</title>
     
+    <!-- 1. 引入必要的函式庫 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/theme/material-palenight.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/theme/dracula.min.css">
@@ -14,175 +14,148 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        /* --- 1. CSS 變數系統 --- */
+        /* --- CSS 變數與主題系統 --- */
         :root {
             --header-height: 50px;
-            --bg-color: #f4f6f8;
-            --pane-bg: #ffffff;
-            --text-color: #333;
-            --border-color: #e1e4e8;
-            --accent-color: #0366d6;
-            --header-bg: linear-gradient(90deg, #24292e 0%, #2f363d 100%);
-            --header-text: #fff;
-        }
-
-        [data-theme="material"] {
-            --bg-color: #1a1a1a;
-            --pane-bg: #292d3e;
-            --text-color: #a6accd;
-            --border-color: #434758;
-            --accent-color: #82aaff;
-            --header-bg: #1b1e2b;
-        }
-
-        [data-theme="dracula"] {
             --bg-color: #21222c;
             --pane-bg: #282a36;
             --text-color: #f8f8f2;
-            --border-color: #6272a4;
-            --accent-color: #ff79c6;
+            --border-color: #44475a;
+            --accent-color: #bd93f9; /* Dracula Purple */
             --header-bg: #191a21;
+            --highlight-line: rgba(189, 147, 249, 0.25);
         }
 
-        /* --- 2. 全局佈局 (Desktop First) --- */
+        /* Light Theme 變數覆蓋 */
+        [data-theme="eclipse"] {
+            --bg-color: #e0e0e0;
+            --pane-bg: #ffffff;
+            --text-color: #333;
+            --border-color: #ccc;
+            --accent-color: #0366d6;
+            --header-bg: #f5f5f5;
+            --highlight-line: rgba(255, 255, 0, 0.3);
+        }
+
+        /* --- 全局佈局 (Desktop Only) --- */
         * { box-sizing: border-box; outline: none; }
         
         html, body {
-            height: 100%; margin: 0; padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0; padding: 0;
+            width: 100%; height: 100%;
+            overflow: hidden; /* 鎖定外層，防止雙重捲軸 */
             background: var(--bg-color);
             color: var(--text-color);
-            overflow: hidden; /* Desktop: 鎖定外層，靠內部區塊捲動 */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         .app-layout {
             display: flex; flex-direction: column; height: 100vh;
         }
 
-        /* Header */
+        /* --- Header --- */
         .navbar {
             flex: 0 0 var(--header-height);
             background: var(--header-bg);
-            color: var(--header-text);
+            border-bottom: 1px solid var(--border-color);
             display: flex; align-items: center; justify-content: space-between;
             padding: 0 15px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            z-index: 20;
+            user-select: none;
         }
-        .navbar-title { font-weight: bold; display: flex; align-items: center; gap: 10px; }
+        .navbar-title { font-weight: bold; font-size: 1.1rem; display: flex; align-items: center; gap: 10px; color: var(--accent-color); }
+        
         .navbar-controls { display: flex; gap: 10px; align-items: center; }
+        
+        .btn-icon {
+            background: transparent; border: 1px solid transparent; color: var(--text-color); 
+            cursor: pointer; padding: 6px 10px; border-radius: 4px; transition: 0.2s;
+            font-size: 0.9rem; opacity: 0.8;
+        }
+        .btn-icon:hover { opacity: 1; background: rgba(128,128,128,0.2); }
+        .btn-primary { color: var(--accent-color); font-weight: bold; border: 1px solid var(--border-color); }
 
-        /* Grid Workspace */
+        select.theme-select {
+            background: var(--pane-bg); color: var(--text-color);
+            border: 1px solid var(--border-color); padding: 4px; border-radius: 4px;
+        }
+
+        /* --- Workspace Grid (左 | 拉桿 | 中 | 拉桿 | 右) --- */
         .workspace {
             flex: 1;
             display: grid;
-            grid-template-columns: 220px 4px 1fr 4px 1fr; /* 結構 | 拉桿 | 編輯 | 拉桿 | 預覽 */
+            grid-template-columns: 240px 4px 1fr 4px 1fr; 
             overflow: hidden;
             position: relative;
         }
 
-        /* Panes */
+        /* --- Panes --- */
         .pane {
             background: var(--pane-bg);
             display: flex; flex-direction: column;
             min-width: 0; height: 100%;
-            border-right: 1px solid var(--border-color);
-        }
-        
-        .pane-header {
-            flex: 0 0 36px;
-            background: rgba(0,0,0,0.03);
-            border-bottom: 1px solid var(--border-color);
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 0 10px;
-            font-size: 0.85rem; font-weight: 600;
-            user-select: none;
-        }
-
-        /* 內容區塊 (關鍵：讓內容自己捲動) */
-        .scroll-area {
-            flex: 1;
-            overflow-y: auto;
             position: relative;
         }
 
-        /* CodeMirror 特別設定 */
+        .pane-header {
+            flex: 0 0 32px;
+            background: rgba(0,0,0,0.1);
+            border-bottom: 1px solid var(--border-color);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 10px;
+            font-size: 0.8rem; font-weight: 600; letter-spacing: 0.5px;
+            color: var(--text-color); opacity: 0.8;
+        }
+
+        /* 內容捲動區 (左側與中間) */
+        .scroll-area {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        /* 自定義捲軸 */
+        .scroll-area::-webkit-scrollbar { width: 8px; height: 8px; }
+        .scroll-area::-webkit-scrollbar-track { background: transparent; }
+        .scroll-area::-webkit-scrollbar-thumb { background: #666; border-radius: 4px; }
+
+        /* --- 左側結構樹 --- */
+        .outline-item {
+            padding: 5px 10px; cursor: pointer; border-left: 3px solid transparent;
+            font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            border-bottom: 1px solid rgba(128,128,128,0.1);
+            display: flex; align-items: center;
+        }
+        .outline-item:hover { background: rgba(128,128,128,0.1); border-left-color: var(--accent-color); }
+        .tag-badge { 
+            display: inline-block; padding: 2px 6px; border-radius: 3px; 
+            background: rgba(128,128,128,0.2); font-family: monospace; font-size: 0.75rem; margin-right: 8px;
+            color: var(--accent-color);
+        }
+        .id-text { color: #61afef; margin-left: 5px; font-size: 0.8rem; }
+
+        /* --- 中間 CodeMirror --- */
         .CodeMirror {
             height: 100% !important;
             font-family: 'Fira Code', Consolas, monospace;
-            font-size: 14px;
-            line-height: 1.5;
+            font-size: 14px; line-height: 1.6;
         }
+        .highlight-line { background-color: var(--highlight-line) !important; }
 
-        iframe { width: 100%; height: 100%; border: none; background: white; }
+        /* --- 右側預覽 --- */
+        .preview-wrapper {
+            flex: 1; background: white; overflow: hidden;
+        }
+        iframe { width: 100%; height: 100%; border: none; }
 
-        /* Resizer & UI Components */
+        /* --- Resizer --- */
         .resizer {
-            background: var(--border-color); cursor: col-resize; z-index: 10;
+            background: var(--bg-color); cursor: col-resize; z-index: 10;
             transition: background 0.2s;
+            border-left: 1px solid var(--border-color);
+            border-right: 1px solid var(--border-color);
         }
         .resizer:hover, .resizer.active { background: var(--accent-color); }
 
-        .btn-icon {
-            background: transparent; border: none; color: inherit; cursor: pointer;
-            padding: 5px 8px; border-radius: 4px; opacity: 0.7; transition: 0.2s;
-        }
-        .btn-icon:hover { opacity: 1; background: rgba(128,128,128,0.1); }
-        .btn-primary { color: var(--accent-color); opacity: 1; font-weight: bold; }
-        
-        select.theme-select {
-            background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
-            color: white; padding: 4px; border-radius: 4px;
-        }
-        select.theme-select option { color: black; }
-
-        /* 結構樹樣式 */
-        .outline-item {
-            padding: 4px 10px; cursor: pointer; border-left: 3px solid transparent;
-            font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        }
-        .outline-item:hover { background: rgba(128,128,128,0.05); border-left-color: var(--accent-color); }
-        .outline-tag { 
-            display: inline-block; width: 45px; font-family: monospace; opacity: 0.6; font-size: 0.8em;
-        }
-
-        /* --- 3. RWD 手機版適配 (關鍵修復) --- */
-        @media (max-width: 768px) {
-            /* 解鎖 Body 捲動 */
-            html, body { overflow-y: auto !important; height: auto !important; }
-            .app-layout { height: auto !important; display: block; }
-            
-            /* Navbar */
-            .navbar { position: sticky; top: 0; }
-            
-            /* 把 Grid 變成垂直排列 */
-            .workspace {
-                display: flex; flex-direction: column;
-                height: auto !important;
-                overflow: visible !important;
-            }
-
-            /* 隱藏非必要元件 */
-            .resizer, #pane-nav { display: none; }
-
-            /* 確保編輯器和預覽有足夠高度 */
-            .pane { 
-                height: auto !important; 
-                border-right: none; 
-                border-bottom: 5px solid var(--border-color);
-            }
-
-            /* CodeMirror 在手機上固定高度，避免太長 */
-            .CodeMirror { height: 500px !important; }
-            
-            /* 預覽區高度 */
-            #pane-preview { height: 600px !important; }
-            
-            /* 調整按鈕大小適合手指 */
-            .btn-icon { padding: 8px 12px; }
-        }
-
-        /* --- 4. Modals & Toasts --- */
+        /* --- Modals (AI) --- */
         .modal-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center;
@@ -191,161 +164,195 @@
         .modal-box {
             background: var(--pane-bg); width: 600px; max-width: 90%; 
             border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            display: flex; flex-direction: column; overflow: hidden;
+            display: flex; flex-direction: column; border: 1px solid var(--border-color);
         }
-        .modal-header { padding: 15px; background: var(--header-bg); color: white; font-weight: bold; }
+        .modal-header { padding: 15px; background: rgba(0,0,0,0.2); font-weight: bold; border-bottom: 1px solid var(--border-color); }
         .modal-body { padding: 15px; }
-        .modal-footer { padding: 10px 15px; display: flex; justify-content: flex-end; gap: 10px; background: rgba(0,0,0,0.05); }
+        .modal-footer { padding: 10px 15px; display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid var(--border-color); }
         
         textarea.ai-input {
-            width: 100%; height: 200px; background: rgba(0,0,0,0.05); 
+            width: 100%; height: 200px; background: rgba(0,0,0,0.1); 
             border: 1px solid var(--border-color); color: var(--text-color); 
             padding: 10px; font-family: monospace; resize: vertical;
         }
 
+        /* --- Toast --- */
         .toast {
             position: fixed; bottom: 20px; right: 20px; 
             padding: 10px 20px; background: #28a745; color: white; 
             border-radius: 4px; transform: translateY(100px); 
-            transition: transform 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28); z-index: 2000;
+            transition: transform 0.3s; z-index: 2000;
         }
         .toast.show { transform: translateY(0); }
-
-        /* 高亮效果 */
-        .highlight-line { background-color: rgba(255, 255, 0, 0.2); }
     </style>
 </head>
+
 <body>
 
-<div class="app-layout">
-    <header class="navbar">
-        <div class="navbar-title">
-            <i class="fa-solid fa-code"></i> HTML Ultimate
-        </div>
-        <div class="navbar-controls">
-            <span id="save-status" style="font-size: 0.8rem; opacity: 0.7;"></span>
-            <select class="theme-select" onchange="setTheme(this.value)">
-                <option value="eclipse">Light</option>
-                <option value="material">Material</option>
-                <option value="dracula">Dracula</option>
-            </select>
-        </div>
-    </header>
-
-    <div class="workspace" id="grid">
-        
-        <div class="pane" id="pane-nav">
-            <div class="pane-header">
-                <span><i class="fa-solid fa-list-ul"></i> 結構</span>
-                <button class="btn-icon" onclick="updateOutline()" title="重新整理">⟳</button>
+    <div class="app-layout">
+        <!-- 頂部導航 -->
+        <header class="navbar">
+            <div class="navbar-title">
+                <i class="fa-solid fa-code"></i> HTML Ultimate
             </div>
-            <div id="outline-container" class="scroll-area"></div>
-        </div>
+            <div class="navbar-controls">
+                <span id="save-status" style="font-size: 0.8rem; opacity: 0.6; margin-right: 10px;"></span>
+                
+                <select class="theme-select" onchange="setTheme(this.value)">
+                    <option value="dracula">Dracula (Dark)</option>
+                    <option value="material">Material (Dark)</option>
+                    <option value="eclipse">Eclipse (Light)</option>
+                </select>
 
-        <div class="resizer" data-target="pane-nav"></div>
+                <button class="btn-icon btn-primary" onclick="openAiModal()">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> AI 替換
+                </button>
+                <button class="btn-icon" onclick="formatCode()" title="美化代碼">
+                    <i class="fa-solid fa-align-left"></i>
+                </button>
+                <button class="btn-icon" onclick="copyCode()" title="複製全部">
+                    <i class="fa-regular fa-copy"></i>
+                </button>
+                <button class="btn-icon" onclick="clearEditor()" title="清空" style="color:#ff5555">
+                    <i class="fa-regular fa-trash-can"></i>
+                </button>
+            </div>
+        </header>
 
-        <div class="pane" id="pane-editor">
-            <div class="pane-header">
-                <span><i class="fa-solid fa-file-code"></i> 原始碼</span>
-                <div>
-                    <button class="btn-icon btn-primary" onclick="openAiModal()">
-                        <i class="fa-solid fa-wand-magic-sparkles"></i> AI 替換
-                    </button>
-                    <button class="btn-icon" onclick="formatCode()" title="美化">
-                        <i class="fa-solid fa-align-left"></i>
-                    </button>
-                    <button class="btn-icon" onclick="copyCode()" title="複製">
-                        <i class="fa-regular fa-copy"></i>
-                    </button>
-                    <button class="btn-icon" onclick="editor.setValue('')" title="清空" style="color:#e53e3e">
-                        <i class="fa-regular fa-trash-can"></i>
-                    </button>
+        <!-- 主要工作區 (Grid) -->
+        <div class="workspace" id="grid">
+
+            <!-- 左側：結構樹 -->
+            <div class="pane" id="pane-nav">
+                <div class="pane-header">
+                    <span><i class="fa-solid fa-layer-group"></i> DOM 結構</span>
+                    <button class="btn-icon" onclick="updateOutline()" style="font-size:0.7rem">⟳</button>
+                </div>
+                <div id="outline-container" class="scroll-area"></div>
+            </div>
+
+            <!-- 拉桿 1 -->
+            <div class="resizer" data-target="pane-nav"></div>
+
+            <!-- 中間：編輯器 -->
+            <div class="pane" id="pane-editor">
+                <div class="pane-header">
+                    <span><i class="fa-solid fa-file-code"></i> 原始碼</span>
+                </div>
+                <textarea id="code-editor"></textarea>
+            </div>
+
+            <!-- 拉桿 2 -->
+            <div class="resizer" data-target="pane-editor"></div>
+
+            <!-- 右側：預覽 -->
+            <div class="pane" id="pane-preview">
+                <div class="pane-header">
+                    <span><i class="fa-solid fa-desktop"></i> 即時預覽 (點擊元素跳轉)</span>
+                </div>
+                <div class="preview-wrapper">
+                    <iframe id="preview-frame" sandbox="allow-scripts allow-modals allow-same-origin"></iframe>
                 </div>
             </div>
-            <textarea id="code-editor"></textarea>
-        </div>
-
-        <div class="resizer" data-target="pane-editor"></div>
-
-        <div class="pane" id="pane-preview">
-            <div class="pane-header">
-                <span><i class="fa-solid fa-desktop"></i> 預覽</span>
-                <label style="cursor:pointer; display:flex; align-items:center; gap:5px; font-size:0.8rem;">
-                    <input type="checkbox" id="mode-md" onchange="switchMode()"> Markdown
-                </label>
-            </div>
-            <iframe id="preview-frame" sandbox="allow-scripts allow-modals allow-same-origin"></iframe>
         </div>
     </div>
-</div>
 
-<div id="ai-modal" class="modal-overlay">
-    <div class="modal-box">
-        <div class="modal-header">
-            <i class="fa-solid fa-robot"></i> AI 智能替換
-        </div>
-        <div class="modal-body">
-            <p style="font-size:0.9rem; margin-top:0; opacity:0.8;">
-                請貼上 LLM (ChatGPT/Claude) 產生的新程式碼區塊。<br>
-                系統會自動比對函數名稱、ID 或 Class 進行局部更新。
-            </p>
-            <textarea id="ai-input" class="ai-input" placeholder="例如：
+    <!-- AI 彈窗 -->
+    <div id="ai-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header">
+                <i class="fa-solid fa-robot"></i> AI 智能替換
+            </div>
+            <div class="modal-body">
+                <p style="font-size:0.9rem; margin-top:0; opacity:0.8;">
+                    請貼上 LLM (ChatGPT/Claude) 產生的新程式碼區塊。<br>
+                    若有選取文字，將直接替換選取範圍；否則將插入游標處。
+                </p>
+                <textarea id="ai-input" class="ai-input" placeholder="例如：
 function updateChart() {
     // 新的邏輯...
 }"></textarea>
-        </div>
-        <div class="modal-footer">
-            <button class="btn-icon" onclick="closeAiModal()" style="border:1px solid #ccc">取消</button>
-            <button class="btn-icon btn-primary" onclick="performSmartReplace()" style="background:var(--accent-color); color:white;">執行替換</button>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-icon" onclick="closeAiModal()" style="border:1px solid var(--border-color)">取消</button>
+                <button class="btn-icon btn-primary" onclick="performSmartReplace()">執行替換</button>
+            </div>
         </div>
     </div>
-</div>
 
-<div id="toast" class="toast"><i class="fa-solid fa-check"></i> 已儲存</div>
+    <!-- 提示訊息 -->
+    <div id="toast" class="toast"><i class="fa-solid fa-check"></i> 已儲存</div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/xml/xml.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/javascript/javascript.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/css/css.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/htmlmixed/htmlmixed.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/markdown/markdown.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/search/searchcursor.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/fold/foldcode.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/fold/foldgutter.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/fold/xml-fold.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.7/beautify-html.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/xml/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/css/css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/htmlmixed/htmlmixed.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/search/searchcursor.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/fold/foldcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/fold/foldgutter.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/fold/xml-fold.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.7/beautify-html.min.js"></script>
 
-<script>
-    // --- 1. 編輯器初始化 ---
-    const editor = CodeMirror.fromTextArea(document.getElementById('code-editor'), {
-        mode: "htmlmixed",
-        theme: "eclipse",
-        lineNumbers: true,
-        lineWrapping: true,
-        styleActiveLine: true,
-        foldGutter: true,
-        gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"]
-    });
-
-    const previewFrame = document.getElementById('preview-frame');
-    let debounceTimer;
-
-    // --- 2. 預覽與雙向同步 (Sync) ---
-    function updatePreview() {
-        const isMd = document.getElementById('mode-md').checked;
-        let content = editor.getValue();
+    <script>
+        // --- 1. 編輯器初始化 ---
+        const editor = CodeMirror.fromTextArea(document.getElementById('code-editor'), {
+            mode: "htmlmixed",
+            theme: "dracula",
+            lineNumbers: true,
+            lineWrapping: true,
+            styleActiveLine: true,
+            foldGutter: true,
+            gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"]
+        });
         
-        if (isMd) {
-            content = `<style>body{font-family:sans-serif;padding:20px;line-height:1.6}img{max-width:100%}</style>` + marked.parse(content);
-        } else {
-            // 注入同步腳本
+        const previewFrame = document.getElementById('preview-frame');
+        let debounceTimer;
+
+        // 預設範本
+        const defaultContent = `<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background: #f4f4f9; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); max-width: 600px; margin: 0 auto; }
+        h1 { color: #333; border-bottom: 2px solid #007bff; padding-bottom: 10px; }
+        p { color: #666; line-height: 1.6; }
+        button { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        button:hover { background: #0056b3; }
+        #output { margin-top: 15px; font-weight: bold; color: #28a745; }
+    </style>
+</head>
+<body>
+    <div id="main-card" class="card">
+        <h1>Hello World</h1>
+        <p>這是一個整合了 DOM 結構、代碼編輯與即時預覽的編輯器。</p>
+        <p>試試看點擊右側預覽區的文字，左側代碼會自動跳轉！</p>
+        
+        <button id="btn-test" onclick="showMessage()">點擊測試</button>
+        <div id="output"></div>
+    </div>
+
+    <script>
+        function showMessage() {
+            document.getElementById('output').innerText = "按鈕已點擊！時間：" + new Date().toLocaleTimeString();
+        }
+    <\/script>
+</body>
+</html>`;
+
+        // --- 2. 核心：預覽與雙向同步 ---
+        function updatePreview() {
+            let content = editor.getValue();
+            
+            // 注入同步腳本 (Reverse Sync)
             const syncScript = `
             <script>
                 document.addEventListener('click', (e) => {
                     e.stopPropagation();
                     const data = {
-                        type: 'sync',
+                        type: 'sync-click',
                         tag: e.target.tagName.toLowerCase(),
                         id: e.target.id,
                         cls: e.target.className,
@@ -354,238 +361,212 @@ function updateChart() {
                     window.parent.postMessage(data, '*');
                 }, true);
             <\/script>`;
-            content = content.replace('</body>', syncScript + '</body>');
-            if(!content.includes('</body>')) content += syncScript;
-        }
-        
-        previewFrame.srcdoc = content;
-        saveToLocal();
-    }
-
-    // 接收來自 iframe 的點擊，跳轉到原始碼
-    window.addEventListener('message', (e) => {
-        if (e.data.type === 'sync') {
-            const { tag, id, text } = e.data;
-            // 建立正則表達式尋找標籤
-            let regexStr = `<${tag}`;
-            if (id) regexStr += `[^>]*id=["']${id}["']`;
-            else if (text) regexStr += `[^>]*>[^<]*${text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`;
             
-            const cursor = editor.getSearchCursor(new RegExp(regexStr, 'i'));
-            if (cursor.findNext()) {
-                const line = cursor.from().line;
-                editor.setCursor(line, 0);
-                editor.scrollIntoView({line, ch:0}, 200);
-                // 閃爍高亮
-                const mark = editor.markText({line, ch:0}, {line:line+1, ch:0}, {className: "highlight-line"});
-                setTimeout(() => mark.clear(), 1500);
-                showToast(`定位到 <${tag}>`);
+            if(content.includes('</body>')) {
+                content = content.replace('</body>', syncScript + '</body>');
+            } else {
+                content += syncScript;
             }
-        }
-    });
-
-    // --- 3. AI 智能替換 (Advanced Logic) ---
-    function openAiModal() { document.getElementById('ai-modal').style.display = 'flex'; }
-    function closeAiModal() { document.getElementById('ai-modal').style.display = 'none'; }
-    
-    function performSmartReplace() {
-        const input = document.getElementById('ai-input').value.trim();
-        if (!input) { showToast('請先貼上程式碼'); return; }
-
-        // 策略 A: 如果有選取區域，直接替換
-        if (editor.somethingSelected()) {
-            editor.replaceSelection(input);
-            finishReplace('已替換選取區域');
-            return;
-        }
-
-        // 策略 B: 智慧搜尋 (Fuzzy Match)
-        const lines = input.split('\n');
-        // 找第一行非註解、非空白的代碼作為特徵
-        const featureLine = lines.find(l => l.trim().length > 3 && !l.trim().startsWith('//'));
-        
-        if (featureLine) {
-            // 取特徵行 (去掉括號後面的內容，增加容錯率)
-            const cleanKey = featureLine.split('{')[0].split('(')[0].trim();
-            const cursor = editor.getSearchCursor(new RegExp(cleanKey.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'));
             
-            if (cursor.findNext()) {
-                const startLine = cursor.from().line;
+            previewFrame.srcdoc = content;
+            
+            // 同步更新左側結構
+            updateOutline();
+            saveToLocal();
+        }
+
+        // 接收 iframe 點擊事件
+        window.addEventListener('message', (e) => {
+            if (e.data.type === 'sync-click') {
+                const { tag, id, cls } = e.data;
                 
-                // 嘗試自動判斷區塊結尾 (基於縮排或括號平衡)
-                // 這裡簡化：提示使用者，並高亮該位置
-                editor.setCursor(startLine, 0);
-                editor.scrollIntoView({line: startLine, ch: 0}, 200);
-                
-                if (confirm(`找到與第一行相似的代碼 (第 ${startLine + 1} 行)：\n\n"${editor.getLine(startLine).trim()}"\n\n是否在此處插入/替換？`)) {
-                    // 這裡採用插入模式，或者您可以手動選擇範圍
-                    // 若要自動替換整個區塊難度較高，這裡我們先做「取代游標處往下 N 行」或直接插入
-                    editor.replaceRange(input + '\n', {line: startLine, ch: 0}); 
-                    finishReplace('已在目標位置插入代碼 (舊代碼可能需手動刪除)');
+                // 建立搜尋正則
+                let regexStr = `<${tag}`;
+                if (id) regexStr += `[^>]*id=["']${id}["']`;
+                else if (cls && typeof cls === 'string' && cls.trim()) {
+                    const firstClass = cls.split(' ')[0];
+                    regexStr += `[^>]*class=["'][^"']*${firstClass}[^"']*["']`;
                 }
-            } else {
-                alert('找不到特徵代碼：' + cleanKey + '\n請嘗試選取舊代碼後再使用此功能。');
-            }
-        } else {
-            showToast('無法識別代碼特徵');
-        }
-    }
-
-    function finishReplace(msg) {
-        closeAiModal();
-        formatCode();
-        showToast(msg);
-        document.getElementById('ai-input').value = '';
-    }
-
-    // --- 4. 結構導航 (Outline) ---
-    function updateOutline() {
-        const list = document.getElementById('outline-container');
-        if(document.getElementById('mode-md').checked) {
-             list.innerHTML = '<div style="padding:10px;color:#999;text-align:center">Markdown 模式無結構</div>'; 
-             return; 
-        }
-
-        const lines = editor.getValue().split('\n');
-        let html = '';
-        
-        lines.forEach((line, i) => {
-            let label = '', tag = '', color = '#666';
-            
-            // 標題 H1-H6
-            const hMatch = line.match(/<(h[1-6]).*?>(.*?)<\/\1>/i);
-            if (hMatch) { tag = hMatch[1].toUpperCase(); label = hMatch[2]; color = '#d35400'; }
-            
-            // ID
-            const idMatch = line.match(/id=["']([^"']+)["']/i);
-            if (!hMatch && idMatch) { tag = '#'; label = idMatch[1]; color = '#2980b9'; }
-            
-            // Script Function
-            const funcMatch = line.match(/function\s+([a-zA-Z0-9_]+)/);
-            if (funcMatch) { tag = 'JS'; label = funcMatch[1] + '()'; color = '#27ae60'; }
-            
-            // CSS Class (僅列出主要的)
-            const cssMatch = line.match(/^\s*\.([a-zA-Z0-9_-]+)\s*\{/);
-            if (cssMatch) { tag = 'CSS'; label = '.' + cssMatch[1]; color = '#8e44ad'; }
-
-            if (label) {
-                html += `<div class="outline-item" onclick="jumpTo(${i})">
-                            <span class="outline-tag" style="color:${color}">${tag}</span>
-                            ${label.replace(/<[^>]+>/g, '')}
-                         </div>`;
+                
+                const cursor = editor.getSearchCursor(new RegExp(regexStr, 'i'));
+                if (cursor.findNext()) {
+                    const line = cursor.from().line;
+                    jumpToLine(line);
+                    showToast(`定位到 <${tag}>`);
+                }
             }
         });
+
+        // --- 3. 左側結構樹 (DOM Tree) ---
+        function updateOutline() {
+            const list = document.getElementById('outline-container');
+            const lines = editor.getValue().split('\n');
+            let html = '';
+            
+            lines.forEach((line, i) => {
+                // 簡單解析：抓取 <tag id="x">
+                const match = line.match(/<([a-zA-Z0-9-]+)([^>]*)>/);
+                if (match) {
+                    const tag = match[1];
+                    const attrs = match[2];
+                    
+                    // 排除閉合標籤
+                    if (line.includes(`</${tag}`) && !line.includes(`<${tag}`)) return;
+
+                    const idMatch = attrs.match(/id=["']([^"']+)["']/);
+                    const id = idMatch ? '#' + idMatch[1] : '';
+                    
+                    // 過濾顯示重要的標籤
+                    const importantTags = ['html','head','body','div','section','article','header','footer','nav','h1','h2','h3','form','table','script','style'];
+                    
+                    if (importantTags.includes(tag) || id) {
+                        html += `
+                        <div class="outline-item" onclick="jumpToLine(${i})">
+                            <span class="tag-badge">${tag}</span>
+                            ${id ? `<span class="id-text">${id}</span>` : ''}
+                        </div>`;
+                    }
+                }
+            });
+            
+            list.innerHTML = html || '<div style="padding:10px; opacity:0.5; text-align:center">無結構</div>';
+        }
+
+        function jumpToLine(line) {
+            editor.setCursor(line, 0);
+            // 垂直置中
+            const coords = editor.charCoords({line: line, ch: 0}, "local");
+            const scrollInfo = editor.getScrollInfo();
+            editor.scrollTo(null, coords.top - scrollInfo.clientHeight / 2);
+            editor.focus();
+            
+            // 高亮閃爍
+            const mark = editor.markText({line, ch:0}, {line:line+1, ch:0}, {className: "highlight-line"});
+            setTimeout(() => mark.clear(), 1500);
+        }
+
+        // --- 4. AI 替換功能 ---
+        function openAiModal() { document.getElementById('ai-modal').style.display = 'flex'; }
+        function closeAiModal() { document.getElementById('ai-modal').style.display = 'none'; }
         
-        list.innerHTML = html || '<div style="padding:10px;color:#999;text-align:center">無可顯示結構</div>';
-    }
+        function performSmartReplace() {
+            const input = document.getElementById('ai-input').value;
+            if (!input) return;
 
-    function jumpTo(line) {
-        editor.setCursor(line, 0);
-        editor.scrollIntoView({line, ch:0}, 200);
-        editor.focus();
-    }
-
-    // --- 5. 拖曳調整 (Resizer) ---
-    document.querySelectorAll('.resizer').forEach(el => {
-        el.addEventListener('mousedown', initResize);
-    });
-
-    function initResize(e) {
-        e.preventDefault();
-        const targetId = e.target.dataset.target;
-        const grid = document.getElementById('grid');
-        const startX = e.clientX;
-        const cols = getComputedStyle(grid).gridTemplateColumns.split(' ');
-        // 取得當前寬度 (Nav是第0欄, Editor是第2欄)
-        const startWidth = parseFloat(cols[targetId === 'pane-nav' ? 0 : 2]); 
-        
-        document.body.style.cursor = 'col-resize';
-        e.target.classList.add('active');
-
-        function doDrag(ev) {
-            const diff = ev.clientX - startX;
-            const newWidth = startWidth + diff;
-            if (newWidth < 50) return; 
-
-            if (targetId === 'pane-nav') {
-                grid.style.gridTemplateColumns = `${newWidth}px 4px 1fr ${cols[3]} ${cols[4]}`;
+            if (editor.somethingSelected()) {
+                editor.replaceSelection(input);
             } else {
-                // 調整 Editor 寬度時，犧牲 Preview 寬度
-                grid.style.gridTemplateColumns = `${cols[0]} ${cols[1]} ${newWidth}px 4px 1fr`;
+                editor.replaceRange(input + '\n', editor.getCursor());
             }
+            
+            closeAiModal();
+            formatCode();
+            showToast('代碼已插入');
+            document.getElementById('ai-input').value = '';
         }
 
-        function stopDrag() {
-            document.removeEventListener('mousemove', doDrag);
-            document.removeEventListener('mouseup', stopDrag);
-            document.body.style.cursor = '';
-            e.target.classList.remove('active');
-            editor.refresh();
-        }
-
-        document.addEventListener('mousemove', doDrag);
-        document.addEventListener('mouseup', stopDrag);
-    }
-
-    // --- 6. 實用工具 ---
-    function formatCode() {
-        if(document.getElementById('mode-md').checked) return;
-        editor.setValue(html_beautify(editor.getValue(), { indent_size: 4, indent_inner_html: true }));
-    }
-
-    function copyCode() {
-        navigator.clipboard.writeText(editor.getValue()).then(() => showToast('已複製'));
-    }
-
-    function switchMode() {
-        const isMd = document.getElementById('mode-md').checked;
-        editor.setOption('mode', isMd ? 'markdown' : 'htmlmixed');
-        updatePreview();
-        updateOutline();
-    }
-
-    function setTheme(t) {
-        editor.setOption('theme', t);
-        document.body.setAttribute('data-theme', t === 'eclipse' ? 'light' : t);
-        localStorage.setItem('editor_theme', t);
-    }
-
-    function showToast(msg) {
-        const t = document.getElementById('toast');
-        t.innerHTML = `<i class="fa-solid fa-check"></i> ${msg}`;
-        t.classList.add('show');
-        setTimeout(() => t.classList.remove('show'), 2000);
-    }
-
-    // --- 7. 載入與儲存 ---
-    function saveToLocal() {
-        localStorage.setItem('ultimate_editor_content', editor.getValue());
-        const t = new Date();
-        document.getElementById('save-status').innerText = `Saved ${t.getHours()}:${t.getMinutes() < 10 ? '0'+t.getMinutes() : t.getMinutes()}`;
-    }
-
-    window.addEventListener('load', () => {
-        // 恢復主題
-        const savedTheme = localStorage.getItem('editor_theme') || 'eclipse';
-        document.querySelector(`.theme-select [value="${savedTheme}"]`).selected = true;
-        setTheme(savedTheme);
-
-        // 恢復內容
-        const savedContent = localStorage.getItem('ultimate_editor_content');
-        if (savedContent) editor.setValue(savedContent);
-        else editor.setValue('<!DOCTYPE html>\n<html>\n<head>\n<style>\n  body { font-family: sans-serif; padding: 20px; }\n  h1 { color: #333; }\n</style>\n</head>\n<body>\n  <h1>Hello World</h1>\n  <p>這是您的 HTML 編輯器</p>\n  <script>\n    console.log("Ready");\n  <\/script>\n</body>\n</html>');
-
-        // 監聽
-        editor.on('change', () => {
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(updatePreview, 500);
-            setTimeout(updateOutline, 800);
+        // --- 5. 拖曳調整 (Resizer) ---
+        document.querySelectorAll('.resizer').forEach(el => {
+            el.addEventListener('mousedown', initResize);
         });
 
-        updateOutline();
-        updatePreview();
-    });
+        function initResize(e) {
+            e.preventDefault();
+            const targetId = e.target.dataset.target;
+            const grid = document.getElementById('grid');
+            const previewWrapper = document.querySelector('.preview-wrapper');
+            
+            // 暫時停用 iframe 互動，避免拖曳卡住
+            previewWrapper.style.pointerEvents = 'none';
+            document.body.style.cursor = 'col-resize';
+            e.target.classList.add('active');
 
-</script>
+            function doDrag(ev) {
+                const cols = getComputedStyle(grid).gridTemplateColumns.split(' ');
+                // cols[0]=Left, cols[2]=Center, cols[4]=Right
+                
+                if (targetId === 'pane-nav') {
+                    // 調整左側寬度
+                    const newWidth = ev.clientX;
+                    if (newWidth > 150 && newWidth < 500) {
+                        grid.style.gridTemplateColumns = `${newWidth}px 4px 1fr 4px 1fr`;
+                    }
+                } else if (targetId === 'pane-editor') {
+                    // 調整中間寬度
+                    const leftWidth = document.getElementById('pane-nav').offsetWidth;
+                    const centerWidth = ev.clientX - leftWidth - 4;
+                    if (centerWidth > 200 && (ev.clientX < window.innerWidth - 200)) {
+                        grid.style.gridTemplateColumns = `${leftWidth}px 4px ${centerWidth}px 4px 1fr`;
+                    }
+                }
+            }
+
+            function stopDrag() {
+                document.removeEventListener('mousemove', doDrag);
+                document.removeEventListener('mouseup', stopDrag);
+                document.body.style.cursor = '';
+                e.target.classList.remove('active');
+                previewWrapper.style.pointerEvents = 'auto';
+                editor.refresh();
+            }
+
+            document.addEventListener('mousemove', doDrag);
+            document.addEventListener('mouseup', stopDrag);
+        }
+
+        // --- 6. 輔助功能 ---
+        function formatCode() {
+            editor.setValue(html_beautify(editor.getValue(), { indent_size: 4, indent_inner_html: true }));
+        }
+
+        function copyCode() {
+            navigator.clipboard.writeText(editor.getValue()).then(() => showToast('已複製全部代碼'));
+        }
+
+        function clearEditor() {
+            if(confirm('確定要清空所有代碼嗎？')) editor.setValue('');
+        }
+
+        function setTheme(theme) {
+            editor.setOption('theme', theme);
+            document.body.setAttribute('data-theme', theme);
+            localStorage.setItem('editor_theme', theme);
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.innerHTML = `<i class="fa-solid fa-check"></i> ${msg}`;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2000);
+        }
+
+        function saveToLocal() {
+            localStorage.setItem('ultimate_editor_content', editor.getValue());
+            const t = new Date();
+            document.getElementById('save-status').innerText = `已儲存 ${t.getHours()}:${t.getMinutes().toString().padStart(2, '0')}`;
+        }
+
+        // --- 7. 啟動載入 ---
+        window.addEventListener('load', () => {
+            // 恢復主題
+            const savedTheme = localStorage.getItem('editor_theme') || 'dracula';
+            document.querySelector(`.theme-select [value="${savedTheme}"]`).selected = true;
+            setTheme(savedTheme);
+
+            // 恢復內容
+            const savedContent = localStorage.getItem('ultimate_editor_content');
+            if (savedContent) editor.setValue(savedContent);
+            else editor.setValue(defaultContent);
+
+            // 監聽變更
+            editor.on('change', () => {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(updatePreview, 500);
+            });
+
+            updatePreview();
+        });
+
+    </script>
 </body>
 </html>
