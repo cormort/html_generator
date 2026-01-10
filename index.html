@@ -1,536 +1,584 @@
-
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HTML Editor Ultimate (AI 輔助版)</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.css" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/theme/material.min.css" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/theme/dracula.min.css" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/lint/lint.css" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/fold/foldgutter.css" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/dialog/dialog.css" crossorigin="anonymous">
+    <title>HTML Editor Ultimate (Pro版)</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/theme/material-palenight.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/theme/dracula.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/theme/eclipse.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/fold/foldgutter.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/dialog/dialog.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        /* --- CSS 變數 --- */
+        /* --- 核心變數 --- */
         :root {
-            --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --bg-color: #f5f7fa;
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --bg-color: #f8f9fa;
+            --sidebar-bg: #ffffff;
             --text-color: #2d3748;
-            --container-bg: #ffffff;
-            --nav-border-color: #e2e8f0;
+            --border-color: #e2e8f0;
             --accent-color: #667eea;
-            --button-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --scroll-thumb: #cbd5e0;
         }
 
         [data-theme="material"] {
-            --bg-gradient: linear-gradient(135deg, #1a237e 0%, #0d47a1 100%);
-            --bg-color: #1e1e1e;
-            --text-color: #e0e0e0;
-            --container-bg: #2d2d2d;
-            --nav-border-color: #424242;
-            --accent-color: #26c6da;
-            --button-bg: linear-gradient(135deg, #26c6da 0%, #00acc1 100%);
+            --primary-gradient: linear-gradient(135deg, #292d3e 0%, #1b1e2b 100%);
+            --bg-color: #1a1a1a;
+            --sidebar-bg: #292d3e;
+            --text-color: #a6accd;
+            --border-color: #434758;
+            --accent-color: #82aaff;
+            --scroll-thumb: #434758;
         }
 
         [data-theme="dracula"] {
-            --bg-gradient: linear-gradient(135deg, #6272a4 0%, #44475a 100%);
-            --bg-color: #282a36;
+            --primary-gradient: linear-gradient(135deg, #282a36 0%, #44475a 100%);
+            --bg-color: #21222c;
+            --sidebar-bg: #282a36;
             --text-color: #f8f8f2;
-            --container-bg: #44475a;
-            --nav-border-color: #6272a4;
-            --accent-color: #bd93f9;
-            --button-bg: linear-gradient(135deg, #bd93f9 0%, #9580d6 100%);
+            --border-color: #6272a4;
+            --accent-color: #ff79c6;
+            --scroll-thumb: #6272a4;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        /* --- 基礎設定 --- */
+        * { box-sizing: border-box; outline: none; }
+        html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: var(--bg-color); color: var(--text-color); }
         
-        /* 1. 確保視窗高度固定，禁止外層捲動 */
-        html, body { 
-            height: 100%; 
-            width: 100%;
-            overflow: hidden; 
+        /* 滾動條美化 */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--scroll-thumb); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent-color); }
+
+        /* --- 佈局 --- */
+        .app-container {
+            display: flex; flex-direction: column; height: 100vh;
         }
+
+        /* 1. 頂部導航 */
+        .navbar {
+            height: 48px; background: var(--primary-gradient); display: flex; align-items: center; justify-content: space-between; padding: 0 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); z-index: 10;
+        }
+        .brand { font-weight: 700; color: #fff; font-size: 1.1rem; display: flex; align-items: center; gap: 10px; }
+        .brand i { font-size: 1.2rem; }
         
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg-color);
-            color: var(--text-color);
-            display: flex;   
-            flex-direction: column;  
+        .nav-controls { display: flex; gap: 10px; align-items: center; }
+        .theme-select {
+            background: rgba(255,255,255,0.2); border: none; color: white; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.85rem;
+        }
+        .theme-select option { background: #333; color: white; }
+
+        /* 2. 主工作區 (Grid) */
+        .workspace {
+            flex: 1; display: grid; grid-template-columns: 220px 4px 1fr 4px 1fr; overflow: hidden; position: relative;
         }
 
-        /* 2. Header 固定高度 */
-        .header-bar {
-            padding: 0 20px;
-            height: 50px;
-            background: var(--bg-gradient);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex: 0 0 auto; /* 禁止縮放 */
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-            z-index: 1000;
-            position: relative;
-        }
-        .header-bar h1 { font-size: 1.1rem; color: white; font-weight: 600; }
-        .controls { display: flex; gap: 10px; align-items: center; }
-        select { padding: 4px 8px; border-radius: 4px; border: none; font-size: 0.85rem; }
-
-        /* 3. 主內容區：填滿剩餘高度 */
-        .main-content {
-            display: grid;
-            grid-template-columns: 250px 4px 1fr 4px 1fr;
-            flex: 1; 
-            width: 100%;
-            overflow: hidden; /* 關鍵：防止網格本身撐開 */
-            position: relative;
-            transition: grid-template-columns 0.3s ease;
-        }
-
-        /* Resizer */
-        .resizer { background: var(--nav-border-color); cursor: col-resize; z-index: 5; transition: background 0.2s; }
-        .resizer:hover { background: var(--accent-color); }
-
-        /* 4. 窗格容器：Flex Column 佈局 */
-        .pane { 
-            background: var(--container-bg); 
-            display: flex; 
-            flex-direction: column; 
-            height: 100%;      /* 填滿網格高度 */
-            min-height: 0;     /* 關鍵：允許 Flex 子元素縮小到 0，防止溢出 */
-            overflow: hidden;  /* 隱藏溢出，交給子元素捲動 */
-            position: relative; 
-        }
-
+        /* 窗格通用樣式 */
+        .pane { display: flex; flex-direction: column; background: var(--sidebar-bg); min-width: 0; position: relative; }
         .pane-header {
-            padding: 8px 12px;
-            border-bottom: 1px solid var(--nav-border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(0,0,0,0.02);
-            gap: 5px;
-            white-space: nowrap;
-            flex: 0 0 auto; /* 標題列固定高度 */
+            height: 36px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; padding: 0 10px; background: rgba(0,0,0,0.03); user-select: none;
         }
-        .pane-title { font-size: 0.85rem; font-weight: bold; opacity: 0.8; }
-
-        /* Toggle Buttons */
-        .toggle-btn {
-            position: absolute; top: 50%; width: 24px; height: 24px; border-radius: 50%;
-            background: var(--container-bg); border: 1px solid var(--accent-color);
-            color: var(--accent-color); display: flex; align-items: center; justify-content: center;
-            cursor: pointer; z-index: 20; font-weight: bold; line-height: 1;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.15); transition: all 0.2s; user-select: none;
-        }
-        .toggle-btn:hover { background: var(--accent-color); color: white; transform: scale(1.1); }
-        #btn-toggle-nav { left: 0; transform: translate(-50%, -50%); }
-        #btn-toggle-preview { right: 0; transform: translate(50%, -50%); }
-
-        /* Navigation Filter */
-        #nav-filter { flex-grow: 1; max-width: 120px; padding: 2px 5px; border: 1px solid var(--nav-border-color); border-radius: 4px; font-size: 0.8rem; background: var(--container-bg); color: var(--text-color); }
-
-        /* 5. 左側導覽列：獨立捲動 */
-        #outline-container { 
-            flex: 1;           /* 填滿剩餘空間 */
-            overflow-y: auto;  /* 允許垂直捲動 */
-            padding: 5px 0; 
-            min-height: 0;     /* 防止 Flex 溢出 */
-        }
-        #outline-container a { display: block; padding: 6px 15px; text-decoration: none; color: var(--text-color); font-size: 0.85rem; border-left: 3px solid transparent; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        #outline-container a:hover { background: rgba(128,128,128,0.1); border-left-color: var(--accent-color); }
-        .outline-h1 { font-weight: bold; }
-        .outline-h2 { padding-left: 25px !important; }
-        .outline-h3 { padding-left: 35px !important; opacity: 0.8; }
-        .outline-id { color: var(--accent-color) !important; font-family: monospace; padding-left: 15px !important; }
-        .outline-class { color: #d97706 !important; font-family: monospace; padding-left: 15px !important; }
-
-        /* 6. 中間編輯器：獨立捲動 */
-        .CodeMirror { 
-            flex: 1;           /* 填滿剩餘空間 */
-            height: auto !important; /* 覆蓋預設高度 */
-            min-height: 0;     /* 防止 Flex 溢出 */
-            font-size: 14px; 
-            font-family: 'Fira Code', monospace; 
-        }
+        .pane-title { font-weight: 600; font-size: 0.8rem; letter-spacing: 0.5px; opacity: 0.8; text-transform: uppercase; }
         
-        /* 7. 右側預覽：獨立捲動 */
-        iframe { 
-            flex: 1;           /* 填滿剩餘空間 */
-            border: none; 
-            background: white; 
-            width: 100%; 
-            height: 100%;      /* 確保 iframe 撐滿容器 */
-            display: block; 
-            min-height: 0;     /* 防止 Flex 溢出 */
+        /* 工具按鈕組 */
+        .toolbar { display: flex; gap: 6px; }
+        .tool-btn {
+            border: none; background: transparent; color: var(--text-color); cursor: pointer; padding: 4px 6px; border-radius: 3px; font-size: 0.85rem; transition: all 0.2s; opacity: 0.7;
+        }
+        .tool-btn:hover { opacity: 1; background: rgba(128,128,128,0.1); color: var(--accent-color); }
+        .tool-btn.primary { background: var(--accent-color); color: white; opacity: 1; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .tool-btn.primary:hover { filter: brightness(1.1); transform: translateY(-1px); }
+        .tool-btn.danger { color: #fc8181; }
+        .tool-btn.danger:hover { background: #fc8181; color: white; }
+
+        /* 左側結構樹 */
+        #outline-list { flex: 1; overflow-y: auto; padding: 8px 0; }
+        .outline-item {
+            padding: 4px 12px; cursor: pointer; font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-left: 2px solid transparent; opacity: 0.8;
+        }
+        .outline-item:hover { background: rgba(128,128,128,0.05); opacity: 1; }
+        .outline-item.active { border-left-color: var(--accent-color); background: rgba(128,128,128,0.1); color: var(--accent-color); font-weight: 600; }
+        .tag-badge { display: inline-block; width: 40px; font-family: monospace; font-size: 0.75rem; color: #888; }
+        
+        /* 編輯器 */
+        .CodeMirror { flex: 1; height: auto !important; font-family: 'Fira Code', Consolas, monospace; font-size: 14px; line-height: 1.5; background: transparent; }
+        .cm-s-material-palenight.CodeMirror { background: #292d3e; }
+
+        /* 預覽區 */
+        iframe { width: 100%; height: 100%; border: none; background: white; }
+
+        /* 分隔線 (Resizer) */
+        .resizer { background: var(--border-color); cursor: col-resize; transition: background 0.2s; z-index: 5; }
+        .resizer:hover, .resizer.dragging { background: var(--accent-color); }
+
+        /* 懸浮按鈕 (Toggle) */
+        .toggle-pane-btn {
+            position: absolute; top: 50%; width: 20px; height: 30px; background: var(--sidebar-bg); border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 20; color: var(--text-color); font-size: 10px; transition: 0.2s;
+        }
+        .toggle-pane-btn:hover { background: var(--accent-color); color: white; border-color: var(--accent-color); }
+
+        /* --- Modal & Toast --- */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(2px);
+        }
+        .modal-box {
+            background: var(--sidebar-bg); width: 600px; max-width: 90%; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--border-color);
+        }
+        .modal-header { padding: 15px 20px; background: var(--primary-gradient); color: white; font-weight: 600; display: flex; justify-content: space-between; }
+        .modal-body { padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+        .modal-footer { padding: 15px 20px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 10px; background: rgba(0,0,0,0.02); }
+        
+        textarea.code-input {
+            width: 100%; height: 200px; background: rgba(0,0,0,0.05); border: 1px solid var(--border-color); color: var(--text-color); font-family: monospace; padding: 10px; border-radius: 4px; resize: vertical;
         }
 
-        /* Buttons */
-        .btn-group { display: flex; gap: 5px; }
-        button.action-btn { padding: 4px 10px; border: none; border-radius: 4px; background: var(--button-bg); color: white; font-size: 0.8rem; cursor: pointer; opacity: 0.9; transition: opacity 0.2s; }
-        button.action-btn:hover { opacity: 1; }
-        button.btn-danger { background: #e53e3e; }
-        button.btn-magic { background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); color: #333; font-weight: bold; }
+        .toast {
+            position: fixed; bottom: 20px; right: 20px; padding: 10px 20px; background: #48bb78; color: white; border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transform: translateY(100px); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 3000; font-weight: 500; display: flex; align-items: center; gap: 8px;
+        }
+        .toast.show { transform: translateY(0); }
 
-        /* Toast */
-        .toast { position: fixed; bottom: 20px; right: 20px; padding: 10px 20px; background: #48bb78; color: white; border-radius: 4px; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 100; }
-        .toast.show { opacity: 1; }
-        
-        /* Highlighting */
-        .CodeMirror-selected { background: #d9d9d9 !important; }
-        .CodeMirror-focused .CodeMirror-selected { background: #d7d4f0 !important; }
-        .highlight-line { background-color: rgba(255, 255, 0, 0.4) !important; }
-
-        /* Modal for AI Replace */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center; }
-        .modal-content { background: var(--container-bg); padding: 20px; border-radius: 8px; width: 90%; max-width: 600px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); display: flex; flex-direction: column; gap: 15px; }
-        .modal-header { font-weight: bold; font-size: 1.1rem; border-bottom: 1px solid var(--nav-border-color); padding-bottom: 10px; }
-        .modal-textarea { width: 100%; height: 200px; padding: 10px; border: 1px solid var(--nav-border-color); border-radius: 4px; background: var(--bg-color); color: var(--text-color); font-family: monospace; resize: vertical; }
-        .modal-footer { display: flex; justify-content: flex-end; gap: 10px; }
-
-        /* RWD */
+        /* --- RWD --- */
         @media (max-width: 768px) {
-            .main-content { 
-                display: flex; 
-                flex-direction: column; 
-                overflow-y: auto; 
-                -webkit-overflow-scrolling: touch;
-            }
-            .resizer, .toggle-btn { display: none; }
-            .pane { 
-                height: auto; 
-                width: 100%; 
-                flex-shrink: 0; 
-            }
-            #pane-nav { display: none; }
-            #pane-editor { height: 50vh; }
-            #pane-preview { height: 50vh; border-top: 4px solid var(--nav-border-color); }
+            .workspace { display: flex; flex-direction: column; overflow-y: auto; }
+            .resizer { display: none; }
+            .pane { height: auto; min-height: 40vh; flex-shrink: 0; }
+            #pane-nav { display: none; } /* 手機版隱藏結構樹 */
+            .navbar h1 span { display: none; }
         }
     </style>
 </head>
-<body>
+<body class="loading">
 
-    <div class="header-bar">
-        <h1>HTML Editor <small>Ultimate</small></h1>
-        <div class="controls">
-            <div id="save-status" style="font-size: 0.8rem; opacity: 0.8;"></div>
-            <select onchange="setTheme(this.value)">
-                <option value="default">Light</option>
+<div class="app-container">
+    <header class="navbar">
+        <div class="brand">
+            <i class="fa-solid fa-code"></i>
+            <h1>HTML Editor <span>Pro</span></h1>
+        </div>
+        <div class="nav-controls">
+            <span id="save-indicator" style="font-size: 0.8rem; opacity: 0.7; margin-right: 10px;"></span>
+            <select class="theme-select" onchange="setTheme(this.value)">
+                <option value="eclipse">Light</option>
                 <option value="material">Material</option>
                 <option value="dracula">Dracula</option>
             </select>
         </div>
-    </div>
+    </header>
 
-    <div class="main-content" id="grid">
+    <div class="workspace" id="grid">
+        
         <div class="pane" id="pane-nav">
             <div class="pane-header">
-                <span class="pane-title">結構</span>
-                <select id="nav-filter" onchange="updateOutline()">
-                    <option value="all">全部</option>
-                    <option value="headings">標題</option>
-                    <option value="ids">ID</option>
-                    <option value="classes">Class</option>
-                </select>
-                <button class="action-btn" onclick="updateOutline()" title="重新整理">⟳</button>
+                <span class="pane-title"><i class="fa-solid fa-layer-group"></i> 結構</span>
+                <button class="tool-btn" onclick="updateOutline()" title="重新整理"><i class="fa-solid fa-rotate-right"></i></button>
             </div>
-            <div id="outline-container"></div>
+            <div id="outline-list"></div>
         </div>
 
         <div class="resizer" data-target="pane-nav"></div>
 
-        <div class="pane" id="pane-editor" style="overflow: visible;">
-            <div id="btn-toggle-nav" class="toggle-btn" onclick="togglePane('nav')" title="收合/展開導覽">«</div>
-            <div id="btn-toggle-preview" class="toggle-btn" onclick="togglePane('preview')" title="收合/展開預覽">»</div>
+        <div class="pane" id="pane-editor">
+            <div class="toggle-pane-btn" style="left:0" onclick="togglePane('nav')">‹</div>
+            <div class="toggle-pane-btn" style="right:0" onclick="togglePane('preview')">›</div>
 
             <div class="pane-header">
-                <span class="pane-title">原始碼</span>
-                <div class="btn-group">
-                    <button class="action-btn btn-magic" onclick="openAiReplace()" title="貼上AI產生的程式碼以替換舊功能">🪄 智能替換</button>
-                    <button class="action-btn" onclick="formatCode()">美化</button>
-                    <button class="action-btn" onclick="downloadFile()">下載</button>
-                    <button class="action-btn btn-danger" onclick="clearCode()">清空</button>
+                <span class="pane-title"><i class="fa-solid fa-file-code"></i> 原始碼</span>
+                <div class="toolbar">
+                    <button class="tool-btn primary" onclick="openAiModal()" title="貼上 AI 程式碼"><i class="fa-solid fa-wand-magic-sparkles"></i> 智能替換</button>
+                    <button class="tool-btn" onclick="formatCode()" title="美化程式碼"><i class="fa-solid fa-align-left"></i></button>
+                    <button class="tool-btn" onclick="copyCode()" title="複製"><i class="fa-regular fa-copy"></i></button>
+                    <button class="tool-btn danger" onclick="clearCode()" title="清空"><i class="fa-regular fa-trash-can"></i></button>
                 </div>
             </div>
-            <textarea id="editor"></textarea>
+            <textarea id="code-editor"></textarea>
         </div>
 
         <div class="resizer" data-target="pane-editor"></div>
 
         <div class="pane" id="pane-preview">
             <div class="pane-header">
-                <span class="pane-title">預覽</span>
-                <label style="font-size: 0.8rem; display: flex; align-items: center; gap: 5px; cursor: pointer;">
-                    <input type="checkbox" id="md-toggle" onchange="toggleMode()"> Markdown
-                </label>
+                <span class="pane-title"><i class="fa-solid fa-eye"></i> 預覽</span>
+                <div class="toolbar">
+                    <label style="font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                        <input type="checkbox" id="mode-md" onchange="switchMode()"> Markdown
+                    </label>
+                    <button class="tool-btn" onclick="downloadFile()" title="下載檔案"><i class="fa-solid fa-download"></i></button>
+                </div>
             </div>
-            <iframe id="preview" sandbox="allow-scripts allow-modals"></iframe>
+            <iframe id="preview-frame" sandbox="allow-scripts allow-modals allow-same-origin"></iframe>
         </div>
     </div>
+</div>
 
-    <div id="toast" class="toast">已儲存</div>
-
-    <div id="ai-modal" class="modal-overlay">
-        <div class="modal-content">
-            <div class="modal-header">🪄 AI 智慧程式碼替換</div>
-            <p style="font-size: 0.9rem; opacity: 0.8;">請貼上 AI 產生的完整 Function 或 CSS 區塊，系統會根據第一行自動尋找舊程式碼並替換。</p>
-            <textarea id="ai-input" class="modal-textarea" placeholder="例如：
-function updatePreview() {
-   ...
+<div id="ai-modal" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-header">
+            <span><i class="fa-solid fa-robot"></i> AI 智能程式碼替換</span>
+            <i class="fa-solid fa-xmark" style="cursor:pointer" onclick="closeAiModal()"></i>
+        </div>
+        <div class="modal-body">
+            <p style="font-size: 0.9rem; opacity: 0.8; margin:0;">
+                請將 LLM (ChatGPT/Claude/Local) 產生的程式碼區塊貼在下方。
+                <br>
+                <span style="font-size:0.8rem; color:var(--accent-color)">* 系統會自動比對函數名稱、ID 或 Class 進行局部替換。</span>
+            </p>
+            <textarea id="ai-input" class="code-input" placeholder="例如：
+function updateChart() {
+    // 新的邏輯...
 }"></textarea>
-            <div class="modal-footer">
-                <button class="action-btn" style="background: #718096;" onclick="closeAiReplace()">取消</button>
-                <button class="action-btn btn-magic" onclick="performAiReplace()">自動搜尋並替換</button>
-            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="tool-btn" onclick="closeAiModal()">取消</button>
+            <button class="tool-btn primary" onclick="performSmartReplace()">執行替換</button>
         </div>
     </div>
+</div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.js" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/dialog/dialog.min.js" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/search/searchcursor.min.js" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/search/search.min.js" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/edit/closetag.js" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/fold/xml-fold.js" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/xml/xml.min.js" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/javascript/javascript.min.js" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/css/css.min.js" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/htmlmixed/htmlmixed.min.js" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/markdown/markdown.min.js" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.7/beautify-html.min.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" crossorigin="anonymous"></script>
+<div id="toast" class="toast"><i class="fa-solid fa-check-circle"></i> <span>已儲存</span></div>
 
-    <script>
-        // 初始化編輯器
-        const editor = CodeMirror.fromTextArea(document.getElementById('editor'), {
-            mode: "htmlmixed", theme: "default", lineNumbers: true, lineWrapping: true, autoCloseTags: true, styleActiveLine: true
-        });
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/mode/overlay.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/xml/xml.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/javascript/javascript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/css/css.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/htmlmixed/htmlmixed.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/markdown/markdown.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/search/searchcursor.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/edit/closetag.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/edit/closebrackets.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.7/beautify-html.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
-        const previewFrame = document.getElementById('preview');
-        let updateTimer;
-        let currentMark = null;
+<script>
+    // --- 初始化編輯器 ---
+    const editor = CodeMirror.fromTextArea(document.getElementById('code-editor'), {
+        mode: "htmlmixed",
+        theme: "eclipse",
+        lineNumbers: true,
+        lineWrapping: true,
+        autoCloseTags: true,
+        autoCloseBrackets: true,
+        styleActiveLine: true,
+        foldGutter: true,
+        gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"]
+    });
 
-        // 預設內容
-        const defaultHTML = ``;
+    const previewFrame = document.getElementById('preview-frame');
+    let debounceTimer;
 
-        // --- 核心功能：高亮並跳轉 ---
-        function highlightAndJump(line) {
-            if (currentMark) currentMark.clear();
-            editor.setCursor(line, 0);
-            editor.scrollIntoView({line: line, ch: 0}, 200);
-            editor.focus();
-            currentMark = editor.markText({line: line, ch: 0}, {line: line + 1, ch: 0}, {className: "highlight-line"});
-            setTimeout(() => { if (currentMark) currentMark.clear(); }, 1500);
+    // --- 核心邏輯：預覽更新 ---
+    function updatePreview() {
+        const isMd = document.getElementById('mode-md').checked;
+        let content = editor.getValue();
+        
+        if (isMd) {
+            // Markdown 模式加一點 CSS 讓預覽好看
+            const mdStyle = `<style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding:20px;line-height:1.6;max-width:800px;margin:0 auto}img{max-width:100%}code{background:#f0f0f0;padding:2px 4px;border-radius:3px}pre{background:#f6f8fa;padding:16px;overflow:auto;border-radius:6px}</style>`;
+            content = mdStyle + marked.parse(content);
+        } else {
+            // HTML 注入同步腳本
+            const syncScript = `
+            <script>
+                document.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    // 發送點擊元素的特徵給父視窗
+                    window.parent.postMessage({
+                        type: 'sync-scroll',
+                        tag: e.target.tagName.toLowerCase(),
+                        id: e.target.id,
+                        cls: e.target.className,
+                        text: e.target.innerText.substring(0,20)
+                    }, '*');
+                }, true);
+            <\/script>`;
+            
+            // 插入在 body 結束前，如果沒有 body 則直接追加
+            if (content.includes('</body>')) {
+                content = content.replace('</body>', syncScript + '</body>');
+            } else {
+                content += syncScript;
+            }
         }
+        
+        // 使用 srcdoc 避免 iframe 歷史紀錄汙染
+        previewFrame.srcdoc = content;
+        saveToLocal();
+    }
 
-        // --- AI 智慧替換功能 ---
-        function openAiReplace() {
-            document.getElementById('ai-modal').style.display = 'flex';
-            document.getElementById('ai-input').value = '';
-            document.getElementById('ai-input').focus();
-        }
+    // --- 智能替換邏輯 (重點優化) ---
+    function openAiModal() {
+        document.getElementById('ai-modal').style.display = 'flex';
+        document.getElementById('ai-input').value = '';
+        document.getElementById('ai-input').focus();
+    }
+    
+    function closeAiModal() {
+        document.getElementById('ai-modal').style.display = 'none';
+    }
 
-        function closeAiReplace() {
-            document.getElementById('ai-modal').style.display = 'none';
-        }
+    // 正規化字串：移除多餘空白、換行，讓比對更寬容
+    function normalizeStr(str) {
+        return str.replace(/\s+/g, ' ').trim();
+    }
 
-        function performAiReplace() {
-            const inputCode = document.getElementById('ai-input').value.trim();
-            if (!inputCode) { showToast('請先貼上程式碼'); return; }
+    function performSmartReplace() {
+        const inputCode = document.getElementById('ai-input').value;
+        if (!inputCode.trim()) { showToast('請先貼上程式碼'); return; }
 
-            // 1. 取得第一行作為搜尋關鍵字 (忽略空白)
+        const doc = editor.getDoc();
+        let replaced = false;
+
+        // 策略 1: 如果使用者有選取區域，直接替換選取區
+        if (editor.somethingSelected()) {
+            editor.replaceSelection(inputCode);
+            replaced = true;
+        } 
+        // 策略 2: 嘗試根據第一行特徵尋找 (Fuzzy Match)
+        else {
             const lines = inputCode.split('\n');
-            let searchLine = lines[0].trim();
+            // 找出第一行有意義的程式碼 (跳過註解或空白)
+            const firstMeaningfulLine = lines.find(l => l.trim().length > 5 && !l.trim().startsWith('//'));
             
-            // 處理括號，如果第一行只有 "function foo() {" 這樣比較好找
-            // 移除尾端可能多餘的空白
+            if (firstMeaningfulLine) {
+                const searchKey = normalizeStr(firstMeaningfulLine.split('{')[0]); // 取括號前部分作為關鍵字
+                const cursor = editor.getSearchCursor(new RegExp(searchKey.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i')); // 簡單轉義 regex
+                
+                if (cursor.findNext()) {
+                    // 找到起點
+                    const startPos = cursor.from();
+                    // 嘗試尋找對應的結尾 (簡單的區塊邏輯，或是直接替換之後的 N 行)
+                    // 這裡採用保守策略：提示使用者確認位置
+                    editor.setCursor(startPos);
+                    editor.scrollIntoView(startPos, 200);
+                    
+                    // 我們可以嘗試用類似的 logic 找結尾，但因為 HTML 結構複雜，
+                    // 這裡改為：高亮該行，並在游標處插入 (或詢問替換)
+                    if(confirm(`找到可能的對應位置 (行 ${startPos.line + 1})：\n"${editor.getLine(startPos.line).trim()}"\n\n是否替換該區塊？(系統將嘗試自動判斷區塊結尾)`)) {
+                         // 簡易括號平衡算法找結尾
+                         let braceCount = 0;
+                         let endLine = startPos.line;
+                         for(let i = startPos.line; i < doc.lineCount(); i++) {
+                             const l = doc.getLine(i);
+                             braceCount += (l.match(/{/g) || []).length;
+                             braceCount -= (l.match(/}/g) || []).length;
+                             if(braceCount <= 0 && i > startPos.line) {
+                                 endLine = i;
+                                 break;
+                             }
+                         }
+                         // 替換範圍
+                         doc.replaceRange(inputCode, {line: startPos.line, ch:0}, {line: endLine, ch: doc.getLine(endLine).length});
+                         replaced = true;
+                    }
+                }
+            }
+        }
+
+        if (replaced) {
+            showToast('替換成功！');
+            formatCode(); // 自動美化
+            closeAiModal();
+        } else {
+            alert('找不到對應的程式碼區塊。建議：選取舊程式碼後再執行「智能替換」。');
+        }
+    }
+
+    // --- 結構樹與導航 ---
+    function updateOutline() {
+        const list = document.getElementById('outline-list');
+        const isMd = document.getElementById('mode-md').checked;
+        if(isMd) { list.innerHTML = '<div style="padding:10px;color:#888;text-align:center">Markdown 模式無結構</div>'; return; }
+
+        const code = editor.getValue();
+        const lines = code.split('\n');
+        let html = '';
+        
+        // 簡單的 Regex 提取器
+        lines.forEach((line, i) => {
+            const hMatch = line.match(/<(h[1-6]).*?>(.*?)<\/\1>/i);
+            const idMatch = line.match(/id=["']([^"']+)["']/i);
+            const scriptMatch = line.match(/function\s+(\w+)/);
+            const cssMatch = line.match(/^\s*([.#][\w-]+)\s*{/);
+
+            if (hMatch) html += createOutlineItem(i, hMatch[1], hMatch[2], 'blue');
+            else if (idMatch) html += createOutlineItem(i, 'ID', idMatch[1], 'purple');
+            else if (scriptMatch) html += createOutlineItem(i, 'JS', scriptMatch[1] + '()', 'orange');
+            else if (cssMatch) html += createOutlineItem(i, 'CSS', cssMatch[1], 'green');
+        });
+
+        list.innerHTML = html || '<div style="padding:10px;color:#888;text-align:center">無可顯示結構</div>';
+    }
+
+    function createOutlineItem(line, badge, text, color) {
+        return `<div class="outline-item" onclick="jumpToLine(${line})">
+            <span class="tag-badge" style="color:${color}">${badge}</span> ${text.replace(/<[^>]+>/g,'')}
+        </div>`;
+    }
+
+    function jumpToLine(line) {
+        editor.setCursor(line, 0);
+        editor.scrollIntoView({line:line, ch:0}, 200);
+        editor.focus();
+        // 高亮效果
+        const mark = editor.markText({line, ch:0}, {line:line+1, ch:0}, {className: "CodeMirror-focused"});
+        setTimeout(() => mark.clear(), 1000);
+    }
+
+    // --- 實用功能 ---
+    function formatCode() {
+        if(document.getElementById('mode-md').checked) return;
+        const currentVal = editor.getValue();
+        const formatted = html_beautify(currentVal, { 
+            indent_size: 4, 
+            extra_liners: [],
+            indent_inner_html: true
+        });
+        editor.setValue(formatted);
+    }
+
+    function clearCode() {
+        if(confirm('確定清空所有內容？')) editor.setValue('');
+    }
+
+    function copyCode() {
+        navigator.clipboard.writeText(editor.getValue()).then(() => showToast('已複製到剪貼簿'));
+    }
+
+    function downloadFile() {
+        const isMd = document.getElementById('mode-md').checked;
+        const blob = new Blob([editor.getValue()], {type: 'text/plain'});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = isMd ? 'document.md' : 'index.html';
+        a.click();
+    }
+
+    function switchMode() {
+        const isMd = document.getElementById('mode-md').checked;
+        editor.setOption('mode', isMd ? 'markdown' : 'htmlmixed');
+        updatePreview();
+        updateOutline();
+    }
+
+    function setTheme(theme) {
+        editor.setOption('theme', theme);
+        document.body.setAttribute('data-theme', theme === 'eclipse' ? 'light' : theme);
+        localStorage.setItem('editor_theme', theme);
+    }
+
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        t.innerHTML = `<i class="fa-solid fa-check-circle"></i> ${msg}`;
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 2000);
+    }
+
+    // --- 雙向同步監聽 ---
+    window.addEventListener('message', (e) => {
+        if (e.data.type === 'sync-scroll') {
+            const { tag, id, text } = e.data;
+            // 嘗試尋找對應代碼
+            const cursor = editor.getSearchCursor(new RegExp(`<${tag}[^>]*${id ? 'id=["\']'+id+'["\']' : ''}`, 'i'));
+            if(cursor.findNext()) {
+                jumpToLine(cursor.from().line);
+            }
+        }
+    });
+
+    // --- 拖曳調整 (Resizer) ---
+    document.querySelectorAll('.resizer').forEach(el => {
+        el.addEventListener('mousedown', initDrag);
+    });
+
+    function initDrag(e) {
+        const targetId = e.target.dataset.target;
+        const grid = document.getElementById('grid');
+        const startX = e.clientX;
+        const cols = getComputedStyle(grid).gridTemplateColumns.split(' ');
+        const initialWidth = parseFloat(cols[targetId === 'pane-nav' ? 0 : 2]); // nav 是 col 0, editor 是 col 2
+
+        function doDrag(ev) {
+            e.target.classList.add('dragging');
+            const diff = ev.clientX - startX;
+            const newWidth = initialWidth + diff;
+            if (newWidth < 50) return; // 最小寬度
             
-            if (!searchLine) { showToast('無法識別程式碼'); return; }
-
-            // 2. 在編輯器中搜尋
-            const cursor = editor.getSearchCursor(searchLine);
-            if (cursor.findNext()) {
-                const foundLine = cursor.from().line;
-                
-                // 3. 嘗試找出該區塊的結束點 (利用括號計數)
-                // 從找到的那一行開始往下掃描
-                const doc = editor.getDoc();
-                const lastLine = doc.lineCount();
-                let balance = 0;
-                let endLine = foundLine;
-                let foundStartBrace = false;
-
-                for (let i = foundLine; i < lastLine; i++) {
-                    const lineText = doc.getLine(i);
-                    for (let char of lineText) {
-                        if (char === '{') {
-                            balance++;
-                            foundStartBrace = true;
-                        } else if (char === '}') {
-                            balance--;
-                        }
-                    }
-                    // 如果曾經開始過區塊，且平衡回到0，代表結束
-                    if (foundStartBrace && balance === 0) {
-                        endLine = i;
-                        break;
-                    }
-                    // 安全機制：如果在非 JS/CSS 區域 (如 HTML Tag) 這種邏輯可能不適用，
-                    // 但通常 AI 給的都是 JS Function 或 CSS Rule
-                }
-
-                // 4. 選取並替換
-                // 為了視覺確認，我們先選取
-                editor.setSelection({line: foundLine, ch: 0}, {line: endLine, ch: doc.getLine(endLine).length});
-                
-                // 稍微延遲後詢問是否替換 (或直接替換並通知)
-                if(confirm(`找到位於第 ${foundLine + 1} 行的舊程式碼，是否替換？`)) {
-                    editor.replaceSelection(inputCode);
-                    closeAiReplace();
-                    showToast('替換成功！');
-                    // 重新排版選取區域 (可選)
-                    // editor.indentSelection("smart"); 
-                }
+            if (targetId === 'pane-nav') {
+                grid.style.gridTemplateColumns = `${newWidth}px 4px 1fr ${cols[3]} ${cols[4]}`;
             } else {
-                // 如果完全符合找不到，嘗試放寬搜尋 (只找前半段)
-                const simpleKey = searchLine.split('(')[0].split('{')[0].trim();
-                if (simpleKey && simpleKey !== searchLine) {
-                     const looseCursor = editor.getSearchCursor(simpleKey);
-                     if (looseCursor.findNext()) {
-                         highlightAndJump(looseCursor.from().line);
-                         closeAiReplace();
-                         showToast(`找不到完全符合，已定位到 "${simpleKey}"，請手動確認。`);
-                         return;
-                     }
-                }
-                
-                showToast(`找不到 "${searchLine.substring(0, 20)}..." 對應的原始碼`);
+                // Adjusting editor width means taking from preview
+                grid.style.gridTemplateColumns = `${cols[0]} ${cols[1]} ${newWidth}px 4px 1fr`;
             }
         }
 
-        // --- 收合功能 ---
-        function togglePane(target) {
-            const grid = document.getElementById('grid');
-            const cols = getComputedStyle(grid).gridTemplateColumns.split(' ');
-            if (target === 'nav') {
-                const btn = document.getElementById('btn-toggle-nav');
-                if (cols[0] === '0px') { grid.style.gridTemplateColumns = `250px 4px 1fr ${cols[3]} ${cols[4]}`; btn.innerText = '«'; }
-                else { grid.style.gridTemplateColumns = `0px 0px 1fr ${cols[3]} ${cols[4]}`; btn.innerText = '»'; }
-            } else if (target === 'preview') {
-                const btn = document.getElementById('btn-toggle-preview');
-                if (parseFloat(cols[4]) < 10) { grid.style.gridTemplateColumns = `${cols[0]} ${cols[1]} 1fr 4px 1fr`; btn.innerText = '»'; }
-                else { grid.style.gridTemplateColumns = `${cols[0]} ${cols[1]} 1fr 0px 0px`; btn.innerText = '«'; }
-            }
-            setTimeout(() => editor.refresh(), 300);
+        function stopDrag() {
+            document.removeEventListener('mousemove', doDrag);
+            document.removeEventListener('mouseup', stopDrag);
+            e.target.classList.remove('dragging');
+            editor.refresh(); // 防止 CodeMirror 跑版
         }
 
-        // --- 預覽更新 ---
-        function updatePreview() {
-            const isMd = document.getElementById('md-toggle').checked;
-            let content = editor.getValue();
-            if (isMd) {
-                content = `<style>body{font-family:sans-serif;padding:20px;line-height:1.6}img{max-width:100%}</style>${marked.parse(content)}`;
-            } else {
-                const syncScript = `<script>
-                    document.addEventListener('click', function(e) {
-                        e.stopPropagation(); e.preventDefault();
-                        window.parent.postMessage({
-                            type: 'sync', tag: e.target.tagName, id: e.target.id,
-                            class: e.target.className, text: e.target.innerText ? e.target.innerText.slice(0, 20) : ''
-                        }, '*');
-                    }, true);
-                <\/script>`;
-                content = content.includes('</body>') ? content.replace('</body>', syncScript + '</body>') : content + syncScript;
-            }
-            previewFrame.srcdoc = content;
-        }
+        document.addEventListener('mousemove', doDrag);
+        document.addEventListener('mouseup', stopDrag);
+    }
 
-        // --- 雙向同步 ---
-        window.addEventListener('message', (e) => {
-            if (e.data.type === 'sync') {
-                const { tag, id, text } = e.data;
-                if (!editor.getSearchCursor) return;
-                const cursor = editor.getSearchCursor(new RegExp(`<${tag}`, 'i'));
-                let bestMatch = null;
-                while(cursor.findNext()) {
-                    const from = cursor.from();
-                    const to = cursor.to();
-                    const context = editor.getRange(from, {line: to.line + 5, ch: 0});
-                    let isMatch = false;
-                    if (id && context.includes(`id="${id}"`)) isMatch = true;
-                    else if (id && context.includes(`id='${id}'`)) isMatch = true;
-                    else if (text && context.includes(text.trim())) isMatch = true;
-                    if (!bestMatch) bestMatch = { from, to };
-                    if (isMatch) { bestMatch = { from, to }; break; }
-                }
-                if (bestMatch) { highlightAndJump(bestMatch.from.line); showToast(`定位到 <${tag}>`); }
-                else { showToast(`找不到 <${tag}>`); }
-            }
+    // --- 窗格收合 ---
+    window.togglePane = function(target) {
+        const grid = document.getElementById('grid');
+        const cols = getComputedStyle(grid).gridTemplateColumns.split(' ');
+        
+        if (target === 'nav') {
+            const isOpen = parseFloat(cols[0]) > 10;
+            grid.style.gridTemplateColumns = isOpen 
+                ? `0px 0px 1fr ${cols[3]} ${cols[4]}` 
+                : `220px 4px 1fr ${cols[3]} ${cols[4]}`;
+        } else if (target === 'preview') {
+            const isOpen = parseFloat(cols[4]) > 10;
+            grid.style.gridTemplateColumns = isOpen 
+                ? `${cols[0]} ${cols[1]} 1fr 0px 0px` 
+                : `${cols[0]} ${cols[1]} 1fr 4px 1fr`;
+        }
+        setTimeout(() => editor.refresh(), 200);
+    };
+
+    // --- 載入與儲存 ---
+    function saveToLocal() {
+        localStorage.setItem('editor_content', editor.getValue());
+        localStorage.setItem('editor_mode', document.getElementById('mode-md').checked);
+        document.getElementById('save-indicator').innerText = 'Saved ' + new Date().toLocaleTimeString();
+    }
+
+    window.addEventListener('load', () => {
+        // 恢復主題
+        const savedTheme = localStorage.getItem('editor_theme') || 'eclipse';
+        document.querySelector(`.theme-select [value="${savedTheme}"]`).selected = true;
+        setTheme(savedTheme);
+
+        // 恢復內容
+        const savedContent = localStorage.getItem('editor_content');
+        if (savedContent) editor.setValue(savedContent);
+        else editor.setValue('<!DOCTYPE html>\n<html>\n<head>\n  <style>body { font-family: sans-serif; padding: 20px; }</style>\n</head>\n<body>\n  <h1>Hello World</h1>\n  <p>Start editing...</p>\n</body>\n</html>');
+
+        // 恢復模式
+        const savedMode = localStorage.getItem('editor_mode') === 'true';
+        document.getElementById('mode-md').checked = savedMode;
+        switchMode();
+
+        // 監聽變更 (Debounce)
+        editor.on('change', () => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(updatePreview, 500);
+            setTimeout(updateOutline, 1000);
         });
 
-        // --- 導覽列 ---
-        function updateOutline() {
-            const container = document.getElementById('outline-container');
-            const filter = document.getElementById('nav-filter').value;
-            const isMd = document.getElementById('md-toggle').checked;
-            if (isMd) { container.innerHTML = '<div style="padding:10px;color:#888">Markdown 模式不支援結構</div>'; return; }
+        document.body.classList.remove('loading');
+        updateOutline();
+    });
 
-            const code = editor.getValue();
-            const lines = code.split('\n');
-            let html = '';
-            let hasItem = false;
-            const reH = /<(h[1-6])(.*?)>(.*?)<\/\1>/i;
-            const reId = /id=["']([^"']+)["']/i;
-            const reClass = /class=["']([^"']+)["']/i;
-
-            lines.forEach((line, index) => {
-                let match, text = '', className = '', shouldAdd = false;
-                if ((filter === 'all' || filter === 'headings') && (match = line.match(reH))) {
-                    text = match[3].replace(/<[^>]+>/g, ''); className = `outline-${match[1].toLowerCase()}`; shouldAdd = true;
-                } else if ((filter === 'all' || filter === 'ids') && (match = line.match(reId))) {
-                    text = '#' + match[1]; className = 'outline-id'; shouldAdd = true;
-                } else if ((filter === 'all' || filter === 'classes') && (match = line.match(reClass))) {
-                    text = '.' + match[1].split(' ')[0]; className = 'outline-class'; shouldAdd = true;
-                }
-                if (shouldAdd && text) { hasItem = true; html += `<a class="${className}" onclick="highlightAndJump(${index})">${text}</a>`; }
-            });
-            container.innerHTML = hasItem ? html : '<div style="padding:10px;color:#888;text-align:center">無符合項目</div>';
-        }
-
-        // --- 其他功能 ---
-        editor.on('change', () => { clearTimeout(updateTimer); updateTimer = setTimeout(() => { updatePreview(); updateOutline(); saveToLocal(); }, 500); });
-        function saveToLocal() { try { localStorage.setItem('safe_editor_content', editor.getValue()); localStorage.setItem('safe_editor_mode', document.getElementById('md-toggle').checked); document.getElementById('save-status').innerText = '已儲存'; setTimeout(() => document.getElementById('save-status').innerText = '', 2000); } catch (e) {} }
-        function loadFromLocal() { try { const content = localStorage.getItem('safe_editor_content'); const mode = localStorage.getItem('safe_editor_mode') === 'true'; if (content) editor.setValue(content); else editor.setValue(defaultHTML); document.getElementById('md-toggle').checked = mode; toggleMode(); } catch (e) { editor.setValue(defaultHTML); } }
-        function toggleMode() { const isMd = document.getElementById('md-toggle').checked; editor.setOption('mode', isMd ? 'markdown' : 'htmlmixed'); updatePreview(); updateOutline(); }
-        function formatCode() { if(document.getElementById('md-toggle').checked) return; editor.setValue(html_beautify(editor.getValue(), { indent_size: 4, preserve_newlines: true })); }
-        function downloadFile() { const isMd = document.getElementById('md-toggle').checked; const blob = new Blob([editor.getValue()], {type: isMd ? 'text/markdown' : 'text/html'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = isMd ? 'doc.md' : 'index.html'; a.click(); }
-        function clearCode() { if(confirm('確定清空？')) editor.setValue(''); }
-        function setTheme(theme) { if(theme === 'default') document.body.removeAttribute('data-theme'); else document.body.setAttribute('data-theme', theme); editor.setOption('theme', theme); }
-        function showToast(msg) { const t = document.getElementById('toast'); t.innerText = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2000); }
-
-        // 拖曳調整
-        document.querySelectorAll('.resizer').forEach(resizer => {
-            resizer.addEventListener('mousedown', (e) => {
-                e.preventDefault();
-                const grid = document.getElementById('grid');
-                const isNav = resizer.dataset.target === 'pane-nav';
-                function onMove(e) {
-                    const cols = getComputedStyle(grid).gridTemplateColumns.split(' ');
-                    if (isNav) grid.style.gridTemplateColumns = `${e.clientX}px 4px 1fr ${cols[3]} ${cols[4]}`;
-                }
-                function onUp() { window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); editor.refresh(); }
-                window.addEventListener('mousemove', onMove); window.addEventListener('mouseup', onUp);
-            });
-        });
-
-        window.addEventListener('load', () => {
-            loadFromLocal();
-            setTimeout(() => {
-                editor.refresh();
-                updatePreview();
-            }, 100);
-        });
-    </script>
+</script>
 </body>
 </html>
