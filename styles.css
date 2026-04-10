@@ -65,6 +65,8 @@ html, body { height: 100%; overflow: hidden; }
 
 body { 
   margin: 0; 
+  width: 100vw;
+  height: 100vh;
   font-family: var(--font-main); 
   background: var(--bg-main); 
   color: var(--text-main); 
@@ -193,6 +195,7 @@ select:hover { background: hsla(255, 100%, 100%, 0.15); }
   grid-template-columns: 280px 1px 1fr 1px 1fr; 
   background: var(--bg-main);
   flex: 1;
+  min-height: 0;
 }
 
 .resizer { 
@@ -264,6 +267,18 @@ iframe#preview {
 .toggle-btn:hover { background: var(--accent); color: #fff; transform: scale(1.1); }
 
 /* Toast & Modals */
+.modal-overlay { 
+  display: none; 
+  position: fixed; 
+  inset: 0; 
+  background: rgba(0, 0, 0, 0.6); 
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 3000; 
+  align-items: center; 
+  justify-content: center; 
+}
+
 .toast { 
   background: hsla(245, 80%, 20%, 0.95); 
   backdrop-filter: blur(10px);
