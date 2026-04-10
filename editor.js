@@ -27,8 +27,18 @@
     list: [],
     activeId: null,
     load() {
-      this.list = storage.get(STORE_TABS, [DEFAULT_TAB()]);
-      this.activeId = storage.get(STORE_ACTIVE, this.list[0].id);
+      try {
+        this.list = storage.get(STORE_TABS, []);
+        if (!Array.isArray(this.list) || this.list.length === 0) {
+          this.list = [DEFAULT_TAB()];
+        }
+        const savedActiveId = storage.get(STORE_ACTIVE, null);
+        this.activeId = this.list.some(t => t.id === savedActiveId) ? savedActiveId : this.list[0].id;
+      } catch (err) {
+        console.error('Tabs load failed:', err);
+        this.list = [DEFAULT_TAB()];
+        this.activeId = this.list[0].id;
+      }
     },
     save() { storage.set(STORE_TABS, this.list); storage.set(STORE_ACTIVE, this.activeId); },
     get active() { return this.list.find(t => t.id === this.activeId); },
@@ -273,24 +283,36 @@
     theme: 'default',
 
     async boot(){
-      // tabs
-      Tabs.load();
-      this.renderTabs();
+      try {
+        // tabs
+        Tabs.load();
+        this.renderTabs();
 
-      // engine & theme
-      this.engine = storage.get('heu_engine','codemirror');
-      this.theme = storage.get('heu_theme','default');
-      $('#engine-select').value = this.engine;
-      $('#theme-select').value = this.theme;
-      this.bindEvents();
+        // engine & theme
+        this.engine = storage.get('heu_engine','codemirror');
+        this.theme = storage.get('heu_theme','default');
+        $('#engine-select').value = this.engine;
+        $('#theme-select').value = this.theme;
+        this.bindEvents();
 
-      await this.mountEditor(Tabs.active.content, Tabs.active.mode);
-      this.applyTheme(this.theme);
+        await this.mountEditor(Tabs.active.content, Tabs.active.mode);
+        this.applyTheme(this.theme);
 
-      // first render
-      this.updatePreview();
-      Outline.build($('#nav-filter').value, $('#md-toggle').checked, this.editor.getValue());
-      Layout.initResizers();
+        // first render
+        this.updatePreview();
+        Outline.build($('#nav-filter').value, $('#md-toggle').checked, this.editor.getValue());
+        Layout.initResizers();
+      } catch (err) {
+        console.error('Boot crash:', err);
+        if (confirm('應用程式載入失敗，這通常是因為快存資料不相容。是否嘗試修復並清除暫存？')) {
+          this.repair();
+        }
+      }
+    },
+
+    repair() {
+      ['heu_tabs_v2', 'heu_active_tab', 'heu_engine', 'heu_theme', 'heu_tabs'].forEach(k => localStorage.removeItem(k));
+      location.reload();
     },
 
     async mountEditor(text, mode){
