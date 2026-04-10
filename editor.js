@@ -181,7 +181,7 @@
       const key = first.split('(')[0].split('{')[0].trim();
       const found = App.editor.find(new RegExp(key.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')));
       if (found) { App.editor.jumpTo(found.from.line); toast(`找不到完全符合，已定位至 "${key}"`); this.close(); }
-      else { toast('找不到可替換的目標'); }
+      else { toast('找不到可替換的目標，請檢查程式碼語法是否正確'); }
     },
     _parseFunctionName(code){
       try {
@@ -294,9 +294,14 @@
     },
 
     async mountEditor(text, mode){
-      const host = $('#editor-host');
-      if(this.engine==='monaco') this.editor = await new MonacoAdapter(host).init(text, mode, this.theme);
-      else { host.innerHTML = '<textarea id="cm-textarea"></textarea>'; this.editor = await new CodeMirrorAdapter(host).init(text, mode, this.theme); }
+      try {
+        const host = $('#editor-host');
+        if(this.engine==='monaco') this.editor = await new MonacoAdapter(host).init(text, mode, this.theme);
+        else { host.innerHTML = '<textarea id="cm-textarea"></textarea>'; this.editor = await new CodeMirrorAdapter(host).init(text, mode, this.theme); }
+      } catch (err) {
+        console.error('Editor mount failed:', err);
+        alert('編輯器載入失敗，請檢查網路連接或稍後再試。');
+      }
     },
 
     async switchEngine(engine){
@@ -326,7 +331,7 @@
     updateOutline(){ Outline.build($('#nav-filter').value, $('#md-toggle').checked, this.editor.getValue()); },
     updateOutlineDebounced: debounce(function(){ App.updateOutline(); }, 300),
 
-    format(){ if($('#md-toggle').checked) return; const v = this.editor.getValue(); try{ const pretty = html_beautify(v, { indent_size:2, preserve_newlines:true }); this.editor.setValue(pretty, Tabs.active.mode);}catch(e){} },
+    format(){ if($('#md-toggle').checked) return; const v = this.editor.getValue(); try{ const pretty = html_beautify(v, { indent_size:2, preserve_newlines:true }); this.editor.setValue(pretty, Tabs.active.mode);}catch(e){ toast('格式化失敗，請檢查 HTML 語法'); } },
 
     download(){ const isMd = $('#md-toggle').checked; const blob = new Blob([this.editor.getValue()], {type: isMd?'text/markdown':'text/html'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download = Tabs.active?.name || (isMd?'doc.md':'index.html'); a.click(); },
 
