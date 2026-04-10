@@ -4,7 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>HTML Editor Ultimate · Pro (AI/AST/Monaco)</title>
-  <!-- CodeMirror 5 -->
+  
+  <link rel="icon" href="data:,">
+
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.css" crossorigin="anonymous" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/theme/material.min.css" crossorigin="anonymous" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/theme/dracula.min.css" crossorigin="anonymous" />
@@ -12,7 +14,6 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/fold/foldgutter.css" crossorigin="anonymous" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/dialog/dialog.css" crossorigin="anonymous" />
 
-  <!-- App Styles -->
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -45,7 +46,6 @@
   </section>
 
   <main class="main-content" id="grid">
-    <!-- Outline Pane -->
     <aside class="pane" id="pane-nav">
       <div class="pane-header">
         <span class="pane-title">結構</span>
@@ -62,7 +62,6 @@
 
     <div class="resizer" data-target="pane-nav"></div>
 
-    <!-- Editor Pane -->
     <section class="pane" id="pane-editor">
       <div id="btn-toggle-nav" class="toggle-btn" title="收合/展開導覽">«</div>
       <div id="btn-toggle-preview" class="toggle-btn" title="收合/展開預覽">»</div>
@@ -73,7 +72,6 @@
           <button id="btn-ai" class="btn magic">🪄 智能替換</button>
         </div>
       </div>
-      <!-- Code container (CodeMirror or Monaco will mount here) -->
       <div id="editor-host">
         <textarea id="cm-textarea"></textarea>
       </div>
@@ -81,7 +79,6 @@
 
     <div class="resizer" data-target="pane-editor"></div>
 
-    <!-- Preview Pane -->
     <section class="pane" id="pane-preview">
       <div class="pane-header">
         <span class="pane-title">預覽</span>
@@ -93,10 +90,8 @@
     </section>
   </main>
 
-  <!-- Toast -->
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <!-- AI Replace Modal -->
   <div id="ai-modal" class="modal-overlay" aria-hidden="true">
     <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="ai-modal-title">
       <div id="ai-modal-title" class="modal-header">🪄 AI 智慧程式碼替換</div>
@@ -109,7 +104,6 @@
     </div>
   </div>
 
-  <!-- Libraries -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.js" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/dialog/dialog.min.js" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/search/searchcursor.min.js" crossorigin="anonymous"></script>
@@ -122,19 +116,15 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/htmlmixed/htmlmixed.min.js" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/markdown/markdown.min.js" crossorigin="anonymous"></script>
 
-  <!-- Monaco AMD loader (lazy loaded by editor.js) -->
-  <script>window.__MONACO_BASE__ = 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/';</script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js" crossorigin="anonymous"></script>
-
-  <!-- Beautifier & Markdown -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.7/beautify-html.min.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" crossorigin="anonymous"></script>
 
-  <!-- AST: acorn & walk -->
   <script src="https://cdn.jsdelivr.net/npm/acorn@8/dist/acorn.min.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/acorn-walk@8/dist/walk.min.js" crossorigin="anonymous"></script>
 
-  <!-- App -->
+  <script>window.__MONACO_BASE__ = 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/';</script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js" crossorigin="anonymous"></script>
+
   <script src="editor.js"></script>
 </body>
 </html>
