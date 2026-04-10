@@ -265,12 +265,12 @@
       const cols = getComputedStyle(grid).gridTemplateColumns.split(' ');
       if(which==='nav'){
         const btn=$('#btn-toggle-nav');
-        if(cols[0]==='0px'){ grid.style.gridTemplateColumns = `280px 4px 1fr ${cols[3]} ${cols[4]}`; btn.textContent='«'; }
-        else { grid.style.gridTemplateColumns = `0px 0px 1fr ${cols[3]} ${cols[4]}`; btn.textContent='»'; }
+        if(cols[0]==='0px'){ grid.style.gridTemplateColumns = `280px 1px 1fr ${cols[3]} ${cols[4]}`; btn.classList.remove('hidden'); }
+        else { grid.style.gridTemplateColumns = `0px 0px 1fr ${cols[3]} ${cols[4]}`; btn.classList.add('hidden'); }
       } else {
         const btn=$('#btn-toggle-preview');
-        if(parseFloat(cols[4])<10){ grid.style.gridTemplateColumns = `${cols[0]} ${cols[1]} 1fr 4px 1fr`; btn.textContent='»'; }
-        else { grid.style.gridTemplateColumns = `${cols[0]} ${cols[1]} 1fr 0px 0px`; btn.textContent='«'; }
+        if(parseFloat(cols[4])<10){ grid.style.gridTemplateColumns = `${cols[0]} ${cols[1]} 1fr 1px 1fr`; btn.classList.remove('hidden'); }
+        else { grid.style.gridTemplateColumns = `${cols[0]} ${cols[1]} 1fr 0px 0px`; btn.classList.add('hidden'); }
       }
       setTimeout(()=>App.editor.refresh(),200);
     }

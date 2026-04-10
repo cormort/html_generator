@@ -142,6 +142,10 @@ select:hover { background: hsla(255, 100%, 100%, 0.15); }
 .btn.danger { background: rgba(255, 77, 79, 0.1); color: var(--danger); border: 1px solid var(--danger); }
 .btn.danger:hover { background: var(--danger); color: #fff; }
 
+.btn.chip { background: hsla(var(--h), var(--s), 50%, 0.1); color: var(--text-main); border: 1px solid var(--border-color); }
+.btn.chip:hover { background: hsla(var(--h), var(--s), 50%, 0.2); border-color: var(--accent); }
+.btn.chip.hidden { opacity: 0.5; filter: grayscale(1); }
+
 .btn.magic { 
   background: var(--magic); 
   color: #fff; 
@@ -249,22 +253,6 @@ iframe#preview {
   background: #fff; 
   transition: opacity 0.3s ease;
 }
-
-/* Float Toggle Buttons */
-.toggle-btn { 
-  position: absolute; 
-  top: 50%; 
-  background: var(--bg-pane); 
-  backdrop-filter: blur(10px);
-  border: 1px solid var(--border-color);
-  width: 32px; height: 32px; 
-  border-radius: 50%; 
-  display: flex; align-items: center; justify-content: center;
-  box-shadow: var(--shadow-md);
-  cursor: pointer; z-index: 50;
-  transition: var(--transition);
-}
-.toggle-btn:hover { background: var(--accent); color: #fff; transform: scale(1.1); }
 
 /* Toast & Modals */
 .modal-overlay { 

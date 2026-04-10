@@ -36,6 +36,8 @@
         <option value="material">Material</option>
         <option value="dracula">Dracula</option>
       </select>
+      <button id="btn-toggle-nav" class="btn chip" title="縮放導覽樹">📂 導覽</button>
+      <button id="btn-toggle-preview" class="btn chip" title="縮放預覽視窗">👁️ 預覽</button>
       <button id="btn-format" class="btn action">美化</button>
       <button id="btn-download" class="btn action">下載</button>
       <button id="btn-clear" class="btn danger">清空</button>
@@ -67,9 +69,6 @@
     <div class="resizer" data-target="pane-nav"></div>
 
     <section class="pane" id="pane-editor">
-      <div id="btn-toggle-nav" class="toggle-btn" title="收合/展開導覽">«</div>
-      <div id="btn-toggle-preview" class="toggle-btn" title="收合/展開預覽">»</div>
-
       <div class="pane-header">
         <span class="pane-title">原始碼</span>
         <div class="btn-group">
