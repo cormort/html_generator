@@ -337,19 +337,34 @@
         });
       });
     },
+    // 找到 editor.js 約 280 行附近的 Layout 物件
     togglePane(which){
       const grid = $('#grid');
+      // 重新取得最新的欄位寬度
       const cols = getComputedStyle(grid).gridTemplateColumns.split(' ');
+      
       if(which==='nav'){
         const btn=$('#btn-toggle-nav');
-        if(cols[0]==='0px'){ grid.style.gridTemplateColumns = `280px 1px 1fr ${cols[3]} ${cols[4]}`; btn.classList.remove('hidden'); }
-        else { grid.style.gridTemplateColumns = `0px 0px 1fr ${cols[3]} ${cols[4]}`; btn.classList.add('hidden'); }
+        if(parseFloat(cols[0]) <= 5){ // 改用小於 5 判斷關閉狀態
+          grid.style.gridTemplateColumns = `280px 2px 1fr 2px 1.2fr`; 
+          btn.classList.remove('hidden'); 
+        } else { 
+          grid.style.gridTemplateColumns = `0px 0px 1fr ${cols[3]} ${cols[4]}`; 
+          btn.classList.add('hidden'); 
+        }
       } else {
         const btn=$('#btn-toggle-preview');
-        if(parseFloat(cols[4])<10){ grid.style.gridTemplateColumns = `${cols[0]} ${cols[1]} 1fr 1px 1fr`; btn.classList.remove('hidden'); }
-        else { grid.style.gridTemplateColumns = `${cols[0]} ${cols[1]} 1fr 0px 0px`; btn.classList.add('hidden'); }
+        // 如果最後一欄寬度很小，就展開它
+        if(parseFloat(cols[4]) <= 5){ 
+          grid.style.gridTemplateColumns = `${cols[0]} ${cols[1]} 1fr 2px 1.2fr`; 
+          btn.classList.remove('hidden'); 
+        } else { 
+          // 否則將最後兩欄（resizer + preview）歸零
+          grid.style.gridTemplateColumns = `${cols[0]} ${cols[1]} 1fr 0px 0px`; 
+          btn.classList.add('hidden'); 
+        }
       }
-      setTimeout(()=>App.editor.refresh(),200);
+      setTimeout(()=>App.editor.refresh(), 200);
     }
   };
 
