@@ -69,7 +69,14 @@
     setValue(text, mode) { if (mode) this.cm.setOption('mode', this._modeOf(mode)); this.cm.setValue(text ?? ''); this.refresh(); }
     refresh() { setTimeout(() => this.cm && this.cm.refresh(), 50); }
     find(regex) { const c = this.cm.getSearchCursor(regex); return c.findNext() ? c : null; }
-    jumpTo(line) { this.cm.setCursor(line, 0); this.cm.scrollIntoView({line, ch:0}, 200); this.cm.focus(); }
+    jumpTo(line) { 
+      this.cm.setCursor(line, 0); 
+      this.cm.scrollIntoView({line, ch:0}, 200); 
+      this.cm.focus();
+      const cls = 'cursor-line-highlight';
+      this.cm.addLineClass(line, 'background', cls);
+      setTimeout(() => this.cm.removeLineClass(line, 'background', cls), 1500);
+    }
     replaceRange(from, to, text) { this.cm.replaceRange(text, from, to); }
     getDoc() { return this.cm.getDoc(); }
     setTheme(theme) { this.cm.setOption('theme', theme === 'default' ? 'default' : theme); }
@@ -114,7 +121,17 @@
       const ch = until.split('\n').pop().length;
       return { from: {line, ch}, to: {line, ch: ch + (m[0]?.length || 0)} };
     }
-    jumpTo(line) { this.editor.revealLineInCenter(line+1); this.editor.setPosition({lineNumber: line+1, column:1}); this.editor.focus(); }
+    jumpTo(line) { 
+      this.editor.revealLineInCenter(line+1); 
+      this.editor.setPosition({lineNumber: line+1, column:1}); 
+      this.editor.focus();
+      const oldDecs = this._highlightDecs || [];
+      this._highlightDecs = this.editor.deltaDecorations(oldDecs, [{
+        range: new monaco.Range(line+1, 1, line+1, 1),
+        options: { isWholeLine: true, className: 'cursor-line-highlight' }
+      }]);
+      setTimeout(() => { this._highlightDecs = this.editor.deltaDecorations(this._highlightDecs, []); }, 1500);
+    }
     replaceRange(from, to, text) {
       const model = this.editor.getModel();
       const range = new monaco.Range(from.line+1, from.ch+1, to.line+1, to.ch+1);
@@ -130,8 +147,20 @@
       let html = content;
       if (isMd) {
         html = `<style>body{font-family:sans-serif;padding:20px;line-height:1.6}img{max-width:100%}</style>` + marked.parse(content || '');
-      } else {
-        const syncScript = `<script>\n  document.addEventListener('click', function(e){\n    try{e.stopPropagation();e.preventDefault();}catch(err){}\n    window.parent.postMessage({type:'sync', tag:e.target.tagName, id:e.target.id, class:e.target.className, text:(e.target.innerText||'').slice(0,50)}, '*');\n  }, true);\n<\/script>`;
+} else {
+        const syncScript = `<script>
+  document.addEventListener('click', function(e){
+    try{e.stopPropagation();e.preventDefault();}catch(err){}
+    window.parent.postMessage({type:'sync', tag:e.target.tagName, id:e.target.id, class:e.target.className, text:(e.target.innerText||'').slice(0,50)}, '*');
+  }, true);
+  window.addEventListener('message', function(e){
+    if(e.data?.type==='highlight'){
+      document.querySelectorAll('[data-highlight]').forEach(el=>{ el.style.background=''; delete el.dataset.highlight; });
+      const sel = e.data.selector;
+      if(sel){ const el = document.querySelector(sel); if(el){ el.style.background='yellow'; el.dataset.highlight='true'; } }
+    }
+  });
+<\/script>`;
         html = content.includes('</body>') ? content.replace('</body>', syncScript + '</body>') : (content + syncScript);
       }
       // diff-less assignment (fast)
@@ -165,8 +194,19 @@
         if (add && textVal) { has=true; html += `<a class="${cls}" data-line="${i}">${textVal}</a>`; }
       }
       container.innerHTML = has ? html : '<div style="padding:10px;color:#888;text-align:center">無符合項目</div>';
-      // click -> jump
-      $$('#outline-container a').forEach(a => a.addEventListener('click', () => App.editor.jumpTo(parseInt(a.dataset.line,10))));
+      // click -> jump & highlight
+      $$('#outline-container a').forEach(a => a.addEventListener('click', () => {
+        const line = parseInt(a.dataset.line,10);
+        const text = lines[line] || '';
+        const idMatch = text.match(/id=["']([^"']+)["']/);
+        const classMatch = text.match(/class=["']([^"']+)["']/);
+        let selector = '';
+        if (idMatch) selector = '#' + idMatch[1];
+        else if (classMatch) selector = '.' + classMatch[1].split(' ')[0];
+        const preview = $('#preview');
+        if (selector) preview.contentWindow.postMessage({type:'highlight', selector}, '*');
+        App.editor.jumpTo(line);
+      }));
     }
   };
 

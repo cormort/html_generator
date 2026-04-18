@@ -182,7 +182,10 @@ select:hover { background: #475569; }
 #editor-host { flex: 1; background: #fff; overflow: hidden; }
 [data-theme] #editor-host { background: transparent; }
 .CodeMirror { font-size: 14px; line-height: 1.6; height: 100% !important; background: transparent !important; }
+.CodeMirror .cursor-line-highlight { background: rgba(255, 230, 0, 0.3) !important; }
 iframe#preview { background: #fff; border: none; }
+
+.monaco-editor .cursor-line-highlight { background: rgba(255, 230, 0, 0.3) !important; }
 
 /* Modals - HIGH IMPACT FIX */
 .modal-overlay { 
