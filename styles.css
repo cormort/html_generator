@@ -175,6 +175,8 @@ select:hover { background: #475569; }
 /* Sidebar List */
 #outline-container a { display: block; padding: 8px 20px; margin: 1px 10px; border-radius: 4px; font-size: 0.85rem; color: var(--text-muted); text-decoration: none; transition: var(--transition); }
 #outline-container a:hover { background: var(--accent-soft); color: var(--accent); }
+#outline-container a.outline-function { color: var(--success); }
+#outline-container a.outline-function:hover { background: rgba(22, 163, 74, 0.1); color: var(--success); }
 
 /* Editor & Preview */
 #editor-host { flex: 1; background: #fff; overflow: hidden; }

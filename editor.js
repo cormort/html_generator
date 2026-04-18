@@ -148,6 +148,7 @@
       const reH = /<(h[1-6])([^>]*)>(.*?)<\/\1>/i;
       const reId = /id=["']([^"']+)["']/i;
       const reClass = /class=["']([^"']+)["']/i;
+      const reFunc = /(?:function\s+(\w+)|(\w+)\s*=\s*(?:function|\(.*?\)\s*=>)|const\s+(\w+)\s*=\s*(?:function|\(.*?\)\s*=>)|let\s+(\w+)\s*=\s*(?:function|\(.*?\)\s*=>))/;
       let html = ''; let has=false;
       for (let i=0;i<lines.length;i++){
         const line = lines[i];
@@ -158,6 +159,8 @@
           textVal = '#'+m[1]; cls = 'outline-id'; add=true;
         } else if ((filter==='all' || filter==='classes') && (m = line.match(reClass))) {
           textVal = '.'+m[1].split(' ')[0]; cls = 'outline-class'; add=true;
+        } else if ((filter==='all' || filter==='functions') && (m = line.match(reFunc))) {
+          textVal = 'ƒ ' + (m[1] || m[2] || m[3] || m[4]); cls = 'outline-function'; add=true;
         }
         if (add && textVal) { has=true; html += `<a class="${cls}" data-line="${i}">${textVal}</a>`; }
       }
