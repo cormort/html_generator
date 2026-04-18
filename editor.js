@@ -73,9 +73,28 @@
       this.cm.setCursor(line, 0); 
       this.cm.scrollIntoView({line, ch:0}, 200); 
       this.cm.focus();
+      this._highlightPairLines(line);
+    }
+    _highlightPairLines(startLine) {
+      const doc = this.cm.getDoc();
+      const totalLines = doc.lineCount();
+      let braceCount = 0;
+      let endLine = startLine;
+      for (let i = startLine; i < totalLines; i++) {
+        const text = doc.getLine(i);
+        for (const ch of text) {
+          if (ch === '{') braceCount++;
+          else if (ch === '}') braceCount--;
+        }
+        if (braceCount <= 0 && i > startLine) { endLine = i; break; }
+      }
       const cls = 'cursor-line-highlight';
-      this.cm.addLineClass(line, 'background', cls);
-      setTimeout(() => this.cm.removeLineClass(line, 'background', cls), 1500);
+      this.cm.addLineClass(startLine, 'background', cls);
+      if (endLine !== startLine) this.cm.addLineClass(endLine, 'background', cls);
+      setTimeout(() => {
+        this.cm.removeLineClass(startLine, 'background', cls);
+        if (endLine !== startLine) this.cm.removeLineClass(endLine, 'background', cls);
+      }, 1500);
     }
     replaceRange(from, to, text) { this.cm.replaceRange(text, from, to); }
     getDoc() { return this.cm.getDoc(); }
@@ -125,11 +144,26 @@
       this.editor.revealLineInCenter(line+1); 
       this.editor.setPosition({lineNumber: line+1, column:1}); 
       this.editor.focus();
+      this._highlightPairLines(line);
+    }
+    _highlightPairLines(startLine) {
+      const model = this.editor.getModel();
+      const lines = model.getLineCount();
+      let braceCount = 0;
+      let endLine = startLine;
+      for (let i = startLine; i <= lines; i++) {
+        const text = model.getLineContent(i);
+        for (const ch of text) {
+          if (ch === '{') braceCount++;
+          else if (ch === '}') braceCount--;
+        }
+        if (braceCount <= 0 && i > startLine) { endLine = i - 1; break; }
+      }
       const oldDecs = this._highlightDecs || [];
-      this._highlightDecs = this.editor.deltaDecorations(oldDecs, [{
-        range: new monaco.Range(line+1, 1, line+1, 1),
-        options: { isWholeLine: true, className: 'cursor-line-highlight' }
-      }]);
+      const decs = [];
+      decs.push({ range: new monaco.Range(startLine+1, 1, startLine+1, 1), options: { isWholeLine: true, className: 'cursor-line-highlight' } });
+      if (endLine !== startLine) decs.push({ range: new monaco.Range(endLine+1, 1, endLine+1, 1), options: { isWholeLine: true, className: 'cursor-line-highlight' } });
+      this._highlightDecs = this.editor.deltaDecorations(oldDecs, decs);
       setTimeout(() => { this._highlightDecs = this.editor.deltaDecorations(this._highlightDecs, []); }, 1500);
     }
     replaceRange(from, to, text) {
