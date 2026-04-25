@@ -257,3 +257,353 @@ iframe#preview {
   flex-direction: column !important;
   }  
 }
+/* =============================================
+   MOBILE OPTIMIZATIONS — append to styles.css
+   ============================================= */
+
+@media (max-width: 768px) {
+
+  /* === HEADER === */
+  .header-bar {
+    height: auto;
+    min-height: 48px;
+    padding: 8px 12px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .brand::after {
+    font-size: 0.85rem;
+    letter-spacing: 0.02em;
+  }
+
+  /* === CONTROLS ROW — scroll horizontally === */
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;          /* Firefox */
+    width: 100%;
+    padding-bottom: 2px;
+  }
+  .controls::-webkit-scrollbar { display: none; }
+
+  /* Compact selects */
+  .controls select {
+    padding: 5px 8px;
+    font-size: 0.78rem;
+    flex-shrink: 0;
+  }
+
+  /* Compact buttons */
+  .controls .btn {
+    padding: 5px 10px;
+    font-size: 0.78rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* Hide secondary buttons by default — show via expand */
+  #btn-toggle-nav,
+  #btn-toggle-preview {
+    display: none;     /* nav/preview always stacked on mobile */
+  }
+
+  /* === TABS BAR === */
+  .tabs-bar {
+    padding: 6px 10px;
+    gap: 8px;
+  }
+
+  .tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    flex: 1;
+    min-width: 0;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+
+  .tab {
+    padding: 5px 10px;
+    font-size: 0.78rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  #btn-new-tab {
+    padding: 5px 10px;
+    font-size: 0.78rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* === MAIN LAYOUT — vertical stack === */
+  .main-content {
+    display: flex !important;
+    flex-direction: column !important;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .resizer,
+  #pane-nav { display: none !important; }
+
+  /* Editor pane */
+  #pane-editor {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 45vh;
+    max-height: 55vh;
+    border-bottom: 2px solid var(--border);
+  }
+
+  /* Preview pane */
+  #pane-preview {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 40vh;
+    flex: 1;
+  }
+
+  /* Pane headers */
+  .pane-header {
+    padding: 8px 12px;
+    font-size: 0.8rem;
+  }
+
+  /* AI button text — shorter label */
+  #btn-ai::before { content: '🪄'; }
+  #btn-ai { font-size: 0.78rem; padding: 5px 10px; }
+
+  /* CodeMirror fills pane height */
+  #editor-host {
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .CodeMirror {
+    font-size: 13px !important;
+    height: 100% !important;
+  }
+
+  /* Preview iframe fills pane height */
+  iframe#preview {
+    flex: 1;
+    min-height: 0;
+  }
+
+  /* === AI MODAL === */
+  .modal-content {
+    width: 96vw;
+    height: 80vh;
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .modal-header { font-size: 1.1rem; }
+
+  .modal-textarea {
+    padding: 14px;
+    font-size: 0.85rem;
+  }
+
+  /* === TOAST === */
+  .toast {
+    bottom: 16px;
+    right: 12px;
+    left: 12px;
+    text-align: center;
+    font-size: 0.85rem;
+    padding: 10px 16px;
+  }
+
+  /* === REPAIR LINK === */
+  .brand > a {
+    font-size: 0.65rem !important;
+    margin-left: 8px !important;
+  }
+}
+
+/* Very small screens (iPhone SE etc.) */
+@media (max-width: 390px) {
+  .controls select { display: none; }   /* hide engine/theme selects, use defaults */
+  .controls .btn { padding: 5px 8px; font-size: 0.72rem; }
+}
+/* =============================================
+   MOBILE OPTIMIZATIONS — append to styles.css
+   ============================================= */
+
+@media (max-width: 768px) {
+
+  /* === HEADER === */
+  .header-bar {
+    height: auto;
+    min-height: 48px;
+    padding: 8px 12px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .brand::after {
+    font-size: 0.85rem;
+    letter-spacing: 0.02em;
+  }
+
+  /* === CONTROLS ROW — scroll horizontally === */
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;          /* Firefox */
+    width: 100%;
+    padding-bottom: 2px;
+  }
+  .controls::-webkit-scrollbar { display: none; }
+
+  /* Compact selects */
+  .controls select {
+    padding: 5px 8px;
+    font-size: 0.78rem;
+    flex-shrink: 0;
+  }
+
+  /* Compact buttons */
+  .controls .btn {
+    padding: 5px 10px;
+    font-size: 0.78rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* Hide secondary buttons by default — show via expand */
+  #btn-toggle-nav,
+  #btn-toggle-preview {
+    display: none;     /* nav/preview always stacked on mobile */
+  }
+
+  /* === TABS BAR === */
+  .tabs-bar {
+    padding: 6px 10px;
+    gap: 8px;
+  }
+
+  .tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    flex: 1;
+    min-width: 0;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+
+  .tab {
+    padding: 5px 10px;
+    font-size: 0.78rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  #btn-new-tab {
+    padding: 5px 10px;
+    font-size: 0.78rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* === MAIN LAYOUT — vertical stack === */
+  .main-content {
+    display: flex !important;
+    flex-direction: column !important;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .resizer,
+  #pane-nav { display: none !important; }
+
+  /* Editor pane */
+  #pane-editor {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 45vh;
+    max-height: 55vh;
+    border-bottom: 2px solid var(--border);
+  }
+
+  /* Preview pane */
+  #pane-preview {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 40vh;
+    flex: 1;
+  }
+
+  /* Pane headers */
+  .pane-header {
+    padding: 8px 12px;
+    font-size: 0.8rem;
+  }
+
+  /* AI button text — shorter label */
+  #btn-ai::before { content: '🪄'; }
+  #btn-ai { font-size: 0.78rem; padding: 5px 10px; }
+
+  /* CodeMirror fills pane height */
+  #editor-host {
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .CodeMirror {
+    font-size: 13px !important;
+    height: 100% !important;
+  }
+
+  /* Preview iframe fills pane height */
+  iframe#preview {
+    flex: 1;
+    min-height: 0;
+  }
+
+  /* === AI MODAL === */
+  .modal-content {
+    width: 96vw;
+    height: 80vh;
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .modal-header { font-size: 1.1rem; }
+
+  .modal-textarea {
+    padding: 14px;
+    font-size: 0.85rem;
+  }
+
+  /* === TOAST === */
+  .toast {
+    bottom: 16px;
+    right: 12px;
+    left: 12px;
+    text-align: center;
+    font-size: 0.85rem;
+    padding: 10px 16px;
+  }
+
+  /* === REPAIR LINK === */
+  .brand > a {
+    font-size: 0.65rem !important;
+    margin-left: 8px !important;
+  }
+}
+
+/* Very small screens (iPhone SE etc.) */
+@media (max-width: 390px) {
+  .controls select { display: none; }   /* hide engine/theme selects, use defaults */
+  .controls .btn { padding: 5px 8px; font-size: 0.72rem; }
+}
