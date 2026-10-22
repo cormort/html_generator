@@ -346,7 +346,8 @@
       const cssResult = this._replaceCSSRule(content, pasted);
       if (cssResult && cssResult.ok) {
         App.editor.setValue(cssResult.text, Tabs.active.mode);
-        toast('CSS 規則已替換'); this.close(); return;
+        // HTML 檔整份無法以 JS 解析，<script> 裡的函式會走這條括號比對路徑
+        toast(this._parseFunctionName(pasted).name ? 'JS 函式已替換' : 'CSS 規則已替換'); this.close(); return;
       }
 
       // Otherwise locate approx line
@@ -687,16 +688,18 @@
             const pos = App._findLineByRegex(reId, txt);
             if (pos >= 0) { App.editor.jumpTo(pos); toast(`定位到 <${tag} id="${id}">`); return; }
           }
+          // try text（先於 tag：沒有 id 的 <td> 若先比 tag，永遠只會跳到第一個 <td>）
+          if (text) {
+            const lines = txt.split('\n'), reOpen = new RegExp(`<${escTag}[\\s>]`, 'i');
+            let pos = lines.findIndex(l => l.includes(String(text)) && reOpen.test(l));
+            if (pos < 0) pos = App._findLineByText(String(text), txt);
+            if (pos >= 0) { App.editor.jumpTo(pos); toast('定位到相符內容'); return; }
+          }
           // try tag
           if (tag) {
             const reTag = new RegExp(`<${escTag}[^>]*>`, 'i');
             const pos = App._findLineByRegex(reTag, txt);
             if (pos >= 0) { App.editor.jumpTo(pos); toast(`定位到 <${tag}>`); return; }
-          }
-          // try text
-          if (text) {
-            const pos = App._findLineByText(String(text), txt);
-            if (pos >= 0) { App.editor.jumpTo(pos); toast('定位到相符內容'); return; }
           }
           toast('找不到對應位置');
         }
