@@ -36,7 +36,7 @@
   };
   const storage = {
     get(key, fallback) { try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch { return fallback; } },
-    set(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch {} }
+    set(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); return true; } catch { return false; } }
   };
 
   // ---------- Store (Tabs) ----------
@@ -66,22 +66,26 @@
         this.activeId = this.list[0].id;
       }
     },
-    save() { storage.set(STORE_TABS, this.list); storage.set(STORE_ACTIVE, this.activeId); },
+    save() { return storage.set(STORE_TABS, this.list) && storage.set(STORE_ACTIVE, this.activeId); },
+    // 切換前先把編輯器內容寫回目前分頁：change 有 300ms debounce，不 flush 會丟掉最後幾個字
+    flush() { if (App.editor && this.active) this.active.content = App.editor.getValue(); },
     get active() { return this.list.find(t => t.id === this.activeId); },
     setActive(id) {
       if (this.list.some(t => t.id === id)) {
+        this.flush();
         this.activeId = id;
         this.save();
         App.renderTabs();
         App.syncMdToggle();
-        App.editor.setValue(this.active.content, this.active.mode);
+        App.editor.load(this.active.content, this.active.mode);
       }
     },
-    add(name = 'untitled.html', mode = 'html', content = '') { const t = { id: uid(), name, mode, content }; this.list.push(t); this.activeId = t.id; this.save(); App.renderTabs(); App.syncMdToggle(); App.editor.setValue(content, mode); },
+    add(name = 'untitled.html', mode = 'html', content = '') { this.flush(); const t = { id: uid(), name, mode, content }; this.list.push(t); this.activeId = t.id; this.save(); App.renderTabs(); App.syncMdToggle(); App.editor.load(content, mode); },
     rename(id, name) { const t = this.list.find(x => x.id === id); if (t) { t.name = name; this.save(); App.renderTabs(); } },
     remove(id) {
       const i = this.list.findIndex(x => x.id === id);
       if (i < 0) return;
+      this.flush();
       const removed = this.list.splice(i, 1)[0];
       if (removed.id === this.activeId) {
         const next = this.list[i] || this.list[i - 1] || this.list[0];
@@ -91,7 +95,7 @@
       App.renderTabs();
       if (this.active) {
         App.syncMdToggle();
-        App.editor.setValue(this.active.content, this.active.mode);
+        App.editor.load(this.active.content, this.active.mode);
       } else {
         // 最後一個分頁被刪 → 重建預設分頁，避免編輯器變成孤兒
         this.list = [DEFAULT_TAB()];
@@ -99,10 +103,10 @@
         this.save();
         App.renderTabs();
         App.syncMdToggle();
-        App.editor.setValue(this.list[0].content, this.list[0].mode);
+        App.editor.load(this.list[0].content, this.list[0].mode);
       }
     },
-    updateActiveContent(newText) { if (this.active) { this.active.content = newText; this.save(); } }
+    updateActiveContent(newText) { if (!this.active) return true; this.active.content = newText; return this.save(); }
   };
 
   // ---------- Editor Adapters ----------
@@ -115,12 +119,15 @@
         lineNumbers: true, lineWrapping: true, autoCloseTags: true, styleActiveLine: true
       });
       this.cm.setValue(text || '');
+      this.cm.clearHistory();
       this.cm.on('change', debounce(() => App.onEditorChange(this.getValue()), 300));
       return this;
     }
     _modeOf(mode) { return mode === 'md' ? 'markdown' : (mode === 'css' ? 'css' : (mode === 'js' ? 'javascript' : 'htmlmixed')); }
     getValue() { return this.cm.getValue(); }
     setValue(text, mode) { if (mode) this.cm.setOption('mode', this._modeOf(mode)); this.cm.setValue(text ?? ''); this.refresh(); }
+    // 換分頁用：清空 undo，避免 Ctrl+Z 把上一個分頁的內容倒進來
+    load(text, mode) { this.setValue(text, mode); this.cm.clearHistory(); }
     setMode(mode) { this.cm.setOption('mode', this._modeOf(mode)); }
     refresh() { setTimeout(() => this.cm && this.cm.refresh(), 50); }
     find(regex) { const c = this.cm.getSearchCursor(regex); return c.findNext() ? c : null; }
@@ -178,7 +185,14 @@
     _themeOf(theme) { return theme === 'dracula' ? 'vs-dark' : (theme === 'material' ? 'vs-dark' : 'vs'); }
     _langOf(mode) { return mode === 'md' ? 'markdown' : (mode === 'css' ? 'css' : (mode === 'js' ? 'javascript' : 'html')); }
     getValue() { return this.editor.getValue(); }
+    // executeEdits 保留 undo（美化/智能替換/清空可 Ctrl+Z）；editor.setValue 會清掉 undo，只給換分頁用
     setValue(text, mode) {
+      if (mode) this.setMode(mode);
+      this.editor.pushUndoStop();
+      this.editor.executeEdits('app', [{ range: this.editor.getModel().getFullModelRange(), text: text ?? '' }]);
+      this.editor.pushUndoStop();
+    }
+    load(text, mode) {
       if (mode) this.setMode(mode);
       this.editor.setValue(text ?? '');
     }
@@ -207,12 +221,12 @@
       const model = this.editor.getModel();
       const total = model.getLineCount();
       let braceCount = 0;
-      const first = model.getLineContent(startLine) || '';
+      const first = model.getLineContent(startLine + 1) || ''; // Monaco 行號從 1 起算
       for (const ch of first) { if (ch === '{') braceCount++; else if (ch === '}') braceCount--; }
       if (braceCount <= 0) return;
       let endLine = startLine;
       for (let i = startLine + 1; i < total; i++) {
-        const text = model.getLineContent(i);
+        const text = model.getLineContent(i + 1);
         for (const ch of text) { if (ch === '{') braceCount++; else if (ch === '}') braceCount--; }
         if (braceCount <= 0) { endLine = i; break; }
       }
@@ -236,12 +250,23 @@
       } else {
         const syncScript = `<script>
 (function(){
-  // 點擊同步定位：互動元素（連結/按鈕/表單）不擋預設行為，一般元素才攔截
+  // sandbox 無 allow-same-origin → 存取 localStorage 會丟 SecurityError；換成記憶體版讓頁面照常運作
+  try { window.localStorage; } catch (err) {
+    var mk = function(){
+      var d = Object.create(null);
+      return { getItem:function(k){ return k in d ? d[k] : null; }, setItem:function(k,v){ d[k] = String(v); },
+        removeItem:function(k){ delete d[k]; }, clear:function(){ d = Object.create(null); },
+        key:function(i){ return Object.keys(d)[i] || null; }, get length(){ return Object.keys(d).length; } };
+    };
+    Object.defineProperty(window, 'localStorage', { value: mk() });
+    Object.defineProperty(window, 'sessionStorage', { value: mk() });
+  }
+  // 點擊同步定位：不攔截事件（頁面自己的 click 處理照常觸發）；
+  // 互動元素不同步，否則編輯器 focus 會搶走輸入框焦點
   var INTERACTIVE = 'a,button,input,select,textarea,label,[contenteditable],[onclick]';
   document.addEventListener('click', function(e){
     var t = e.target;
-    var interactive = t.closest && t.closest(INTERACTIVE);
-    if (!interactive) { e.stopPropagation(); e.preventDefault(); }
+    if (t.closest && t.closest(INTERACTIVE)) return;
     try {
       var cls = '';
       if (t.className) cls = (typeof t.className === 'string') ? t.className : (t.className.baseVal || '');
@@ -257,7 +282,10 @@
   });
 })();
 <\/script>`;
-        html = content.includes('</body>') ? content.replace('</body>', syncScript + '</body>') : (content + syncScript);
+        // 插在最前面（<head> 後），storage 替身才會早於頁面腳本生效
+        const m = /<head\b[^>]*>/i.exec(content) || /<html\b[^>]*>/i.exec(content) || /<!doctype[^>]*>/i.exec(content);
+        const at = m ? m.index + m[0].length : 0;
+        html = content.slice(0, at) + syncScript + content.slice(at);
       }
       this.frame.srcdoc = html;
     }
@@ -336,18 +364,19 @@
       if (!pasted) { toast('請先貼上程式碼'); return; }
       const content = App.editor.getValue();
 
-      // Try JS AST first
-      const jsResult = this._replaceJSByAST(content, pasted);
-      if (jsResult && jsResult.ok) {
+      // Try JS AST first（HTML 檔則逐一解析各個 <script>）
+      const fns = this._pastedFunctions(pasted);
+      const jsResult = fns.length ? this._replaceJSByAST(content, pasted, fns) : null;
+      if (jsResult) {
         App.editor.setValue(jsResult.text, Tabs.active.mode);
-        toast('JS 函式已以 AST 精準替換'); this.close(); return;
+        toast(`已以 AST 替換：${jsResult.names.join(', ')}` + (jsResult.missed.length ? `（找不到：${jsResult.missed.join(', ')}）` : ''));
+        this.close(); return;
       }
-      // Fallback: CSS Rule（平衡括號匹配）
-      const cssResult = this._replaceCSSRule(content, pasted);
+      // Fallback: CSS Rule（平衡括號匹配）；貼上的是 JS 函式就不走括號比對，避免誤切
+      const cssResult = fns.length ? null : this._replaceCSSRule(content, pasted);
       if (cssResult && cssResult.ok) {
         App.editor.setValue(cssResult.text, Tabs.active.mode);
-        // HTML 檔整份無法以 JS 解析，<script> 裡的函式會走這條括號比對路徑
-        toast(this._parseFunctionName(pasted).name ? 'JS 函式已替換' : 'CSS 規則已替換'); this.close(); return;
+        toast('CSS 規則已替換'); this.close(); return;
       }
 
       // Otherwise locate approx line
@@ -358,61 +387,75 @@
       if (found) { App.editor.jumpTo(found.from.line); toast(`找不到完全符合，已定位至 "${key}"`); this.close(); }
       else { toast('找不到可替換的目標，請檢查程式碼語法是否正確'); }
     },
-    _parseFunctionName(code) {
+    _parse(code) {
       for (const sourceType of ['script', 'module']) {
-        try {
-          const ast = acorn.parse(code, { ecmaVersion: 'latest', sourceType });
-          let name = null;
-          walkAST(ast, {
-            FunctionDeclaration(node) { if (!name && node.id) name = node.id.name; },
-            VariableDeclaration(node) {
-              node.declarations.forEach(d => {
-                const init = d.init;
-                if (!name && d.id && init && (init.type === 'FunctionExpression' || init.type === 'ArrowFunctionExpression')) name = d.id.name;
-              });
-            }
-          });
-          if (name) return { name };
-        } catch (e) { /* try next sourceType */ }
-      }
-      return { name: null };
-    },
-    _replaceJSByAST(targetText, pasted) {
-      const meta = this._parseFunctionName(pasted);
-      if (!meta.name) return null;
-      for (const sourceType of ['script', 'module']) {
-        try {
-          const ast = acorn.parse(targetText, { ecmaVersion: 'latest', sourceType, ranges: true });
-          let hit = null;
-          walkAST(ast, {
-            FunctionDeclaration(node) { if (node.id && node.id.name === meta.name) hit = { start: node.start, end: node.end }; },
-            VariableDeclaration(node) {
-              node.declarations.forEach(d => {
-                const init = d.init;
-                if (d.id && d.id.name === meta.name && init && (init.type === 'FunctionExpression' || init.type === 'ArrowFunctionExpression')) hit = { start: node.start, end: node.end };
-              });
-            }
-          });
-          if (hit) {
-            const before = targetText.slice(0, hit.start);
-            const after = targetText.slice(hit.end);
-            return { ok: true, text: before + pasted + after };
-          }
-          return null;
-        } catch (e) { /* try next sourceType */ }
+        try { return acorn.parse(code, { ecmaVersion: 'latest', sourceType }); } catch (e) { /* try next sourceType */ }
       }
       return null;
+    },
+    // function foo / const foo = () => / export ... 的名稱；其他節點回傳 null
+    _fnName(node) {
+      if (node && /^Export(Named|Default)Declaration$/.test(node.type)) node = node.declaration;
+      if (!node) return null;
+      if (node.type === 'FunctionDeclaration') return node.id && node.id.name;
+      if (node.type === 'VariableDeclaration' && node.declarations.length === 1) {
+        const d = node.declarations[0];
+        if (d.id.type === 'Identifier' && d.init && /^(Function|ArrowFunction)Expression$/.test(d.init.type)) return d.id.name;
+      }
+      return null;
+    },
+    // 貼上碼的頂層函式（AI 常一次給好幾個）
+    _pastedFunctions(code) {
+      const ast = this._parse(code);
+      if (!ast) return [];
+      return ast.body.map(n => ({ name: this._fnName(n), exported: n.type.startsWith('Export'), code: code.slice(n.start, n.end) }))
+        .filter(f => f.name);
+    },
+    // 目標檔所有函式位置：name -> { outer: 含 export 的範圍, inner: 不含 export 的範圍 }
+    _findFunctions(text) {
+      const segs = [{ offset: 0, code: text }];
+      // HTML 整份無法解析 → 逐一解析內嵌 <script>（略過 src 外部腳本）
+      const re = /<script\b(?![^>]*\bsrc\s*=)[^>]*>([\s\S]*?)<\/script>/gi;
+      for (let m; (m = re.exec(text));) segs.push({ offset: m.index + m[0].indexOf('>') + 1, code: m[1] });
+      const found = {};
+      for (const { offset, code } of segs) {
+        const ast = this._parse(code);
+        if (!ast) continue;
+        const add = (n) => {
+          const name = this._fnName(n);
+          const inner = n.declaration || n;
+          if (name && !found[name]) found[name] = { outer: [n.start + offset, n.end + offset], inner: [inner.start + offset, inner.end + offset] };
+        };
+        walkAST(ast, { ExportNamedDeclaration: add, ExportDefaultDeclaration: add, FunctionDeclaration: add, VariableDeclaration: add });
+      }
+      return found;
+    },
+    _replaceJSByAST(targetText, pasted, fns) {
+      const found = this._findFunctions(targetText);
+      const hits = fns.filter(f => found[f.name])
+        // 貼上碼有 export 就連 export 一起換，沒有就保留原檔的 export
+        .map(f => ({ name: f.name, code: fns.length === 1 ? pasted : f.code, range: found[f.name][f.exported ? 'outer' : 'inner'] }))
+        .sort((a, b) => b.range[0] - a.range[0]);
+      if (!hits.length) return null;
+      let text = targetText, lastStart = Infinity;
+      for (const h of hits) {
+        if (h.range[1] > lastStart) continue; // 範圍重疊（巢狀）→ 只換外層
+        text = text.slice(0, h.range[0]) + h.code + text.slice(h.range[1]);
+        lastStart = h.range[0];
+      }
+      return { text, names: hits.map(h => h.name).reverse(), missed: fns.filter(f => !found[f.name]).map(f => f.name) };
     },
     _replaceCSSRule(targetText, pasted) {
       const selMatch = pasted.match(/^[^{}]+\{/);
       if (!selMatch) return null;
       const selector = selMatch[0].replace('{', '').trim();
-      const open = new RegExp(escapeRegExp(selector) + '\\s*\\{');
+      // 選擇器前須是規則邊界（開頭、{ } > 或註解結尾），避免 .btn 誤中 .card .btn
+      const open = new RegExp('(^|[{}>]|\\*/)(\\s*)' + escapeRegExp(selector) + '\\s*\\{');
       const m = open.exec(targetText);
       if (!m) return null;
-      const start = m.index;
+      const start = m.index + m[1].length + m[2].length;
       // 平衡括號掃描：支援巢狀規則（@media / @supports），並避免 $ 替換模式問題
-      let depth = 0, i = start + m[0].length - 1;
+      let depth = 0, i = m.index + m[0].length - 1;
       for (; i < targetText.length; i++) {
         const c = targetText[i];
         if (c === '{') depth++;
@@ -569,8 +612,7 @@
     syncMdToggle() { $('#md-toggle').checked = (Tabs.active && Tabs.active.mode === 'md'); },
 
     onEditorChange(text) {
-      Tabs.updateActiveContent(text);
-      this.showSaved();
+      this.showSaved(Tabs.updateActiveContent(text));
       this.updatePreviewDebounced();
       this.updateOutlineDebounced();
     },
@@ -608,8 +650,9 @@
 
     clear() { if (confirm('確定清空目前檔案？')) { this.editor.setValue('', Tabs.active.mode); } },
 
-    showSaved() {
+    showSaved(ok = true) {
       const el = $('#save-status');
+      if (!ok) { clearTimeout(this._savedTimer); el.textContent = '⚠️ 儲存失敗（容量已滿？）'; return; }
       el.textContent = '已儲存';
       clearTimeout(this._savedTimer);
       this._savedTimer = setTimeout(() => { el.textContent = ''; }, 1200);
@@ -629,7 +672,7 @@
         close.className = 'close';
         close.innerHTML = '×';
         close.title = '關閉';
-        close.addEventListener('click', (ev) => { ev.stopPropagation(); Tabs.remove(t.id); });
+        close.addEventListener('click', (ev) => { ev.stopPropagation(); if (!t.content || confirm(`關閉並刪除「${t.name}」？`)) Tabs.remove(t.id); });
         node.addEventListener('dblclick', () => { const newName = prompt('重新命名', t.name) || t.name; Tabs.rename(t.id, newName); });
         node.addEventListener('click', () => Tabs.setActive(t.id));
         node.append(name, close);
